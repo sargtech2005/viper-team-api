@@ -5,7 +5,7 @@ primary_region = "ams"
   dockerfile = "Dockerfile"
 
 [env]
-  PORT = "8080"
+  PORT = "3000"
   NODE_ENV = "production"
 
 [http_service]
