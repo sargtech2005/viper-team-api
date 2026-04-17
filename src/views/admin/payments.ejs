@@ -1,41 +1,40 @@
 <%- contentFor('style') %>
+<style>
+.admin-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - var(--navbar-h))}
+@media(max-width:860px){.admin-layout{grid-template-columns:1fr}}
+.admin-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px}
+.admin-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.87rem;font-weight:500;margin-bottom:2px;transition:all var(--transition)}
+.admin-link:hover{background:var(--bg-3);color:var(--text)}
+.admin-link.active{background:var(--purple-bg);color:var(--purple)}
+.admin-main{padding:28px 24px}
+@media(max-width:600px){.admin-main{padding:16px}}
+</style>
 <div class="admin-layout">
-  <%- include('../partials/admin-sidebar', { adminActive: 'payments' }) %>
+  <nav class="admin-sidebar">
+    <a href="/admin"          class="admin-link"><%- icon('bar-chart',15) %> Overview</a>
+    <a href="/admin/users"    class="admin-link"><%- icon('users',15) %> Users</a>
+    <a href="/admin/payments" class="admin-link active"><%- icon('credit-card',15) %> Payments</a>
+    <a href="/admin/plans"    class="admin-link"><%- icon('package',15) %> Plans</a>
+    <a href="/dashboard"      class="admin-link" style="margin-top:12px"><%- icon('arrow-right',15) %> Dashboard</a>
+  </nav>
   <div class="admin-main">
     <div class="page-header"><h2>Payments</h2><p>All transactions.</p></div>
     <div class="card" style="padding:0">
-      <!-- Desktop table -->
-      <div class="table-wrap rwd-table-wrap">
-        <table>
-          <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead>
-          <tbody>
-            <% payments.forEach(p => { %>
-            <tr>
-              <td><strong><%= p.username %></strong><br><span style="font-size:.74rem;color:var(--text-muted)"><%= p.email %></span></td>
-              <td><span class="badge badge-purple"><%= p.plan_name||'—' %></span></td>
-              <td style="font-weight:700">&#8358;<%= (p.amount_ngn||0).toLocaleString() %></td>
-              <td style="font-family:var(--mono);font-size:.73rem;color:var(--text-muted)"><%= p.paystack_ref %></td>
-              <td><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></td>
-              <td style="font-size:.75rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-      <!-- Mobile cards -->
-      <div class="rwd-cards">
-        <% payments.forEach(p => { %>
-        <div class="rwd-card">
-          <div class="rwd-card-row"><span class="rwd-label">User</span><strong><%= p.username %></strong></div>
-          <div class="rwd-card-row"><span class="rwd-label">Email</span><span style="font-size:.8rem;color:var(--text-muted)"><%= p.email %></span></div>
-          <div class="rwd-card-row"><span class="rwd-label">Plan</span><span class="badge badge-purple"><%= p.plan_name||'—' %></span></div>
-          <div class="rwd-card-row"><span class="rwd-label">Amount</span><strong>&#8358;<%= (p.amount_ngn||0).toLocaleString() %></strong></div>
-          <div class="rwd-card-row"><span class="rwd-label">Status</span><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></div>
-          <div class="rwd-card-row"><span class="rwd-label">Ref</span><code style="font-size:.72rem;color:var(--text-muted)"><%= p.paystack_ref %></code></div>
-          <div class="rwd-card-row"><span class="rwd-label">Date</span><span style="font-size:.75rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></span></div>
-        </div>
-        <% }) %>
-      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          <% payments.forEach(p => { %>
+          <tr>
+            <td><strong><%= p.username %></strong><br><span style="font-size:.74rem;color:var(--text-muted)"><%= p.email %></span></td>
+            <td><span class="badge badge-purple"><%= p.plan_name||'—' %></span></td>
+            <td style="font-weight:700">&#8358;<%= (p.amount_ngn||0).toLocaleString() %></td>
+            <td style="font-family:var(--mono);font-size:.73rem;color:var(--text-muted)"><%= p.paystack_ref %></td>
+            <td><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></td>
+            <td style="font-size:.75rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table></div>
     </div>
   </div>
 </div>

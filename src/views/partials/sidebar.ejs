@@ -1,20 +1,81 @@
-<nav class="dashboard-sidebar">
-  <a href="/dashboard"          class="sidebar-link <%= typeof active !== 'undefined' && active==='overview'  ? 'active':'' %>"><%- icon('grid',16) %> Overview</a>
-  <a href="/dashboard/api-keys" class="sidebar-link <%= typeof active !== 'undefined' && active==='api-keys'  ? 'active':'' %>"><%- icon('key',16) %> API Keys</a>
-  <a href="/dashboard/logs"     class="sidebar-link <%= typeof active !== 'undefined' && active==='logs'       ? 'active':'' %>"><%- icon('bar-chart',16) %> Usage Logs</a>
-  <a href="/dashboard/billing"  class="sidebar-link <%= typeof active !== 'undefined' && active==='billing'    ? 'active':'' %>"><%- icon('credit-card',16) %> Billing</a>
-  <a href="/docs"               class="sidebar-link"><%- icon('book',16) %> Docs & Test</a>
-  <a href="/pricing"            class="sidebar-link"><%- icon('dollar',16) %> Upgrade Plan</a>
-  <% if (user && user.role === 'admin') { %>
-  <a href="/admin" class="sidebar-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin Panel</a>
-  <% } %>
-  <div style="flex:1"></div>
-  <a href="/logout" class="sidebar-link danger" onclick="return handleLogout(event)"><%- icon('log-out',16) %> Sign out</a>
+<!-- Mobile sidebar toggle bar -->
+<div class="sidebar-topbar" id="sidebarTopbar">
+  <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open sidebar">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+    Menu
+  </button>
+  <span style="font-size:.84rem;font-weight:600;color:var(--text-muted)">
+    <% if (typeof active !== 'undefined') { %>
+      <%= {overview:'Overview',['api-keys']:'API Keys',logs:'Usage Logs',billing:'Billing'}[active] || 'Dashboard' %>
+    <% } %>
+  </span>
+</div>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar panel -->
+<nav class="dashboard-sidebar" id="dashSidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-header">
+      <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)">Dashboard</span>
+      <button class="sidebar-close-btn" id="sidebarClose" aria-label="Close sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <a href="/dashboard"          class="sidebar-link <%= typeof active !== 'undefined' && active==='overview'  ? 'active':'' %>"><%- icon('grid',16) %> Overview</a>
+    <a href="/dashboard/api-keys" class="sidebar-link <%= typeof active !== 'undefined' && active==='api-keys'  ? 'active':'' %>"><%- icon('key',16) %> API Keys</a>
+    <a href="/dashboard/logs"     class="sidebar-link <%= typeof active !== 'undefined' && active==='logs'       ? 'active':'' %>"><%- icon('bar-chart',16) %> Usage Logs</a>
+    <a href="/dashboard/billing"  class="sidebar-link <%= typeof active !== 'undefined' && active==='billing'    ? 'active':'' %>"><%- icon('credit-card',16) %> Billing</a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="/docs"    class="sidebar-link"><%- icon('book',16) %> Docs & Test</a>
+    <a href="/pricing" class="sidebar-link"><%- icon('dollar',16) %> Upgrade Plan</a>
+
+    <% if (user && user.role === 'admin') { %>
+    <div class="sidebar-divider"></div>
+    <a href="/admin" class="sidebar-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin Panel</a>
+    <% } %>
+
+    <div style="flex:1"></div>
+    <div class="sidebar-divider"></div>
+    <a href="/logout" class="sidebar-link danger" onclick="return handleLogout(event)"><%- icon('log-out',16) %> Sign out</a>
+
+    <% if (user) { %>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+      <div>
+        <div style="font-size:.84rem;font-weight:600"><%= user.username %></div>
+        <div style="font-size:.73rem;color:var(--text-muted)"><%= user.role %></div>
+      </div>
+    </div>
+    <% } %>
+  </div>
 </nav>
+
 <script>
-async function handleLogout(e){
+async function handleLogout(e) {
   e.preventDefault();
-  const ok = await viperConfirm('Sign out of your account?','Sign Out');
-  if(ok) window.location.href='/logout';
+  const ok = await viperConfirm('Sign out of your account?', 'Sign Out');
+  if (ok) window.location.href = '/logout';
 }
+(function () {
+  const toggle   = document.getElementById('sidebarToggle');
+  const close    = document.getElementById('sidebarClose');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const sidebar  = document.getElementById('dashSidebar');
+
+  function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  if (toggle)  toggle.addEventListener('click', openSidebar);
+  if (close)   close.addEventListener('click', closeSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+})();
 </script>

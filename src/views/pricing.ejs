@@ -1,28 +1,65 @@
 <%- contentFor('style') %>
 <style>
-.pricing-page{padding:64px 0 80px}
-.pricing-intro{text-align:center;margin-bottom:52px}
-.pricing-intro h1{margin-bottom:12px}
-.pricing-intro p{max-width:500px;margin:0 auto;font-size:.95rem}
-/* Grid: popular card is taller via padding */
-.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1060px;margin:0 auto}
-@media(max-width:900px){.pricing-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:540px){.pricing-grid{grid-template-columns:1fr}}
-.pc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:28px 22px;display:flex;flex-direction:column;gap:18px;position:relative;transition:all var(--transition)}
-.pc:hover{border-color:#c4b5fd;transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.pc.popular{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple),0 12px 40px rgba(124,58,237,.18);transform:translateY(-8px);padding:34px 22px}
-.pc.popular:hover{transform:translateY(-11px)}
-.pc-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:.72rem;font-weight:700;padding:4px 14px;border-radius:999px;white-space:nowrap;box-shadow:0 4px 12px rgba(124,58,237,.3)}
-.pc-name{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)}
-.pc-price{line-height:1}
-.pc-price .amount{font-size:2rem;font-weight:900;color:var(--text)}
-.pc-price .period{font-size:.84rem;color:var(--text-muted);font-weight:400}
-.pc-feats{display:flex;flex-direction:column;gap:9px;flex:1}
-.pc-feat{display:flex;align-items:center;gap:9px;font-size:.84rem;color:var(--text-subtle)}
-.pc-feat svg{color:var(--green);flex-shrink:0}
+.pricing-page { padding: 56px 0 80px; }
+.pricing-intro { text-align: center; margin-bottom: 48px; }
+.pricing-intro h1 { margin-bottom: 12px; }
+.pricing-intro p { max-width: 500px; margin: 0 auto; font-size: .95rem; }
+
+/* Mobile-first: single column, expands outward */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+@media (min-width: 600px) {
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 680px; }
+}
+@media (min-width: 960px) {
+  .pricing-grid { grid-template-columns: repeat(4, 1fr); max-width: 1040px; }
+}
+
+.pc {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 28px 22px;
+  display: flex; flex-direction: column; gap: 18px;
+  position: relative;
+  transition: all var(--transition);
+}
+.pc:hover { border-color: #c4b5fd; box-shadow: var(--shadow-lg); }
+.pc.popular {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 1px var(--purple), 0 8px 32px rgba(124,58,237,.14);
+  order: -1; /* comes first on mobile */
+}
+@media (min-width: 960px) {
+  .pc.popular { order: 0; transform: translateY(-6px); }
+  .pc.popular:hover { transform: translateY(-9px); }
+}
+
+.pc-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--grad); color: #fff;
+  font-size: .7rem; font-weight: 700; padding: 4px 14px;
+  border-radius: 999px; white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(124,58,237,.3);
+}
+.pc-name { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+.pc-amount { font-size: 2rem; font-weight: 900; color: var(--text); line-height: 1; }
+.pc-period { font-size: .84rem; color: var(--text-muted); }
+.pc-feats { display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.pc-feat { display: flex; align-items: center; gap: 9px; font-size: .84rem; color: var(--text-subtle); }
+.pc-feat svg { color: var(--green); flex-shrink: 0; }
+
+/* Paystack button note */
+.pay-note { font-size: .74rem; color: var(--text-muted); text-align: center; margin-top: -10px; }
+
 /* FAQ */
-.faq-wrap{max-width:680px;margin:64px auto 0}
-.faq-hd{text-align:center;margin-bottom:32px}
+.faq-wrap { max-width: 660px; margin: 60px auto 0; }
+.faq-hd   { text-align: center; margin-bottom: 28px; }
 </style>
 
 <div class="pricing-page container">
@@ -30,29 +67,32 @@
   <div class="pricing-intro">
     <div class="section-badge"><%- icon('dollar',12) %> Simple Pricing</div>
     <h1>Pay Once, Build Freely</h1>
-    <p>No hidden fees. No auto-renewals. Monthly payment via Paystack. Upgrade any time — quota resets immediately.</p>
+    <p>No hidden fees. No auto-renewals. Monthly payment via Paystack (NGN). Quota resets immediately on upgrade.</p>
   </div>
 
   <div class="pricing-grid">
     <% plans.forEach(plan => { %>
-    <% const feats = typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features; %>
-    <% const isPopular = plan.name === 'Pro'; %>
-    <% const isCurrent = user && user.plan_id === plan.id; %>
+    <%
+      const feats     = typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features;
+      const isPopular = plan.name === 'Pro';
+      const isCurrent = user && user.plan_id === plan.id;
+    %>
     <div class="pc <%= isPopular ? 'popular' : '' %>">
       <% if (isPopular) { %><div class="pc-badge"><%- icon('star',11) %> Most Popular</div><% } %>
 
-      <div class="pc-name"><%= plan.name %></div>
-      <div class="pc-price">
+      <div>
+        <div class="pc-name"><%= plan.name %></div>
         <% if (plan.price_ngn === 0) { %>
-          <span class="amount">Free</span>
+          <div class="pc-amount">Free</div>
         <% } else { %>
-          <span class="amount">&#8358;<%= plan.price_ngn.toLocaleString() %></span><span class="period">/month</span>
+          <div class="pc-amount">&#8358;<%= plan.price_ngn.toLocaleString() %></div>
+          <div class="pc-period">per month</div>
         <% } %>
       </div>
 
       <div class="pc-feats">
         <% feats.forEach(f => { %>
-        <div class="pc-feat"><%- icon('check', 13) %> <%= f %></div>
+          <div class="pc-feat"><%- icon('check', 13) %> <%= f %></div>
         <% }) %>
       </div>
 
@@ -65,43 +105,43 @@
           onclick="startPay('<%= plan.id %>','<%= plan.price_ngn %>','<%= plan.name %>')">
           <%- icon('zap',14) %> Get <%= plan.name %>
         </button>
+        <p class="pay-note">Secured by Paystack</p>
       <% } else { %>
-        <a href="/register?plan=<%= plan.id %>" class="btn <%= isPopular ? 'btn-primary' : 'btn-outline' %> btn-block">
-          <%- icon('zap',14) %> Get <%= plan.name %>
+        <a href="/login?redirect=/pricing" class="btn <%= isPopular ? 'btn-primary' : 'btn-outline' %> btn-block">
+          <%- icon('log-in',14) %> Sign in to upgrade
         </a>
       <% } %>
     </div>
     <% }) %>
   </div>
 
-  <!-- Compare bar -->
-  <div style="text-align:center;margin-top:32px">
-    <p style="font-size:.86rem;color:var(--text-muted)">All plans include access to all API categories &nbsp;·&nbsp; 5 API keys &nbsp;·&nbsp; Usage dashboard &nbsp;·&nbsp; Live playground</p>
-  </div>
+  <p style="text-align:center;margin-top:28px;font-size:.84rem;color:var(--text-muted)">
+    All plans include all API categories · Up to 5 API keys · Usage dashboard · Live playground
+  </p>
 
   <!-- FAQ -->
   <div class="faq-wrap">
     <div class="faq-hd">
-      <h2>Frequently Asked Questions</h2>
-      <p style="font-size:.9rem;margin-top:8px">Everything you need to know about pricing.</p>
+      <h2>Common Questions</h2>
     </div>
-
     <% [
-      { q: 'What happens when I reach my monthly limit?', a: 'Your API calls will return a 429 Too Many Requests error. You can upgrade your plan at any time to increase your limit — your quota resets to zero immediately when you upgrade.' },
-      { q: 'Do limits reset automatically every month?', a: 'Your quota resets when you purchase or renew a plan. Upgrading mid-month also resets your count immediately.' },
-      { q: 'Can I use these APIs in any programming language?', a: 'Absolutely. Any language that can make HTTP requests works — Node.js, Python, PHP, Dart, Go, Java, C#, Bash, Ruby, or even curl from your terminal.' },
-      { q: 'Is Paystack payment secure?', a: 'Yes. All payments are processed directly by Paystack, one of Nigeria\'s most trusted payment processors. We never store your card details on our servers.' },
-      { q: 'Can I have multiple API keys?', a: 'Yes, up to 5 active API keys per account. This is useful for separating keys per project or team member. All keys share the same monthly quota.' },
-      { q: 'Can I use the APIs in a WhatsApp or Telegram bot?', a: 'Yes — that\'s exactly what ViperAPI is built for. Any bot framework that makes HTTP requests (Baileys, Grammy, Telegraf, etc.) works perfectly with our REST endpoints.' },
+      { q: 'What happens when I hit my monthly limit?',
+        a: 'Your API calls return a 429 error. Upgrade at any time — your quota resets to zero immediately.' },
+      { q: 'Can I use these APIs in any language?',
+        a: 'Yes. Node.js, Python, PHP, Dart, Go, Java, C#, Bash, curl — any language that makes HTTP requests.' },
+      { q: 'Is payment secure?',
+        a: 'All payments go through Paystack, a trusted Nigerian payment processor. We never store card details.' },
+      { q: 'Can I have multiple API keys?',
+        a: 'Yes — up to 5 per account, useful for separating projects. All keys share the same monthly quota.' },
+      { q: 'Can I use the APIs in my WhatsApp bot?',
+        a: 'Absolutely — that\'s a core use case. Any bot framework (Baileys, Grammy, etc.) that makes HTTP requests works.' },
     ].forEach((item, i) => { %>
     <div class="faq-item" id="faq-<%= i %>">
       <div class="faq-q" onclick="toggleFaq(<%= i %>)">
         <span><%= item.q %></span>
         <span class="faq-icon"><%- icon('chevron-down', 14) %></span>
       </div>
-      <div class="faq-a">
-        <div class="faq-a-inner"><%= item.a %></div>
-      </div>
+      <div class="faq-a"><div class="faq-a-inner"><%= item.a %></div></div>
     </div>
     <% }) %>
   </div>
@@ -109,39 +149,51 @@
 </div>
 
 <%- contentFor('script') %>
-<% if (PAYSTACK_PUBLIC_KEY && user) { %>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
+var PSKEY = '<%- (typeof PAYSTACK_PUBLIC_KEY !== "undefined" ? PAYSTACK_PUBLIC_KEY : "") %>';
+
 function startPay(planId, amountNgn, planName) {
-  const ref = 'VIPER_' + Date.now() + '_' + Math.random().toString(36).slice(2,8).toUpperCase();
-  PaystackPop.setup({
-    key: '<%= PAYSTACK_PUBLIC_KEY %>',
-    email: '<%= user.email %>',
-    amount: parseInt(amountNgn) * 100,
-    ref, currency: 'NGN',
-    callback: async (response) => {
-      viperToast('Verifying payment...', 'info');
-      const r = await fetch('/dashboard/billing/verify', {
-        method: 'POST',
+  if (!PSKEY) {
+    return viperAlert('Payment is not configured yet. Contact support.', 'error');
+  }
+  var ref = 'VIPER_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8).toUpperCase();
+  var handler = PaystackPop.setup({
+    key:      PSKEY,
+    email:    '<%= user ? user.email : "" %>',
+    amount:   parseInt(amountNgn) * 100,   // kobo
+    ref:      ref,
+    currency: 'NGN',
+    metadata: { plan_id: planId, plan_name: planName },
+    callback: function (response) {
+      viperToast('Payment received. Verifying...', 'info');
+      fetch('/dashboard/billing/verify', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reference: response.reference, plan_id: planId }),
+        body:    JSON.stringify({ reference: response.reference, plan_id: planId })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) {
+          viperAlert('Plan upgraded to ' + d.plan + '! Your new quota is active now.', 'success')
+            .then(function () { window.location.href = '/dashboard/billing'; });
+        } else {
+          viperAlert('Verification failed: ' + (d.error || 'Unknown error'), 'error');
+        }
+      })
+      .catch(function () {
+        viperAlert('Network error during verification. Contact support with ref: ' + response.reference, 'error');
       });
-      const d = await r.json();
-      if (d.success) {
-        await viperAlert('Upgraded to ' + d.plan + '! Your new quota is now active.', 'success');
-        window.location.href = '/dashboard/billing';
-      } else {
-        viperAlert('Could not verify payment: ' + d.error, 'error');
-      }
     },
-    onClose: () => viperToast('Payment window closed.', 'warning'),
-  }).openIframe();
+    onClose: function () {
+      viperToast('Payment window closed.', 'warning');
+    }
+  });
+  handler.openIframe();
 }
-</script>
-<% } %>
-<script>
+
 function toggleFaq(i) {
-  const item = document.getElementById('faq-' + i);
-  item.classList.toggle('open');
+  var item = document.getElementById('faq-' + i);
+  if (item) item.classList.toggle('open');
 }
 </script>

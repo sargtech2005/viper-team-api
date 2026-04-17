@@ -2,7 +2,7 @@
   const cardId = 'ep-' + catId + '-' + idx;
 %>
 <div class="ep-card" id="<%= cardId %>">
-  <div class="ep-header">
+  <div class="ep-header" onclick="toggleEp(this.parentElement)">
     <span class="method-b <%= ep.m === 'GET' ? 'm-get' : 'm-post' %>"><%= ep.m %></span>
     <span class="ep-path"><%= ep.p %></span>
     <span class="ep-label"><%= ep.l %></span>

@@ -1,49 +1,86 @@
 <%- contentFor('style') %>
+<style>
+.docs-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - var(--navbar-h))}
+@media(max-width:860px){.docs-layout{grid-template-columns:1fr}}
+.docs-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px;position:sticky;top:var(--navbar-h);height:calc(100vh - var(--navbar-h));overflow-y:auto}
+@media(max-width:860px){.docs-sidebar{display:none}}
+.docs-main{padding:28px 24px}
+@media(max-width:600px){.docs-main{padding:16px}}
+.ds-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin:16px 0 6px}
+.ds-label:first-child{margin-top:0}
+.ds-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.86rem;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all var(--transition)}
+.ds-btn:hover,.ds-btn.active{background:var(--purple-bg);color:var(--purple)}
+.ds-btn svg{flex-shrink:0}
+.base-url-box{margin:16px 8px 0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.base-url-box .bul{font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.base-url-box code{font-family:var(--mono);font-size:.73rem;color:var(--purple);word-break:break-all}
+/* Endpoint card */
+.ep-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:border-color var(--transition)}
+.ep-card.open{border-color:#c4b5fd}
+.ep-header{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;transition:background var(--transition)}
+.ep-header:hover{background:var(--bg-2)}
+.method-b{font-family:var(--mono);font-size:.69rem;font-weight:700;padding:3px 9px;border-radius:6px;flex-shrink:0;letter-spacing:.03em}
+.m-get{background:var(--green-bg);color:#065f46}
+.m-post{background:var(--blue-bg);color:#1e40af}
+.ep-path{font-family:var(--mono);font-size:.81rem;color:var(--text-subtle)}
+.ep-label{font-size:.86rem;font-weight:600;color:var(--text);margin-left:auto}
+.ep-chevron{display:flex;align-items:center;color:var(--text-muted);margin-left:6px;transition:transform var(--transition);flex-shrink:0}
+.ep-card.open .ep-chevron{transform:rotate(180deg)}
+.ep-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
+.ep-card.open .ep-body{display:block}
+.ep-desc{color:var(--text-subtle);font-size:.87rem;line-height:1.65;margin:14px 0 16px}
+/* Param table */
+.p-table{width:100%;border-collapse:collapse;font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:14px}
+.p-table th{text-align:left;padding:9px 14px;background:var(--bg-2);color:var(--text-muted);font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.p-table td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:top}
+.p-req{color:var(--red);font-size:.71rem;font-weight:700}
+.p-opt{color:var(--text-muted);font-size:.71rem}
+/* Test panel */
+.test-panel{background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:4px}
+.test-panel-title{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.test-panel-title svg{color:var(--purple)}
+.test-inputs{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.test-input-row{display:flex;flex-direction:column;gap:4px}
+.test-input-lbl{font-size:.74rem;color:var(--text-muted)}
+.t-input{width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:.83rem;font-family:var(--mono);outline:none;transition:border-color var(--transition)}
+.t-input:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.1)}
+.t-input::placeholder{color:#94a3b8;font-family:var(--font)}
+.run-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;background:var(--grad);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.84rem;font-weight:600;cursor:pointer;transition:all var(--transition)}
+.run-btn:hover{opacity:.9;transform:translateY(-1px)}
+.run-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.run-btn svg{flex-shrink:0}
+.test-result-wrap{margin-top:12px;position:relative;display:none}
+.test-result-wrap.visible{display:block}
+.res-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.res-time{font-size:.75rem;color:var(--text-muted);font-family:var(--mono)}
+.t-result{background:#0f172a;border-radius:var(--radius-sm);padding:14px;font-family:var(--mono);font-size:.79rem;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;line-height:1.7}
+/* Cat section */
+.cat-section{margin-bottom:40px}
+.cat-section-hd{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid var(--border)}
+.cat-icon-badge{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
 
 <div class="docs-layout">
 
-  <!-- Desktop sidebar -->
-  <div class="docs-sidebar" id="docsSidebar">
+  <!-- Sidebar -->
+  <div class="docs-sidebar">
     <div class="ds-label">Navigation</div>
-    <button class="ds-btn" data-jump="top"><%- icon('file-text',14) %> All Endpoints</button>
+    <button class="ds-btn" onclick="scrollToTop()"><%- icon('file-text',14) %> All Endpoints</button>
+
     <div class="ds-label">Categories</div>
-    <button class="ds-btn" data-jump="utility"><%- icon('tool',14) %> Utilities</button>
-    <button class="ds-btn" data-jump="fun"><%- icon('smile',14) %> Fun & Games</button>
-    <button class="ds-btn" data-jump="search-info"><%- icon('search',14) %> Search & Info</button>
-    <button class="ds-btn" data-jump="media-image"><%- icon('image',14) %> Media & Images</button>
+    <button class="ds-btn" onclick="jumpTo('utility')"><%- icon('tool',14) %> Utilities</button>
+    <button class="ds-btn" onclick="jumpTo('fun')"><%- icon('smile',14) %> Fun & Games</button>
+    <button class="ds-btn" onclick="jumpTo('search-info')"><%- icon('search',14) %> Search & Info</button>
+    <button class="ds-btn" onclick="jumpTo('media-image')"><%- icon('image',14) %> Media & Images</button>
+
     <div class="base-url-box">
       <div class="bul">Base URL</div>
       <code>https://viper-api.name.ng/api/v1</code>
     </div>
   </div>
 
-  <!-- Mobile docs overlay + drawer -->
-  <div class="docs-overlay" id="docsOverlay" onclick="closeDocsDrawer()"></div>
-  <div class="docs-drawer" id="docsDrawer">
-    <div class="docs-drawer-header">
-      <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)">Jump to</span>
-      <button class="docs-drawer-close" onclick="closeDocsDrawer()"><%- icon('x',18) %></button>
-    </div>
-    <button class="ds-btn" data-jump="top"><%- icon('file-text',14) %> All Endpoints</button>
-    <div class="ds-label">Categories</div>
-    <button class="ds-btn" data-jump="utility"><%- icon('tool',14) %> Utilities</button>
-    <button class="ds-btn" data-jump="fun"><%- icon('smile',14) %> Fun & Games</button>
-    <button class="ds-btn" data-jump="search-info"><%- icon('search',14) %> Search & Info</button>
-    <button class="ds-btn" data-jump="media-image"><%- icon('image',14) %> Media & Images</button>
-    <div class="base-url-box" style="margin:16px 0 0">
-      <div class="bul">Base URL</div>
-      <code>https://viper-api.name.ng/api/v1</code>
-    </div>
-  </div>
-
-  <!-- Main content -->
+  <!-- Main -->
   <div class="docs-main">
-
-    <!-- Mobile "Jump to section" FAB -->
-    <button class="docs-fab" onclick="toggleDocsDrawer()" aria-label="Jump to section">
-      <%- icon('list',18) %>
-      <span>Sections</span>
-    </button>
 
     <div class="page-header">
       <h2>API Docs & Playground</h2>
@@ -64,15 +101,20 @@
       <% } %>
     </div>
 
-    <!-- UTILITY -->
+    <!-- ─── UTILITY ──────────────────────────────────────────────────────── -->
     <div class="cat-section" id="utility">
       <div class="cat-section-hd">
         <div class="cat-icon-badge ci-purple"><%- icon('tool',20) %></div>
-        <div><h3 style="margin:0">Utilities</h3><div style="font-size:.78rem;color:var(--text-muted)">8 endpoints</div></div>
+        <div>
+          <h3 style="margin:0">Utilities</h3>
+          <div style="font-size:.78rem;color:var(--text-muted)">8 endpoints</div>
+        </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+          <div class="online-dot"></div>
+          <span style="font-size:.75rem;color:var(--green)">Online</span>
         </div>
       </div>
+
       <% [
         {m:'POST',p:'/utility/qr',l:'QR Code Generator',d:'Generate a QR code image (Base64 PNG) from any text or URL.',params:[{n:'text',r:true,d:'Text or URL to encode into the QR code'}]},
         {m:'POST',p:'/utility/base64/encode',l:'Base64 Encode',d:'Encode any plain text string to Base64 format.',params:[{n:'text',r:true,d:'Plain text string to encode'}]},
@@ -87,13 +129,17 @@
       <% }) %>
     </div>
 
-    <!-- FUN -->
+    <!-- ─── FUN ──────────────────────────────────────────────────────────── -->
     <div class="cat-section" id="fun">
       <div class="cat-section-hd">
         <div class="cat-icon-badge ci-orange"><%- icon('smile',20) %></div>
-        <div><h3 style="margin:0">Fun & Games</h3><div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div></div>
+        <div>
+          <h3 style="margin:0">Fun & Games</h3>
+          <div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div>
+        </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+          <div class="online-dot"></div>
+          <span style="font-size:.75rem;color:var(--green)">Online</span>
         </div>
       </div>
       <% [
@@ -105,13 +151,17 @@
       <% }) %>
     </div>
 
-    <!-- SEARCH & INFO -->
+    <!-- ─── SEARCH & INFO ────────────────────────────────────────────────── -->
     <div class="cat-section" id="search-info">
       <div class="cat-section-hd">
         <div class="cat-icon-badge ci-blue"><%- icon('search',20) %></div>
-        <div><h3 style="margin:0">Search & Info</h3><div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div></div>
+        <div>
+          <h3 style="margin:0">Search & Info</h3>
+          <div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div>
+        </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+          <div class="online-dot"></div>
+          <span style="font-size:.75rem;color:var(--green)">Online</span>
         </div>
       </div>
       <% [
@@ -123,13 +173,17 @@
       <% }) %>
     </div>
 
-    <!-- MEDIA -->
+    <!-- ─── MEDIA ─────────────────────────────────────────────────────────── -->
     <div class="cat-section" id="media-image">
       <div class="cat-section-hd">
         <div class="cat-icon-badge ci-pink"><%- icon('image',20) %></div>
-        <div><h3 style="margin:0">Media & Images</h3><div style="font-size:.78rem;color:var(--text-muted)">2 endpoints</div></div>
+        <div>
+          <h3 style="margin:0">Media & Images</h3>
+          <div style="font-size:.78rem;color:var(--text-muted)">2 endpoints</div>
+        </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+          <div class="online-dot"></div>
+          <span style="font-size:.75rem;color:var(--green)">Online</span>
         </div>
       </div>
       <% [
@@ -140,12 +194,21 @@
       <% }) %>
     </div>
 
-  </div><!-- /docs-main -->
-</div><!-- /docs-layout -->
+  </div>
+</div>
 
 <%- contentFor('script') %>
 <script>
-// API key visibility toggle
+// ── Scroll helpers ────────────────────────────────────────────────────────
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function jumpTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── API key visibility toggle ─────────────────────────────────────────────
 function toggleKeyVis() {
   const inp = document.getElementById('globalApiKey');
   const btn = document.getElementById('keyToggleBtn');
@@ -158,14 +221,19 @@ function toggleKeyVis() {
   }
 }
 
-// Live test runner
+// ── Endpoint accordion ────────────────────────────────────────────────────
+function toggleEp(card) {
+  card.classList.toggle('open');
+}
+
+// ── Live test runner ──────────────────────────────────────────────────────
 async function runTest(method, path, cardId) {
   const apiKey = document.getElementById('globalApiKey').value.trim();
   if (!apiKey) {
     return viperAlert('Paste your API key in the field at the top of the page to test endpoints.', 'warning');
   }
 
-  const card       = document.getElementById(cardId);
+  const card      = document.getElementById(cardId);
   const resultWrap = card.querySelector('.test-result-wrap');
   const resultEl   = card.querySelector('.t-result');
   const statusEl   = card.querySelector('.res-status');

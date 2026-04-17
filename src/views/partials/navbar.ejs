@@ -4,6 +4,8 @@
       <div class="nav-logo-icon"><%- icon('zap', 16) %></div>
       Viper<span class="logo-accent">API</span>
     </a>
+
+    <!-- Desktop links -->
     <ul class="nav-links">
       <li><a href="/"        class="nav-link <%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
       <li><a href="/docs"    class="nav-link <%= currentPath.startsWith('/docs') ? 'active' : '' %>">Docs</a></li>
@@ -19,39 +21,64 @@
         <li><a href="/register" class="btn btn-primary btn-sm">Get started</a></li>
       <% } %>
     </ul>
-    <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+
+    <!-- Mobile hamburger -->
+    <button class="nav-hamburger" id="drawerToggle" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
-<!-- Mobile nav drawer -->
-<div class="nav-overlay" id="navOverlay"></div>
-<div class="nav-drawer" id="navDrawer">
-  <div class="nav-drawer-header">
-    <a href="/" class="nav-logo">
-      <div class="nav-logo-icon"><%- icon('zap', 14) %></div>
+<!-- Slide-in drawer overlay -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<!-- Slide-in drawer panel -->
+<aside class="drawer" id="navDrawer" aria-label="Navigation">
+  <div class="drawer-header">
+    <a href="/" class="nav-logo" style="font-size:1rem">
+      <div class="nav-logo-icon" style="width:28px;height:28px"><%- icon('zap', 14) %></div>
       Viper<span class="logo-accent">API</span>
     </a>
-    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Close">
-      <%- icon('x', 20) %>
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
     </button>
   </div>
-  <div class="nav-drawer-body">
-    <a href="/"        class="nav-drawer-link <%= currentPath === '/' ? 'active' : '' %>"><%- icon('home',16) %> Home</a>
-    <a href="/docs"    class="nav-drawer-link <%= currentPath.startsWith('/docs') ? 'active' : '' %>"><%- icon('book',16) %> Docs</a>
-    <a href="/pricing" class="nav-drawer-link <%= currentPath === '/pricing' ? 'active' : '' %>"><%- icon('tag',16) %> Pricing</a>
+
+  <nav class="drawer-nav">
+    <a href="/"        class="drawer-link <%= currentPath === '/' ? 'active' : '' %>"><%- icon('home',16) %> Home</a>
+    <a href="/docs"    class="drawer-link <%= currentPath.startsWith('/docs') ? 'active' : '' %>"><%- icon('book',16) %> Docs</a>
+    <a href="/pricing" class="drawer-link <%= currentPath === '/pricing' ? 'active' : '' %>"><%- icon('tag',16) %> Pricing</a>
+
     <% if (user) { %>
-      <a href="/dashboard" class="nav-drawer-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>"><%- icon('grid',16) %> Dashboard</a>
+      <div class="drawer-divider"></div>
+      <a href="/dashboard"      class="drawer-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>"><%- icon('grid',16) %> Dashboard</a>
+      <a href="/dashboard/api-keys"  class="drawer-link"><%- icon('key',16) %> API Keys</a>
+      <a href="/dashboard/billing"   class="drawer-link"><%- icon('credit-card',16) %> Billing</a>
+      <a href="/dashboard/logs"      class="drawer-link"><%- icon('bar-chart',16) %> Usage Logs</a>
       <% if (user.role === 'admin') { %>
-        <a href="/admin" class="nav-drawer-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin</a>
+        <div class="drawer-divider"></div>
+        <a href="/admin" class="drawer-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin Panel</a>
       <% } %>
-      <div class="nav-drawer-divider"></div>
-      <a href="/logout" class="nav-drawer-link nav-drawer-danger"><%- icon('log-out',16) %> Sign out</a>
+      <div class="drawer-divider"></div>
+      <a href="/logout" class="drawer-link" style="color:var(--red)"><%- icon('log-out',16) %> Sign out</a>
     <% } else { %>
-      <div class="nav-drawer-divider"></div>
-      <a href="/login"    class="nav-drawer-link"><%- icon('log-in',16) %> Sign in</a>
-      <a href="/register" class="nav-drawer-link nav-drawer-cta"><%- icon('zap',16) %> Get started free</a>
+      <div class="drawer-divider"></div>
+      <a href="/login"    class="drawer-link"><%- icon('log-in',16) %> Sign in</a>
+      <a href="/register" class="drawer-link drawer-cta"><%- icon('zap',16) %> Get started free</a>
     <% } %>
+  </nav>
+
+  <% if (user) { %>
+  <div class="drawer-footer">
+    <div class="drawer-user">
+      <div class="drawer-avatar"><%- user.username.charAt(0).toUpperCase() %></div>
+      <div>
+        <div style="font-weight:600;font-size:.88rem"><%= user.username %></div>
+        <div style="font-size:.76rem;color:var(--text-muted)"><%= user.email %></div>
+      </div>
+    </div>
   </div>
-</div>
+  <% } %>
+</aside>

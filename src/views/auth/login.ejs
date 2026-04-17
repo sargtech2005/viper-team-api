@@ -1,8 +1,14 @@
 <%- contentFor('style') %>
 <style>
-.pw-wrap{position:relative}.pw-wrap .form-input{padding-right:46px}
-.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center;transition:color var(--transition)}
-.pw-toggle:hover{color:var(--purple)}
+.pw-wrap { position: relative; }
+.pw-wrap .form-input { padding-right: 46px; }
+.pw-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; display: flex; align-items: center;
+  transition: color var(--transition);
+}
+.pw-toggle:hover { color: var(--purple); }
 </style>
 
 <div class="auth-page">
@@ -27,6 +33,7 @@
           placeholder="you@example.com" value="<%= formData.email || '' %>"
           required autocomplete="email" />
       </div>
+
       <div class="form-group">
         <label class="form-label" for="password">
           Password
@@ -35,8 +42,10 @@
         <div class="pw-wrap">
           <input class="form-input" type="password" id="password" name="password"
             placeholder="Your password" required autocomplete="current-password" />
-          <button type="button" class="pw-toggle" onclick="togglePw('password', this)" tabindex="-1">
-            <%- icon('eye', 16) %>
+          <button type="button" class="pw-toggle" id="pwToggleLogin" tabindex="-1" aria-label="Show password">
+            <svg id="eyeLogin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -59,17 +68,23 @@
 
 <%- contentFor('script') %>
 <script>
-function togglePw(id, btn) {
-  const inp = document.getElementById(id);
-  const isText = inp.type === 'text';
-  inp.type = isText ? 'password' : 'text';
-  btn.innerHTML = isText ? `<%- icon('eye', 16).replace(/`/g, '\\`') %>` : `<%- icon('eye-off', 16).replace(/`/g, '\\`') %>`;
-}
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+(function () {
+  const inp = document.getElementById('password');
+  const btn = document.getElementById('pwToggleLogin');
+  const eyeShow = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const eyeHide = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  if (btn) btn.addEventListener('click', function () {
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? eyeHide : eyeShow;
+  });
+})();
+
+document.getElementById('loginForm').addEventListener('submit', function (e) {
   const email = document.getElementById('email').value.trim();
   const pass  = document.getElementById('password').value;
   if (!email || !pass) { e.preventDefault(); viperAlert('Please fill in all fields.', 'warning'); return; }
   const btn = document.getElementById('loginBtn');
-  btn.disabled = true; btn.innerHTML = 'Signing in...';
+  btn.disabled = true; btn.textContent = 'Signing in...';
 });
 </script>

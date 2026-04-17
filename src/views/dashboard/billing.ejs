@@ -84,20 +84,41 @@
 <%- contentFor('script') %>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-const PSKEY = '<%= PAYSTACK_PUBLIC_KEY %>';
+var PSKEY = '<%- (typeof PAYSTACK_PUBLIC_KEY !== "undefined" ? PAYSTACK_PUBLIC_KEY : "") %>';
 function startPay(planId, amountNgn, planName) {
-  if (!PSKEY) return viperAlert('Payments not configured. Contact support.','error');
-  const ref = 'VIPER_'+Date.now()+'_'+Math.random().toString(36).slice(2,8).toUpperCase();
-  PaystackPop.setup({
-    key: PSKEY, email: '<%= user.email %>', amount: parseInt(amountNgn)*100, ref, currency:'NGN',
-    callback: async (response) => {
-      viperToast('Verifying payment...','info');
-      const r = await fetch('/dashboard/billing/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:response.reference,plan_id:planId})});
-      const d = await r.json();
-      if(d.success){await viperAlert('Plan upgraded to '+d.plan+'! Your new quota starts now.','success');location.reload();}
-      else viperAlert('Verification failed: '+d.error,'error');
+  if (!PSKEY) return viperAlert('Payments not configured. Contact support.', 'error');
+  var ref = 'VIPER_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8).toUpperCase();
+  var handler = PaystackPop.setup({
+    key:      PSKEY,
+    email:    '<%= user.email %>',
+    amount:   parseInt(amountNgn) * 100,
+    ref:      ref,
+    currency: 'NGN',
+    metadata: { plan_id: planId, plan_name: planName },
+    callback: function (response) {
+      viperToast('Verifying payment...', 'info');
+      fetch('/dashboard/billing/verify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ reference: response.reference, plan_id: planId })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) {
+          viperAlert('Plan upgraded to ' + d.plan + '! Your new quota starts now.', 'success')
+            .then(function () { location.reload(); });
+        } else {
+          viperAlert('Verification failed: ' + (d.error || 'Unknown error'), 'error');
+        }
+      })
+      .catch(function () {
+        viperAlert('Network error. Contact support with ref: ' + response.reference, 'error');
+      });
     },
-    onClose: () => viperToast('Payment window closed.','warning'),
-  }).openIframe();
+    onClose: function () {
+      viperToast('Payment window closed.', 'warning');
+    }
+  });
+  handler.openIframe();
 }
 </script>
