@@ -1,17 +1,23 @@
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies first (layer caching)
+# Copy root + client package.json files first for caching
 COPY package*.json ./
-RUN npm install --production
+COPY client/package*.json ./client/
 
-# Copy source code
+# Install ALL deps including dev deps so we can build
+RUN npm install
+
+# Copy the rest of your source code
 COPY . .
 
-# Expose port
+# Build the React client now that client/ exists
+RUN npm run build
+
+# Remove devDependencies to keep final image small
+RUN npm prune --production
+
 EXPOSE 3000
 
-# Start the app
 CMD ["node", "app.js"]
