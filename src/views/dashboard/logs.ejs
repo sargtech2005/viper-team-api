@@ -1,0 +1,58 @@
+<%- contentFor('style') %>
+<style>
+.log-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.dot-g{background:var(--green)}.dot-y{background:var(--yellow)}.dot-r{background:var(--red)}
+.pager{display:flex;align-items:center;gap:7px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.page-btn{padding:7px 13px;border-radius:var(--radius-sm);background:var(--bg-2);border:1.5px solid var(--border);color:var(--text-muted);font-size:.83rem;cursor:pointer;text-decoration:none;transition:all var(--transition)}
+.page-btn:hover,.page-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-icon{width:60px;height:60px;background:var(--bg-3);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+</style>
+
+<div class="dashboard-layout">
+  <%- include('../partials/sidebar', { active: 'logs' }) %>
+  <div class="dashboard-main">
+    <div class="page-header">
+      <h2>Usage Logs</h2>
+      <p>Every API call made with your keys. Total: <strong><%= total.toLocaleString() %></strong> requests.</p>
+    </div>
+
+    <% if (!logs.length) { %>
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon"><%- icon('activity', 26) %></div>
+          <h3 style="margin-bottom:8px">No logs yet</h3>
+          <p>Make your first API call to see logs appear here.</p>
+          <a href="/docs" class="btn btn-primary mt-3"><%- icon('play-circle',15) %> Try the Playground</a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="card" style="padding:0">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Endpoint</th><th>Method</th><th>Status</th><th>Duration</th><th>Key</th><th>When</th></tr></thead>
+          <tbody>
+            <% logs.forEach(l => { %>
+            <tr>
+              <td><code style="font-size:.76rem;color:var(--text-subtle)"><%= l.endpoint %></code></td>
+              <td><span class="badge badge-blue"><%= l.method %></span></td>
+              <td><span style="display:inline-flex;align-items:center"><span class="log-dot <%= l.status_code<300?'dot-g':l.status_code<500?'dot-y':'dot-r' %>"></span><%= l.status_code %></span></td>
+              <td><%= l.duration_ms ? l.duration_ms+'ms' : '—' %></td>
+              <td style="font-size:.74rem;color:var(--text-muted)"><%= l.key_label||'—' %></td>
+              <td style="font-size:.74rem;color:var(--text-muted);white-space:nowrap"><%= new Date(l.created_at).toLocaleString() %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table></div>
+      </div>
+      <% if (totalPages > 1) { %>
+      <div class="pager">
+        <% if (page>1) { %><a href="?page=<%= page-1 %>" class="page-btn"><%- icon('chevron-right',14) %> Prev</a><% } %>
+        <% for(let i=Math.max(1,page-2);i<=Math.min(totalPages,page+2);i++){ %>
+          <a href="?page=<%= i %>" class="page-btn <%= i===page?'active':'' %>"><%= i %></a>
+        <% } %>
+        <% if (page<totalPages) { %><a href="?page=<%= page+1 %>" class="page-btn">Next <%- icon('chevron-right',14) %></a><% } %>
+      </div>
+      <% } %>
+    <% } %>
+  </div>
+</div>

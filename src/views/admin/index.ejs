@@ -1,0 +1,52 @@
+<%- contentFor('style') %>
+<style>
+.admin-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - var(--navbar-h))}
+@media(max-width:860px){.admin-layout{grid-template-columns:1fr}}
+.admin-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px}
+.admin-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.87rem;font-weight:500;margin-bottom:2px;transition:all var(--transition)}
+.admin-link:hover{background:var(--bg-3);color:var(--text)}
+.admin-link.active{background:var(--purple-bg);color:var(--purple)}
+.admin-link svg{flex-shrink:0}
+.admin-main{padding:28px 24px}
+@media(max-width:600px){.admin-main{padding:16px}}
+.admin-stat{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+.admin-val{font-size:1.9rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.admin-lbl{font-size:.76rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+</style>
+
+<div class="admin-layout">
+  <nav class="admin-sidebar">
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin-bottom:10px">Admin</div>
+    <a href="/admin"          class="admin-link active"><%- icon('bar-chart',15) %> Overview</a>
+    <a href="/admin/users"    class="admin-link"><%- icon('users',15) %> Users</a>
+    <a href="/admin/payments" class="admin-link"><%- icon('credit-card',15) %> Payments</a>
+    <a href="/admin/plans"    class="admin-link"><%- icon('package',15) %> Plans</a>
+    <a href="/dashboard"      class="admin-link" style="margin-top:12px"><%- icon('arrow-right',15) %> Dashboard</a>
+  </nav>
+  <div class="admin-main">
+    <div class="page-header"><h2>Admin Overview</h2><p>Platform-wide stats and recent signups.</p></div>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="admin-stat"><div class="admin-val"><%= stats.users %></div><div class="admin-lbl">Total Users</div></div>
+      <div class="admin-stat"><div class="admin-val"><%= stats.apiKeys %></div><div class="admin-lbl">Active Keys</div></div>
+      <div class="admin-stat"><div class="admin-val">&#8358;<%= Number(stats.revenue||0).toLocaleString() %></div><div class="admin-lbl">Revenue</div></div>
+      <div class="admin-stat"><div class="admin-val"><%= Number(stats.apiCalls||0).toLocaleString() %></div><div class="admin-lbl">API Calls</div></div>
+    </div>
+    <div class="card" style="padding:0">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h4>Recent Signups</h4></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+        <tbody>
+          <% recentUsers.forEach(u => { %>
+          <tr>
+            <td style="color:var(--text-muted)">#<%= u.id %></td>
+            <td><strong><%= u.username %></strong></td>
+            <td style="color:var(--text-muted);font-size:.83rem"><%= u.email %></td>
+            <td><span class="badge <%= u.role==='admin'?'badge-purple':'badge-blue' %>"><%= u.role %></span></td>
+            <td style="font-size:.76rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>

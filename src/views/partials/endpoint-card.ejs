@@ -1,0 +1,64 @@
+<%
+  const cardId = 'ep-' + catId + '-' + idx;
+%>
+<div class="ep-card" id="<%= cardId %>">
+  <div class="ep-header" onclick="toggleEp(this.parentElement)">
+    <span class="method-b <%= ep.m === 'GET' ? 'm-get' : 'm-post' %>"><%= ep.m %></span>
+    <span class="ep-path"><%= ep.p %></span>
+    <span class="ep-label"><%= ep.l %></span>
+    <span class="ep-chevron"><%- icon('chevron-down', 14) %></span>
+  </div>
+  <div class="ep-body">
+    <p class="ep-desc"><%= ep.d %></p>
+
+    <% if (ep.params && ep.params.length) { %>
+    <table class="p-table">
+      <thead><tr><th>Parameter</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <% ep.params.forEach(p => { %>
+        <tr>
+          <td><code style="color:var(--purple);font-size:.82rem"><%= p.n %></code></td>
+          <td><span class="<%= p.r ? 'p-req' : 'p-opt' %>"><%= p.r ? 'Required' : 'Optional' %></span></td>
+          <td style="color:var(--text-muted);font-size:.82rem"><%= p.d %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+
+    <!-- Live test panel -->
+    <div class="test-panel">
+      <div class="test-panel-title"><%- icon('play-circle', 14) %> Live Test</div>
+
+      <% if (ep.params && ep.params.length) { %>
+      <div class="test-inputs">
+        <% ep.params.forEach(p => { %>
+        <div class="test-input-row">
+          <label class="test-input-lbl"><%= p.n %><%= p.r ? ' *' : '' %></label>
+          <input type="text" class="t-input" data-param="<%= p.n %>" placeholder="<%= p.d %>" />
+        </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="run-btn" onclick="runTest('<%= ep.m %>', '/api/v1<%= ep.p %>', '<%= cardId %>')">
+          <%- icon('play-circle', 14) %> Run Request
+        </button>
+        <code style="font-size:.75rem;color:var(--text-muted)"><%= ep.m %> /api/v1<%= ep.p %></code>
+      </div>
+
+      <div class="test-result-wrap">
+        <div class="res-header">
+          <span class="status-pill" style="display:none"></span>
+          <span class="res-status status-pill sp-2xx" style="font-size:.75rem"></span>
+          <span class="res-time"></span>
+          <button class="test-result-copy" onclick="viperCopy(this.parentElement.nextElementSibling.textContent, 'Response copied!')">
+            <%- icon('copy', 11) %> Copy
+          </button>
+        </div>
+        <div class="t-result"></div>
+      </div>
+    </div>
+  </div>
+</div>

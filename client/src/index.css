@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg:       #070b14;
+  --surface:  #0d1526;
+  --border:   #1e2d45;
+  --green:    #00e87a;
+  --green-dim:#00c265;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Glow utility */
+.glow-green { box-shadow: 0 0 20px rgba(0, 232, 122, 0.25); }
+
+/* Code blocks */
+pre, code { font-family: 'IBM Plex Mono', monospace; }
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #00e87a 0%, #00b4d8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animate fade-in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.5s ease forwards; }
+
+/* Grid noise overlay */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0,232,122,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,232,122,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

@@ -1,0 +1,42 @@
+<%
+  const ap = typeof adminActive !== 'undefined' ? adminActive : '';
+%>
+<!-- Admin mobile top bar -->
+<div class="admin-topbar">
+  <button class="admin-menu-btn" onclick="toggleAdminDrawer()" aria-label="Menu">
+    <%- icon('menu', 18) %> <span>Admin</span>
+  </button>
+  <div class="admin-topbar-links">
+    <a href="/admin"          class="atl <%= ap==='overview'  ? 'atl-active':'' %>"><%- icon('bar-chart',14) %></a>
+    <a href="/admin/users"    class="atl <%= ap==='users'     ? 'atl-active':'' %>"><%- icon('users',14) %></a>
+    <a href="/admin/payments" class="atl <%= ap==='payments'  ? 'atl-active':'' %>"><%- icon('credit-card',14) %></a>
+    <a href="/admin/plans"    class="atl <%= ap==='plans'     ? 'atl-active':'' %>"><%- icon('package',14) %></a>
+  </div>
+</div>
+
+<!-- Admin overlay -->
+<div class="admin-overlay" id="adminOverlay" onclick="closeAdminDrawer()"></div>
+
+<!-- Admin drawer -->
+<div class="admin-drawer" id="adminDrawer">
+  <div class="admin-drawer-header">
+    <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)">Admin Panel</span>
+    <button class="admin-drawer-close" onclick="closeAdminDrawer()"><%- icon('x',18) %></button>
+  </div>
+  <a href="/admin"          class="admin-link <%= ap==='overview'  ? 'active':'' %>"><%- icon('bar-chart',15) %> Overview</a>
+  <a href="/admin/users"    class="admin-link <%= ap==='users'     ? 'active':'' %>"><%- icon('users',15) %> Users</a>
+  <a href="/admin/payments" class="admin-link <%= ap==='payments'  ? 'active':'' %>"><%- icon('credit-card',15) %> Payments</a>
+  <a href="/admin/plans"    class="admin-link <%= ap==='plans'     ? 'active':'' %>"><%- icon('package',15) %> Plans</a>
+  <div style="flex:1"></div>
+  <a href="/dashboard" class="admin-link" style="margin-top:8px"><%- icon('arrow-left',15) %> Dashboard</a>
+</div>
+
+<!-- Desktop sidebar (unchanged) -->
+<nav class="admin-sidebar admin-sidebar-desktop">
+  <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin-bottom:10px">Admin</div>
+  <a href="/admin"          class="admin-link <%= ap==='overview'  ? 'active':'' %>"><%- icon('bar-chart',15) %> Overview</a>
+  <a href="/admin/users"    class="admin-link <%= ap==='users'     ? 'active':'' %>"><%- icon('users',15) %> Users</a>
+  <a href="/admin/payments" class="admin-link <%= ap==='payments'  ? 'active':'' %>"><%- icon('credit-card',15) %> Payments</a>
+  <a href="/admin/plans"    class="admin-link <%= ap==='plans'     ? 'active':'' %>"><%- icon('package',15) %> Plans</a>
+  <a href="/dashboard" class="admin-link" style="margin-top:12px"><%- icon('arrow-left',15) %> Dashboard</a>
+</nav>

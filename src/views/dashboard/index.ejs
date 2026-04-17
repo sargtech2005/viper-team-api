@@ -1,0 +1,127 @@
+<%- contentFor('style') %>
+<style>
+.welcome-banner{background:linear-gradient(135deg,var(--purple-bg),var(--green-bg));border:1.5px solid #ddd6fe;border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:14px}
+.welcome-icon{width:44px;height:44px;background:var(--grad);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.welcome-icon svg{color:#fff}
+.quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.quick-link{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;transition:all var(--transition);color:var(--text)}
+.quick-link:hover{border-color:var(--purple);background:var(--purple-bg)}
+.quick-link:hover svg{color:var(--purple)}
+.quick-link svg{color:var(--text-muted);flex-shrink:0}
+.quick-label{font-size:.84rem;font-weight:600}
+.log-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+.dot-g{background:var(--green)}.dot-y{background:var(--yellow)}.dot-r{background:var(--red)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-state .es-icon{width:56px;height:56px;background:var(--bg-3);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-state .es-icon svg{color:var(--text-muted)}
+</style>
+
+<div class="dashboard-layout">
+  <%- include('../partials/sidebar', { active: 'overview' }) %>
+  <div class="dashboard-main">
+
+    <% if (showWelcome) { %>
+    <div class="welcome-banner">
+      <div class="welcome-icon"><%- icon('zap', 22) %></div>
+      <div>
+        <h3 style="margin-bottom:4px">Welcome to ViperAPI, <%= user.username %>!</h3>
+        <p style="font-size:.87rem">Your account is ready. Generate an API key below and start building.</p>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="page-header flex-between flex-wrap gap-1">
+      <div>
+        <h2>Overview</h2>
+        <p>Hi <%= user.username %> — here's your API usage summary.</p>
+      </div>
+      <a href="/dashboard/api-keys" class="btn btn-primary btn-sm"><%- icon('plus',14) %> New API Key</a>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Current Plan</div>
+        <div class="stat-value stat-grad" style="font-size:1.3rem"><%= plan.name %></div>
+        <div class="stat-sub"><a href="/pricing" style="color:var(--purple);font-size:.78rem">Upgrade plan <%- icon('arrow-right',11) %></a></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">API Calls Used</div>
+        <div class="stat-value"><%= (user.api_calls_used||0).toLocaleString() %></div>
+        <div class="stat-sub">of <%= plan.api_limit ? plan.api_limit.toLocaleString() : '∞' %> this month</div>
+        <% if (plan.api_limit) { %>
+        <div class="progress-bar mt-1">
+          <div class="progress-fill" style="width:<%= Math.min(100,Math.round(((user.api_calls_used||0)/plan.api_limit)*100)) %>%"></div>
+        </div>
+        <% } %>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Keys</div>
+        <div class="stat-value"><%= apiKeys.length %></div>
+        <div class="stat-sub">of 5 max</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rate Limit</div>
+        <div class="stat-value"><%= plan.rate_per_min || 5 %></div>
+        <div class="stat-sub">requests / minute</div>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a href="/docs"               class="quick-link"><%- icon('book',18) %><span class="quick-label">Docs & Test</span></a>
+      <a href="/dashboard/api-keys" class="quick-link"><%- icon('key',18) %><span class="quick-label">API Keys</span></a>
+      <a href="/pricing"            class="quick-link"><%- icon('dollar',18) %><span class="quick-label">Upgrade</span></a>
+      <a href="/dashboard/logs"     class="quick-link"><%- icon('bar-chart',18) %><span class="quick-label">Usage Logs</span></a>
+    </div>
+
+    <div class="card mb-3">
+      <div class="flex-between mb-2">
+        <h4>API Keys</h4>
+        <a href="/dashboard/api-keys" class="btn btn-outline btn-sm">Manage</a>
+      </div>
+      <% if (!apiKeys.length) { %>
+        <div class="empty-state">
+          <div class="es-icon"><%- icon('key', 24) %></div>
+          <p style="margin-bottom:12px">No API keys yet.</p>
+          <a href="/dashboard/api-keys" class="btn btn-primary btn-sm"><%- icon('plus',14) %> Generate Key</a>
+        </div>
+      <% } else { %>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <% apiKeys.forEach(k => { %>
+          <div class="api-key-row">
+            <div class="api-key-val"><%= k.key_value.substring(0,12) %>••••••••••••••••••••••••</div>
+            <span class="badge <%= k.is_active ? 'badge-green':'badge-red' %>"><%= k.is_active ? 'Active':'Off' %></span>
+            <button class="btn btn-outline btn-sm" onclick="viperCopy('<%= k.key_value %>','API key copied!')"><%- icon('copy',13) %> Copy</button>
+          </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <div class="flex-between mb-2">
+        <h4>Recent API Calls</h4>
+        <a href="/dashboard/logs" class="btn btn-outline btn-sm">All logs</a>
+      </div>
+      <% if (!recentLogs.length) { %>
+        <div class="empty-state" style="padding:24px">
+          <div class="es-icon"><%- icon('activity', 22) %></div>
+          <p>No API calls yet — start building!</p>
+        </div>
+      <% } else { %>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Endpoint</th><th>Status</th><th>ms</th><th>When</th></tr></thead>
+          <tbody>
+            <% recentLogs.forEach(l => { %>
+            <tr>
+              <td><code style="font-size:.76rem;color:var(--text-subtle)"><%= l.endpoint %></code></td>
+              <td><span style="display:inline-flex;align-items:center"><span class="log-dot <%= l.status_code<300?'dot-g':l.status_code<500?'dot-y':'dot-r' %>"></span><%= l.status_code %></span></td>
+              <td><%= l.duration_ms||'—' %></td>
+              <td style="color:var(--text-muted);font-size:.76rem;white-space:nowrap"><%= new Date(l.created_at).toLocaleString() %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table></div>
+      <% } %>
+    </div>
+  </div>
+</div>

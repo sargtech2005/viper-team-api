@@ -1,0 +1,40 @@
+<%- contentFor('style') %>
+<style>
+.admin-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - var(--navbar-h))}
+@media(max-width:860px){.admin-layout{grid-template-columns:1fr}}
+.admin-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px}
+.admin-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.87rem;font-weight:500;margin-bottom:2px;transition:all var(--transition)}
+.admin-link:hover{background:var(--bg-3);color:var(--text)}
+.admin-link.active{background:var(--purple-bg);color:var(--purple)}
+.admin-main{padding:28px 24px}
+@media(max-width:600px){.admin-main{padding:16px}}
+</style>
+<div class="admin-layout">
+  <nav class="admin-sidebar">
+    <a href="/admin"          class="admin-link"><%- icon('bar-chart',15) %> Overview</a>
+    <a href="/admin/users"    class="admin-link"><%- icon('users',15) %> Users</a>
+    <a href="/admin/payments" class="admin-link"><%- icon('credit-card',15) %> Payments</a>
+    <a href="/admin/plans"    class="admin-link active"><%- icon('package',15) %> Plans</a>
+    <a href="/dashboard"      class="admin-link" style="margin-top:12px"><%- icon('arrow-right',15) %> Dashboard</a>
+  </nav>
+  <div class="admin-main">
+    <div class="page-header"><h2>Plans</h2><p>Plan configuration. Edit via SQL in the Fly.io Postgres console.</p></div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Price (&#8358;)</th><th>API Limit</th><th>Rate /min</th><th>Status</th></tr></thead>
+        <tbody>
+          <% plans.forEach(p => { %>
+          <tr>
+            <td><strong><%= p.name %></strong></td>
+            <td>&#8358;<%= p.price_ngn.toLocaleString() %></td>
+            <td><%= p.api_limit.toLocaleString() %></td>
+            <td><%= p.rate_per_min %></td>
+            <td><span class="badge <%= p.is_active?'badge-green':'badge-red' %>"><%= p.is_active?'Active':'Hidden' %></span></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="alert alert-info mt-3"><%- icon('info',15) %> To edit plans: <code>fly postgres connect -a viper-db</code> then run SQL UPDATE queries.</div>
+  </div>
+</div>

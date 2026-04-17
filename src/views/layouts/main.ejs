@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'ViperAPI' %></title>
+  <meta name="description" content="Premium REST APIs for any app, bot, or framework. 16 endpoints. One API key." />
+  <meta property="og:title"       content="<%= typeof title !== 'undefined' ? title : 'ViperAPI' %>" />
+  <meta property="og:description" content="Premium REST APIs for every framework. 16 endpoints, one key." />
+  <meta property="og:image"       content="/img/og-image.svg" />
+  <meta property="og:type"        content="website" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <%- style %>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <main class="main-content"><%- body %></main>
+  <%- include('../partials/footer') %>
+  <%- include('../partials/alert-modal') %>
+  <script src="/js/alerts.js"></script>
+  <script src="/js/main.js"></script>
+  <%- script %>
+</body>
+</html>
