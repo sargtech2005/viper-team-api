@@ -1,0 +1,44 @@
+<%- contentFor('style') %>
+<div class="admin-layout">
+  <%- include('../partials/admin-sidebar', { adminActive: 'overview' }) %>
+  <div class="admin-main">
+    <div class="page-header"><h2>Admin Overview</h2><p>Platform-wide stats and recent signups.</p></div>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="admin-stat"><div class="admin-val"><%= stats.users %></div><div class="admin-lbl">Total Users</div></div>
+      <div class="admin-stat"><div class="admin-val"><%= stats.apiKeys %></div><div class="admin-lbl">Active Keys</div></div>
+      <div class="admin-stat"><div class="admin-val">&#8358;<%= Number(stats.revenue||0).toLocaleString() %></div><div class="admin-lbl">Revenue</div></div>
+      <div class="admin-stat"><div class="admin-val"><%= Number(stats.apiCalls||0).toLocaleString() %></div><div class="admin-lbl">API Calls</div></div>
+    </div>
+    <div class="card" style="padding:0">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h4>Recent Signups</h4></div>
+      <!-- Desktop table -->
+      <div class="table-wrap rwd-table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody>
+            <% recentUsers.forEach(u => { %>
+            <tr>
+              <td style="color:var(--text-muted)">#<%= u.id %></td>
+              <td><strong><%= u.username %></strong></td>
+              <td style="color:var(--text-muted);font-size:.83rem"><%= u.email %></td>
+              <td><span class="badge <%= u.role==='admin'?'badge-purple':'badge-blue' %>"><%= u.role %></span></td>
+              <td style="font-size:.76rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <!-- Mobile cards -->
+      <div class="rwd-cards">
+        <% recentUsers.forEach(u => { %>
+        <div class="rwd-card">
+          <div class="rwd-card-row"><span class="rwd-label">User</span><strong>#<%= u.id %> <%= u.username %></strong></div>
+          <div class="rwd-card-row"><span class="rwd-label">Email</span><span style="font-size:.83rem"><%= u.email %></span></div>
+          <div class="rwd-card-row"><span class="rwd-label">Role</span><span class="badge <%= u.role==='admin'?'badge-purple':'badge-blue' %>"><%= u.role %></span></div>
+          <div class="rwd-card-row"><span class="rwd-label">Joined</span><span style="font-size:.76rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></span></div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>

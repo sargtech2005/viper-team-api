@@ -1,0 +1,57 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon"><%- icon('zap', 16) %></div>
+      Viper<span class="logo-accent">API</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/"        class="nav-link <%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+      <li><a href="/docs"    class="nav-link <%= currentPath.startsWith('/docs') ? 'active' : '' %>">Docs</a></li>
+      <li><a href="/pricing" class="nav-link <%= currentPath === '/pricing' ? 'active' : '' %>">Pricing</a></li>
+      <% if (user) { %>
+        <li><a href="/dashboard" class="nav-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>">Dashboard</a></li>
+        <% if (user.role === 'admin') { %>
+          <li><a href="/admin" class="nav-link nav-admin">Admin</a></li>
+        <% } %>
+        <li><a href="/logout" class="btn btn-outline btn-sm">Sign out</a></li>
+      <% } else { %>
+        <li><a href="/login"    class="nav-link">Sign in</a></li>
+        <li><a href="/register" class="btn btn-primary btn-sm">Get started</a></li>
+      <% } %>
+    </ul>
+    <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-header">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon"><%- icon('zap', 14) %></div>
+      Viper<span class="logo-accent">API</span>
+    </a>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Close">
+      <%- icon('x', 20) %>
+    </button>
+  </div>
+  <div class="nav-drawer-body">
+    <a href="/"        class="nav-drawer-link <%= currentPath === '/' ? 'active' : '' %>"><%- icon('home',16) %> Home</a>
+    <a href="/docs"    class="nav-drawer-link <%= currentPath.startsWith('/docs') ? 'active' : '' %>"><%- icon('book',16) %> Docs</a>
+    <a href="/pricing" class="nav-drawer-link <%= currentPath === '/pricing' ? 'active' : '' %>"><%- icon('tag',16) %> Pricing</a>
+    <% if (user) { %>
+      <a href="/dashboard" class="nav-drawer-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>"><%- icon('grid',16) %> Dashboard</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin" class="nav-drawer-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin</a>
+      <% } %>
+      <div class="nav-drawer-divider"></div>
+      <a href="/logout" class="nav-drawer-link nav-drawer-danger"><%- icon('log-out',16) %> Sign out</a>
+    <% } else { %>
+      <div class="nav-drawer-divider"></div>
+      <a href="/login"    class="nav-drawer-link"><%- icon('log-in',16) %> Sign in</a>
+      <a href="/register" class="nav-drawer-link nav-drawer-cta"><%- icon('zap',16) %> Get started free</a>
+    <% } %>
+  </div>
+</div>

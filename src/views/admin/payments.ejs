@@ -1,0 +1,41 @@
+<%- contentFor('style') %>
+<div class="admin-layout">
+  <%- include('../partials/admin-sidebar', { adminActive: 'payments' }) %>
+  <div class="admin-main">
+    <div class="page-header"><h2>Payments</h2><p>All transactions.</p></div>
+    <div class="card" style="padding:0">
+      <!-- Desktop table -->
+      <div class="table-wrap rwd-table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            <% payments.forEach(p => { %>
+            <tr>
+              <td><strong><%= p.username %></strong><br><span style="font-size:.74rem;color:var(--text-muted)"><%= p.email %></span></td>
+              <td><span class="badge badge-purple"><%= p.plan_name||'—' %></span></td>
+              <td style="font-weight:700">&#8358;<%= (p.amount_ngn||0).toLocaleString() %></td>
+              <td style="font-family:var(--mono);font-size:.73rem;color:var(--text-muted)"><%= p.paystack_ref %></td>
+              <td><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></td>
+              <td style="font-size:.75rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <!-- Mobile cards -->
+      <div class="rwd-cards">
+        <% payments.forEach(p => { %>
+        <div class="rwd-card">
+          <div class="rwd-card-row"><span class="rwd-label">User</span><strong><%= p.username %></strong></div>
+          <div class="rwd-card-row"><span class="rwd-label">Email</span><span style="font-size:.8rem;color:var(--text-muted)"><%= p.email %></span></div>
+          <div class="rwd-card-row"><span class="rwd-label">Plan</span><span class="badge badge-purple"><%= p.plan_name||'—' %></span></div>
+          <div class="rwd-card-row"><span class="rwd-label">Amount</span><strong>&#8358;<%= (p.amount_ngn||0).toLocaleString() %></strong></div>
+          <div class="rwd-card-row"><span class="rwd-label">Status</span><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></div>
+          <div class="rwd-card-row"><span class="rwd-label">Ref</span><code style="font-size:.72rem;color:var(--text-muted)"><%= p.paystack_ref %></code></div>
+          <div class="rwd-card-row"><span class="rwd-label">Date</span><span style="font-size:.75rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></span></div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>

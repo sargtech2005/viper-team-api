@@ -1,0 +1,75 @@
+<%- contentFor('style') %>
+<style>
+.pw-wrap{position:relative}.pw-wrap .form-input{padding-right:46px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center;transition:color var(--transition)}
+.pw-toggle:hover{color:var(--purple)}
+</style>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo-wrap"><%- icon('zap', 28) %></div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to your ViperAPI account</p>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%- icon('alert-triangle',15) %> <%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><%- icon('check-circle',15) %> <%= success %></div>
+    <% } %>
+
+    <form class="auth-form" method="POST" action="/login" id="loginForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <input class="form-input" type="email" id="email" name="email"
+          placeholder="you@example.com" value="<%= formData.email || '' %>"
+          required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">
+          Password
+          <a href="/forgot" style="font-weight:500;color:var(--purple);font-size:.8rem">Forgot password?</a>
+        </label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="password" name="password"
+            placeholder="Your password" required autocomplete="current-password" />
+          <button type="button" class="pw-toggle" onclick="togglePw('password', this)" tabindex="-1">
+            <%- icon('eye', 16) %>
+          </button>
+        </div>
+      </div>
+
+      <% if (recaptchaSiteKey) { %>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+      <% } %>
+
+      <button class="btn btn-primary btn-block" type="submit" id="loginBtn">
+        <%- icon('log-in', 16) %> Sign in
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/register">Create one free</a>
+    </div>
+  </div>
+</div>
+
+<%- contentFor('script') %>
+<script>
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  btn.innerHTML = isText ? `<%- icon('eye', 16).replace(/`/g, '\\`') %>` : `<%- icon('eye-off', 16).replace(/`/g, '\\`') %>`;
+}
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  if (!email || !pass) { e.preventDefault(); viperAlert('Please fill in all fields.', 'warning'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.innerHTML = 'Signing in...';
+});
+</script>

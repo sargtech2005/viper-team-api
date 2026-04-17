@@ -1,0 +1,196 @@
+<%- contentFor('style') %>
+
+<!-- ─── HERO ──────────────────────────────────────────────────────────────── -->
+<section class="hero" style="padding:72px 0;min-height:auto">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-split">
+
+    <!-- Left copy -->
+    <div>
+      <div class="hero-badge" style="margin-bottom:20px">
+        <%- icon('zap',13) %>
+        Now live — 16 real endpoints, zero setup
+      </div>
+      <h1 style="margin-bottom:16px">The API platform<br>built for<br><span class="gradient-text">every developer</span></h1>
+      <p style="font-size:1.05rem;margin-bottom:32px;max-width:440px">One API key gives you access to all endpoints — utilities, AI fun, search, media and more. Works in any language, any framework.</p>
+
+      <div class="hero-btns" style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="/register" class="btn btn-primary btn-lg">
+          <%- icon('user-plus',16) %> Get free API key
+        </a>
+        <a href="/docs" class="btn btn-outline btn-lg">
+          <%- icon('book',16) %> Browse docs
+        </a>
+      </div>
+
+      <!-- Stats row -->
+      <div class="hero-dividers">
+        <div class="hstat"><strong>16</strong><span>Endpoints</span></div>
+        <div class="hdiv"></div>
+        <div class="hstat"><strong>5</strong><span>Categories</span></div>
+        <div class="hdiv"></div>
+        <div class="hstat"><strong>99.9%</strong><span>Uptime</span></div>
+        <div class="hdiv"></div>
+        <div class="hstat"><strong>Any</strong><span>Language</span></div>
+      </div>
+    </div>
+
+    <!-- Right code window -->
+    <div class="code-window">
+      <div class="cw-bar">
+        <div class="cw-dot" style="background:#ef4444"></div>
+        <div class="cw-dot" style="background:#f59e0b"></div>
+        <div class="cw-dot" style="background:#10b981"></div>
+        <div class="cw-title">viper-example.js</div>
+      </div>
+      <div class="cw-body"><span class="cc">// Generate a QR code</span>
+<span class="ck">const</span> res = <span class="ck">await</span> fetch(
+  <span class="cs">'https://viper-api.name.ng/api/v1/utility/qr'</span>, {
+    method: <span class="cs">'POST'</span>,
+    headers: {
+      <span class="cp">'Authorization'</span>: <span class="cs">'Bearer YOUR_KEY'</span>,
+      <span class="cp">'Content-Type'</span>: <span class="cs">'application/json'</span>
+    },
+    body: JSON.stringify({ <span class="cp">text</span>: <span class="cs">'https://yourapp.com'</span> })
+  }
+);
+<span class="ck">const</span> data = <span class="ck">await</span> res.json();
+
+<div class="cw-ok"><div class="cw-ok-dot"></div> 200 OK · 52ms</div>
+{
+  <span class="cp">"success"</span>: <span class="cn">true</span>,
+  <span class="cp">"data"</span>: {
+    <span class="cp">"qr_base64"</span>: <span class="cs">"data:image/png;base64,..."</span>
+  }
+}</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── LANGUAGE STRIP ────────────────────────────────────────────────────── -->
+<div class="lang-strip">
+  <div class="lang-strip-label">Works in any language or framework</div>
+  <div class="lang-pills">
+    <div class="lang-pill">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="3" fill="#0f172a"/><path d="M6 17.5l1.5-1c.3.6.6 1 1.3 1 .6 0 1-.3 1-1.4V11h2v5.2c0 2.2-1.3 3.2-3.2 3.2-1.7 0-2.7-.9-3.2-2z" fill="#f7df1e"/><path d="M14 17.3l1.5-.9c.4.7 1 1.2 2 1.2.8 0 1.4-.4 1.4-1 0-.7-.6-1-1.5-1.4l-.6-.2c-1.6-.7-2.7-1.5-2.7-3.3 0-1.7 1.3-2.9 3.2-2.9 1.4 0 2.4.5 3.1 1.7L18.9 12c-.4-.6-.8-.9-1.4-.9s-1 .3-1 .8c0 .6.4.9 1.3 1.2l.6.2c1.9.8 2.9 1.6 2.9 3.4 0 2-1.5 3.1-3.6 3.1-2 0-3.3-1-3.9-2.5z" fill="#f7df1e"/></svg>
+      JavaScript
+    </div>
+    <div class="lang-pill"><%- icon('code',14) %> Python</div>
+    <div class="lang-pill"><%- icon('code',14) %> PHP</div>
+    <div class="lang-pill"><%- icon('code',14) %> Dart / Flutter</div>
+    <div class="lang-pill"><%- icon('cpu',14) %> Go / Java</div>
+    <div class="lang-pill"><%- icon('activity',14) %> cURL / Bash</div>
+  </div>
+</div>
+
+<!-- ─── API CATEGORIES ─────────────────────────────────────────────────────── -->
+<section class="section container">
+  <div style="text-align:center;margin-bottom:44px">
+    <div class="section-badge"><%- icon('grid',12) %> API Categories</div>
+    <h2 style="margin-bottom:10px">One Key. Every Endpoint.</h2>
+    <p style="max-width:480px;margin:0 auto;font-size:.93rem">All categories are included in every plan. Your monthly quota is shared across all of them.</p>
+  </div>
+
+  <div class="cat-grid">
+    <a href="/docs#utility" class="cat-card">
+      <div class="cat-icon ci-purple"><%- icon('tool',22) %></div>
+      <div class="cat-name">Utilities</div>
+      <div class="cat-count">8 endpoints</div>
+    </a>
+    <a href="/docs#fun" class="cat-card">
+      <div class="cat-icon ci-orange"><%- icon('smile',22) %></div>
+      <div class="cat-name">Fun & Games</div>
+      <div class="cat-count">3 endpoints</div>
+    </a>
+    <a href="/docs#search-info" class="cat-card">
+      <div class="cat-icon ci-blue"><%- icon('search',22) %></div>
+      <div class="cat-name">Search & Info</div>
+      <div class="cat-count">3 endpoints</div>
+    </a>
+    <a href="/docs#media-image" class="cat-card">
+      <div class="cat-icon ci-pink"><%- icon('image',22) %></div>
+      <div class="cat-name">Media & Images</div>
+      <div class="cat-count">2 endpoints</div>
+    </a>
+    <a href="/docs" class="cat-card" style="border-style:dashed">
+      <div class="cat-icon ci-green"><%- icon('plus',22) %></div>
+      <div class="cat-name">More coming</div>
+      <div class="cat-count">In development</div>
+    </a>
+  </div>
+</section>
+
+<!-- ─── FEATURES ──────────────────────────────────────────────────────────── -->
+<div class="section-strip">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:44px">
+      <div class="section-badge"><%- icon('star',12) %> Why ViperAPI</div>
+      <h2>Built Different</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('zap',24) %></div>
+        <div class="feature-title">Lightning Fast</div>
+        <div class="feature-desc">Responses under 300ms on average. Node.js backend with PostgreSQL and connection pooling.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('shield',24) %></div>
+        <div class="feature-title">Secure by Default</div>
+        <div class="feature-desc">Every request authenticated. API keys stored hashed. Rate limits enforced. HTTPS everywhere.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('bar-chart',24) %></div>
+        <div class="feature-title">Usage Analytics</div>
+        <div class="feature-desc">Real-time logs of every call — endpoint, status code, response time, and key used.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('code',24) %></div>
+        <div class="feature-title">Any Language</div>
+        <div class="feature-desc">Pure REST. If your language makes HTTP requests, it works. No SDK, no dependencies.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('play-circle',24) %></div>
+        <div class="feature-title">Live Playground</div>
+        <div class="feature-desc">Test every endpoint directly in your browser. Paste your key and run — no Postman needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><%- icon('key',24) %></div>
+        <div class="feature-title">Up to 5 API Keys</div>
+        <div class="feature-desc">Create separate keys per project. All share your monthly quota. Revoke any key instantly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HOW IT WORKS ──────────────────────────────────────────────────────── -->
+<section class="section container">
+  <div style="text-align:center;margin-bottom:44px">
+    <div class="section-badge"><%- icon('clock',12) %> Get Started</div>
+    <h2 style="margin-bottom:10px">Up in 3 Steps</h2>
+    <p style="max-width:420px;margin:0 auto;font-size:.93rem">No lengthy onboarding. No credit card. Start calling APIs in under a minute.</p>
+  </div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <h4>Create Free Account</h4>
+      <p>Sign up with your email. Instantly activated. Free plan included.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <h4>Generate API Key</h4>
+      <p>Go to your dashboard and generate a key. Label it per project.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <h4>Start Building</h4>
+      <p>Add the key to your request header and call any endpoint.</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <a href="/register" class="btn btn-primary btn-lg">
+      <%- icon('arrow-right',16) %> Start building free
+    </a>
+  </div>
+</section>

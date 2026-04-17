@@ -1,0 +1,103 @@
+<%- contentFor('style') %>
+<style>
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:20px 0}
+.plan-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:24px;display:flex;flex-direction:column;gap:18px;transition:all var(--transition);position:relative}
+.plan-card:hover{border-color:#c4b5fd;transform:translateY(-2px);box-shadow:var(--shadow)}
+.plan-card.current{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.plan-card.popular{border-color:var(--purple)}
+.plan-tag{position:absolute;top:14px;right:14px;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;background:var(--grad)}
+.plan-name{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)}
+.plan-price{font-size:1.9rem;font-weight:900;line-height:1;color:var(--text)}
+.plan-price span{font-size:.85rem;font-weight:400;color:var(--text-muted)}
+.plan-feats{display:flex;flex-direction:column;gap:8px;flex:1}
+.plan-feat{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--text-subtle)}
+.plan-feat svg{color:var(--green);flex-shrink:0}
+</style>
+
+<div class="dashboard-layout">
+  <%- include('../partials/sidebar', { active: 'billing' }) %>
+  <div class="dashboard-main">
+    <div class="page-header">
+      <h2>Billing & Plans</h2>
+      <p>Upgrade to unlock more API calls and higher rate limits.</p>
+    </div>
+
+    <div class="alert alert-info mb-3">
+      <%- icon('info',15) %>
+      <span>You are on the <strong><%= currentPlan ? currentPlan.name : 'Free' %></strong> plan.
+      <% if (currentPlan && currentPlan.name !== 'Ultra') { %>
+        <a href="#plans" style="color:inherit;text-decoration:underline;margin-left:4px">Upgrade below</a> for more calls.
+      <% } else { %> You're on our top plan! <% } %></span>
+    </div>
+
+    <h3 id="plans" style="margin-bottom:4px">Choose a Plan</h3>
+    <p style="font-size:.86rem;margin-bottom:0">One-time monthly payment via Paystack. Quota resets when you upgrade.</p>
+
+    <div class="plan-grid">
+      <% plans.forEach(plan => { %>
+      <% const features = typeof plan.features==='string' ? JSON.parse(plan.features) : plan.features; %>
+      <div class="plan-card <%= currentPlan && currentPlan.id===plan.id ? 'current':'' %> <%= plan.name==='Pro'?'popular':'' %>">
+        <% if (plan.name==='Pro') { %><div class="plan-tag">Most Popular</div><% } %>
+        <% if (currentPlan && currentPlan.id===plan.id) { %><div class="plan-tag" style="background:var(--green)">Current Plan</div><% } %>
+        <div class="plan-name"><%= plan.name %></div>
+        <div class="plan-price">
+          <% if (plan.price_ngn===0) { %>Free<% } else { %>&#8358;<%= plan.price_ngn.toLocaleString() %><span>/mo</span><% } %>
+        </div>
+        <div class="plan-feats">
+          <% features.forEach(f => { %><div class="plan-feat"><%- icon('check',13) %> <%= f %></div><% }) %>
+        </div>
+        <% if (currentPlan && currentPlan.id===plan.id) { %>
+          <button class="btn btn-outline btn-block" disabled>Current Plan</button>
+        <% } else if (plan.price_ngn===0) { %>
+          <button class="btn btn-outline btn-block" disabled>Free</button>
+        <% } else { %>
+          <button class="btn btn-primary btn-block" onclick="startPay('<%= plan.id %>','<%= plan.price_ngn %>','<%= plan.name %>')"><%- icon('zap',15) %> Upgrade to <%= plan.name %></button>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+
+    <div class="card mt-4">
+      <h4 style="margin-bottom:14px">Payment History</h4>
+      <% if (!payments.length) { %>
+        <p style="text-align:center;padding:20px;font-size:.86rem;color:var(--text-muted)">No payments yet.</p>
+      <% } else { %>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          <% payments.forEach(p => { %>
+          <tr>
+            <td><%= p.plan_name||'—' %></td>
+            <td>&#8358;<%= (p.amount_ngn||0).toLocaleString() %></td>
+            <td style="font-family:var(--mono);font-size:.75rem"><%= p.paystack_ref %></td>
+            <td><span class="badge <%= p.status==='success'?'badge-green':p.status==='pending'?'badge-yellow':'badge-red' %>"><%= p.status %></span></td>
+            <td style="font-size:.76rem;color:var(--text-muted)"><%= new Date(p.created_at).toLocaleDateString() %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table></div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- contentFor('script') %>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+const PSKEY = '<%= PAYSTACK_PUBLIC_KEY %>';
+function startPay(planId, amountNgn, planName) {
+  if (!PSKEY) return viperAlert('Payments not configured. Contact support.','error');
+  const ref = 'VIPER_'+Date.now()+'_'+Math.random().toString(36).slice(2,8).toUpperCase();
+  PaystackPop.setup({
+    key: PSKEY, email: '<%= user.email %>', amount: parseInt(amountNgn)*100, ref, currency:'NGN',
+    callback: async (response) => {
+      viperToast('Verifying payment...','info');
+      const r = await fetch('/dashboard/billing/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:response.reference,plan_id:planId})});
+      const d = await r.json();
+      if(d.success){await viperAlert('Plan upgraded to '+d.plan+'! Your new quota starts now.','success');location.reload();}
+      else viperAlert('Verification failed: '+d.error,'error');
+    },
+    onClose: () => viperToast('Payment window closed.','warning'),
+  }).openIframe();
+}
+</script>

@@ -1,0 +1,219 @@
+<%- contentFor('style') %>
+
+<div class="docs-layout">
+
+  <!-- Desktop sidebar -->
+  <div class="docs-sidebar" id="docsSidebar">
+    <div class="ds-label">Navigation</div>
+    <button class="ds-btn" data-jump="top"><%- icon('file-text',14) %> All Endpoints</button>
+    <div class="ds-label">Categories</div>
+    <button class="ds-btn" data-jump="utility"><%- icon('tool',14) %> Utilities</button>
+    <button class="ds-btn" data-jump="fun"><%- icon('smile',14) %> Fun & Games</button>
+    <button class="ds-btn" data-jump="search-info"><%- icon('search',14) %> Search & Info</button>
+    <button class="ds-btn" data-jump="media-image"><%- icon('image',14) %> Media & Images</button>
+    <div class="base-url-box">
+      <div class="bul">Base URL</div>
+      <code>https://viper-api.name.ng/api/v1</code>
+    </div>
+  </div>
+
+  <!-- Mobile docs overlay + drawer -->
+  <div class="docs-overlay" id="docsOverlay" onclick="closeDocsDrawer()"></div>
+  <div class="docs-drawer" id="docsDrawer">
+    <div class="docs-drawer-header">
+      <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)">Jump to</span>
+      <button class="docs-drawer-close" onclick="closeDocsDrawer()"><%- icon('x',18) %></button>
+    </div>
+    <button class="ds-btn" data-jump="top"><%- icon('file-text',14) %> All Endpoints</button>
+    <div class="ds-label">Categories</div>
+    <button class="ds-btn" data-jump="utility"><%- icon('tool',14) %> Utilities</button>
+    <button class="ds-btn" data-jump="fun"><%- icon('smile',14) %> Fun & Games</button>
+    <button class="ds-btn" data-jump="search-info"><%- icon('search',14) %> Search & Info</button>
+    <button class="ds-btn" data-jump="media-image"><%- icon('image',14) %> Media & Images</button>
+    <div class="base-url-box" style="margin:16px 0 0">
+      <div class="bul">Base URL</div>
+      <code>https://viper-api.name.ng/api/v1</code>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="docs-main">
+
+    <!-- Mobile "Jump to section" FAB -->
+    <button class="docs-fab" onclick="toggleDocsDrawer()" aria-label="Jump to section">
+      <%- icon('list',18) %>
+      <span>Sections</span>
+    </button>
+
+    <div class="page-header">
+      <h2>API Docs & Playground</h2>
+      <p>Browse all endpoints and test them live — paste your API key and run directly in the browser.</p>
+    </div>
+
+    <!-- API Key bar -->
+    <div class="apikey-bar">
+      <div style="display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:600;color:var(--purple);white-space:nowrap">
+        <%- icon('key',15) %> API Key
+      </div>
+      <input type="password" id="globalApiKey" placeholder="Paste your API key here to test endpoints live" />
+      <button class="btn btn-outline btn-sm" onclick="toggleKeyVis()" id="keyToggleBtn"><%- icon('eye',14) %> Show</button>
+      <% if (!user) { %>
+        <a href="/register" class="btn btn-primary btn-sm"><%- icon('user-plus',14) %> Get Free Key</a>
+      <% } else { %>
+        <a href="/dashboard/api-keys" class="btn btn-ghost btn-sm"><%- icon('settings',14) %> Manage Keys</a>
+      <% } %>
+    </div>
+
+    <!-- UTILITY -->
+    <div class="cat-section" id="utility">
+      <div class="cat-section-hd">
+        <div class="cat-icon-badge ci-purple"><%- icon('tool',20) %></div>
+        <div><h3 style="margin:0">Utilities</h3><div style="font-size:.78rem;color:var(--text-muted)">8 endpoints</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+        </div>
+      </div>
+      <% [
+        {m:'POST',p:'/utility/qr',l:'QR Code Generator',d:'Generate a QR code image (Base64 PNG) from any text or URL.',params:[{n:'text',r:true,d:'Text or URL to encode into the QR code'}]},
+        {m:'POST',p:'/utility/base64/encode',l:'Base64 Encode',d:'Encode any plain text string to Base64 format.',params:[{n:'text',r:true,d:'Plain text string to encode'}]},
+        {m:'POST',p:'/utility/base64/decode',l:'Base64 Decode',d:'Decode a Base64 encoded string back to plain text.',params:[{n:'text',r:true,d:'Base64 encoded string to decode'}]},
+        {m:'GET', p:'/utility/uuid',l:'UUID Generator',d:'Generate one or more cryptographically secure UUID v4 strings.',params:[{n:'count',r:false,d:'How many UUIDs to generate (1–10, default: 1)'}]},
+        {m:'POST',p:'/utility/password',l:'Password Generator',d:'Generate a strong random password with configurable length and symbols.',params:[{n:'length',r:false,d:'Password length (8–128, default: 16)'},{n:'symbols',r:false,d:'Include symbols? true or false (default: true)'}]},
+        {m:'POST',p:'/utility/slugify',l:'Text Slugifier',d:'Convert any text to a clean, URL-friendly slug.',params:[{n:'text',r:true,d:'Text to convert to a slug'}]},
+        {m:'POST',p:'/utility/text/analyze',l:'Text Analyzer',d:'Get word count, character count, sentence count, and estimated reading time.',params:[{n:'text',r:true,d:'Text content to analyze'}]},
+        {m:'GET', p:'/utility/ip',l:'IP Lookup',d:'Get geolocation and ISP info for an IP address. Omit ip param to look up the caller\'s own IP.',params:[{n:'ip',r:false,d:'IP address to look up (optional — uses your IP if omitted)'}]},
+      ].forEach((ep, i) => { %>
+        <%- include('../partials/endpoint-card', { ep, catId: 'utility', idx: i }) %>
+      <% }) %>
+    </div>
+
+    <!-- FUN -->
+    <div class="cat-section" id="fun">
+      <div class="cat-section-hd">
+        <div class="cat-icon-badge ci-orange"><%- icon('smile',20) %></div>
+        <div><h3 style="margin:0">Fun & Games</h3><div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+        </div>
+      </div>
+      <% [
+        {m:'GET',p:'/fun/joke',l:'Random Joke',d:'Returns a random safe-for-work two-part joke.',params:[{n:'category',r:false,d:'Joke category: Any, Programming, Misc, Pun (default: Any)'}]},
+        {m:'GET',p:'/fun/quote',l:'Random Quote',d:'Returns an inspiring quote with author attribution.',params:[{n:'tag',r:false,d:'Topic filter e.g. wisdom, success, love'}]},
+        {m:'GET',p:'/fun/fact',l:'Random Fact',d:'Returns a random interesting fact.',params:[]},
+      ].forEach((ep, i) => { %>
+        <%- include('../partials/endpoint-card', { ep, catId: 'fun', idx: i }) %>
+      <% }) %>
+    </div>
+
+    <!-- SEARCH & INFO -->
+    <div class="cat-section" id="search-info">
+      <div class="cat-section-hd">
+        <div class="cat-icon-badge ci-blue"><%- icon('search',20) %></div>
+        <div><h3 style="margin:0">Search & Info</h3><div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+        </div>
+      </div>
+      <% [
+        {m:'GET',p:'/search/wikipedia',l:'Wikipedia Search',d:'Get a clean Wikipedia article summary for any search term.',params:[{n:'q',r:true,d:'Search term or article title'}]},
+        {m:'GET',p:'/info/country',l:'Country Info',d:'Get detailed information about any country — capital, population, currency, flag and more.',params:[{n:'name',r:true,d:'Country name e.g. Nigeria, France, Japan'}]},
+        {m:'GET',p:'/info/currency',l:'Currency Rates',d:'Get live exchange rates from a base currency against all major currencies.',params:[{n:'base',r:false,d:'Base currency code e.g. USD, NGN, EUR (default: USD)'}]},
+      ].forEach((ep, i) => { %>
+        <%- include('../partials/endpoint-card', { ep, catId: 'search-info', idx: i }) %>
+      <% }) %>
+    </div>
+
+    <!-- MEDIA -->
+    <div class="cat-section" id="media-image">
+      <div class="cat-section-hd">
+        <div class="cat-icon-badge ci-pink"><%- icon('image',20) %></div>
+        <div><h3 style="margin:0">Media & Images</h3><div style="font-size:.78rem;color:var(--text-muted)">2 endpoints</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <div class="online-dot"></div><span style="font-size:.75rem;color:var(--green)">Online</span>
+        </div>
+      </div>
+      <% [
+        {m:'GET',p:'/media/placeholder',l:'Placeholder Image',d:'Generate a placeholder SVG image at any size, with custom background color and label text. Returns an SVG directly.',params:[{n:'width',r:false,d:'Width in px (default: 400)'},{n:'height',r:false,d:'Height in px (default: 300)'},{n:'text',r:false,d:'Label text shown on the image'},{n:'bg',r:false,d:'Background hex color without # (default: 1e1e2e)'}]},
+        {m:'GET',p:'/media/avatar',l:'Avatar Generator',d:'Generate a gradient letter avatar SVG for any username or name. Returns an SVG directly.',params:[{n:'name',r:true,d:'Name or username to generate initials from'},{n:'size',r:false,d:'Image size in px (32–512, default: 150)'}]},
+      ].forEach((ep, i) => { %>
+        <%- include('../partials/endpoint-card', { ep, catId: 'media-image', idx: i }) %>
+      <% }) %>
+    </div>
+
+  </div><!-- /docs-main -->
+</div><!-- /docs-layout -->
+
+<%- contentFor('script') %>
+<script>
+// API key visibility toggle
+function toggleKeyVis() {
+  const inp = document.getElementById('globalApiKey');
+  const btn = document.getElementById('keyToggleBtn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.innerHTML = '<%- icon("eye-off",14).replace(/'/g,"\\'") %> Hide';
+  } else {
+    inp.type = 'password';
+    btn.innerHTML = '<%- icon("eye",14).replace(/'/g,"\\'") %> Show';
+  }
+}
+
+// Live test runner
+async function runTest(method, path, cardId) {
+  const apiKey = document.getElementById('globalApiKey').value.trim();
+  if (!apiKey) {
+    return viperAlert('Paste your API key in the field at the top of the page to test endpoints.', 'warning');
+  }
+
+  const card       = document.getElementById(cardId);
+  const resultWrap = card.querySelector('.test-result-wrap');
+  const resultEl   = card.querySelector('.t-result');
+  const statusEl   = card.querySelector('.res-status');
+  const timeEl     = card.querySelector('.res-time');
+  const btn        = card.querySelector('.run-btn');
+  const inputs     = card.querySelectorAll('.t-input');
+
+  const params = {};
+  inputs.forEach(inp => { if (inp.value.trim()) params[inp.dataset.param] = inp.value.trim(); });
+
+  btn.disabled = true;
+  btn.innerHTML = '<%- icon("refresh-cw",14).replace(/'/g,"\\'") %> Sending...';
+  resultWrap.classList.add('visible');
+  resultEl.style.color = '#94a3b8';
+  resultEl.textContent = 'Waiting for response...';
+
+  try {
+    let url = path;
+    const headers = { 'Authorization': 'Bearer ' + apiKey };
+    let body = undefined;
+
+    if (method === 'GET') {
+      if (Object.keys(params).length) url += '?' + new URLSearchParams(params).toString();
+    } else {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(params);
+    }
+
+    const t0  = Date.now();
+    const res = await fetch(url, { method, headers, body });
+    const ms  = Date.now() - t0;
+    const json = await res.json();
+
+    const cls = res.ok ? 'sp-2xx' : res.status < 500 ? 'sp-4xx' : 'sp-5xx';
+    statusEl.className = 'status-pill ' + cls;
+    statusEl.textContent = res.status + ' ' + res.statusText;
+    timeEl.textContent = ms + 'ms';
+    resultEl.style.color = res.ok ? '#86efac' : '#f87171';
+    resultEl.textContent = JSON.stringify(json, null, 2);
+  } catch (err) {
+    statusEl.className = 'status-pill sp-5xx';
+    statusEl.textContent = 'Network Error';
+    timeEl.textContent = '';
+    resultEl.style.color = '#f87171';
+    resultEl.textContent = 'Error: ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<%- icon("play-circle",14).replace(/'/g,"\\'") %> Run Request';
+}
+</script>

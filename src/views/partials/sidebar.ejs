@@ -1,0 +1,20 @@
+<nav class="dashboard-sidebar">
+  <a href="/dashboard"          class="sidebar-link <%= typeof active !== 'undefined' && active==='overview'  ? 'active':'' %>"><%- icon('grid',16) %> Overview</a>
+  <a href="/dashboard/api-keys" class="sidebar-link <%= typeof active !== 'undefined' && active==='api-keys'  ? 'active':'' %>"><%- icon('key',16) %> API Keys</a>
+  <a href="/dashboard/logs"     class="sidebar-link <%= typeof active !== 'undefined' && active==='logs'       ? 'active':'' %>"><%- icon('bar-chart',16) %> Usage Logs</a>
+  <a href="/dashboard/billing"  class="sidebar-link <%= typeof active !== 'undefined' && active==='billing'    ? 'active':'' %>"><%- icon('credit-card',16) %> Billing</a>
+  <a href="/docs"               class="sidebar-link"><%- icon('book',16) %> Docs & Test</a>
+  <a href="/pricing"            class="sidebar-link"><%- icon('dollar',16) %> Upgrade Plan</a>
+  <% if (user && user.role === 'admin') { %>
+  <a href="/admin" class="sidebar-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin Panel</a>
+  <% } %>
+  <div style="flex:1"></div>
+  <a href="/logout" class="sidebar-link danger" onclick="return handleLogout(event)"><%- icon('log-out',16) %> Sign out</a>
+</nav>
+<script>
+async function handleLogout(e){
+  e.preventDefault();
+  const ok = await viperConfirm('Sign out of your account?','Sign Out');
+  if(ok) window.location.href='/logout';
+}
+</script>

@@ -1,0 +1,60 @@
+<%- contentFor('style') %>
+<style>
+.pw-wrap{position:relative}.pw-wrap .form-input{padding-right:46px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center}
+</style>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo-wrap"><%- icon('lock', 26) %></div>
+      <h1 class="auth-title">Set new password</h1>
+      <p class="auth-subtitle">Choose a strong password for your account.</p>
+    </div>
+    <% if (error) { %>
+      <div class="alert alert-error"><%- icon('alert-triangle',15) %> <%= error %>
+        <% if (!validToken) { %> <a href="/forgot" style="margin-left:8px;text-decoration:underline">Request new link</a><% } %>
+      </div>
+    <% } %>
+    <% if (validToken) { %>
+    <form class="auth-form" method="POST" action="/reset-password" id="resetForm" novalidate>
+      <input type="hidden" name="token" value="<%= token %>" />
+      <div class="form-group">
+        <label class="form-label" for="password">New password</label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="password" name="password"
+            placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password" />
+          <button type="button" class="pw-toggle" onclick="togglePw('password')" tabindex="-1"><%- icon('eye',16) %></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="confirm_password">Confirm new password</label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="confirm_password" name="confirm_password"
+            placeholder="Repeat new password" required autocomplete="new-password" />
+          <button type="button" class="pw-toggle" onclick="togglePw('confirm_password')" tabindex="-1"><%- icon('eye',16) %></button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" id="resetBtn">
+        <%- icon('lock',16) %> Reset password
+      </button>
+    </form>
+    <% } else { %>
+      <div class="text-center mt-3"><a href="/forgot" class="btn btn-primary">Request new link</a></div>
+    <% } %>
+    <div class="auth-footer"><a href="/login">Back to sign in</a></div>
+  </div>
+</div>
+
+<%- contentFor('script') %>
+<script>
+function togglePw(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';}
+const f=document.getElementById('resetForm');
+if(f) f.addEventListener('submit',function(e){
+  const p=document.getElementById('password').value;
+  const p2=document.getElementById('confirm_password').value;
+  if(p.length<8){e.preventDefault();return viperAlert('Password must be at least 8 characters.','warning');}
+  if(p!==p2){e.preventDefault();return viperAlert('Passwords do not match.','error');}
+  const b=document.getElementById('resetBtn'); b.disabled=true; b.innerHTML='Saving...';
+});
+</script>

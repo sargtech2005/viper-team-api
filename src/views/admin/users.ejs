@@ -1,0 +1,75 @@
+<%- contentFor('style') %>
+<div class="admin-layout">
+  <%- include('../partials/admin-sidebar', { adminActive: 'users' }) %>
+  <div class="admin-main">
+    <div class="page-header flex-between flex-wrap gap-1">
+      <div><h2>Users</h2><p>Total: <strong><%= total %></strong> accounts.</p></div>
+    </div>
+    <div class="card" style="padding:0">
+      <!-- Desktop table -->
+      <div class="table-wrap rwd-table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Calls</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody>
+            <% users.forEach(u => { %>
+            <tr id="urow-<%= u.id %>">
+              <td style="color:var(--text-muted)">#<%= u.id %></td>
+              <td><strong><%= u.username %></strong></td>
+              <td style="font-size:.81rem"><%= u.email %></td>
+              <td><span class="badge badge-blue"><%= u.plan_name||'Free' %></span></td>
+              <td><%= (u.api_calls_used||0).toLocaleString() %></td>
+              <td><span class="badge <%= u.role==='admin'?'badge-purple':'badge-gray' %>"><%= u.role %></span></td>
+              <td><span class="badge <%= u.is_active?'badge-green':'badge-red' %>" id="ustatus-<%= u.id %>"><%= u.is_active?'Active':'Banned' %></span></td>
+              <td style="font-size:.74rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></td>
+              <td><button class="btn btn-outline btn-sm" onclick="toggleUser(<%= u.id %>)"><%- icon('toggle-left',14) %></button></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <!-- Mobile cards -->
+      <div class="rwd-cards">
+        <% users.forEach(u => { %>
+        <div class="rwd-card">
+          <div class="rwd-card-row rwd-card-row--between">
+            <strong>#<%= u.id %> <%= u.username %></strong>
+            <button class="btn btn-outline btn-sm" onclick="toggleUser(<%= u.id %>)"><%- icon('toggle-left',14) %></button>
+          </div>
+          <div class="rwd-card-row"><span class="rwd-label">Email</span><span style="font-size:.81rem"><%= u.email %></span></div>
+          <div class="rwd-card-row">
+            <span class="rwd-label">Plan</span><span class="badge badge-blue"><%= u.plan_name||'Free' %></span>
+          </div>
+          <div class="rwd-card-row">
+            <span class="rwd-label">Status</span>
+            <span class="badge <%= u.is_active?'badge-green':'badge-red' %>" id="ustatus-<%= u.id %>"><%= u.is_active?'Active':'Banned' %></span>
+          </div>
+          <div class="rwd-card-row">
+            <span class="rwd-label">Role</span><span class="badge <%= u.role==='admin'?'badge-purple':'badge-gray' %>"><%= u.role %></span>
+            <span class="rwd-label" style="margin-left:auto">Calls</span><span><%= (u.api_calls_used||0).toLocaleString() %></span>
+          </div>
+          <div class="rwd-card-row"><span class="rwd-label">Joined</span><span style="font-size:.76rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></span></div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% if (totalPages>1) { %>
+    <div style="display:flex;gap:7px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+      <% for(let i=1;i<=totalPages;i++){ %><a href="?page=<%= i %>" class="btn <%= i===page?'btn-primary':'btn-outline' %> btn-sm"><%= i %></a><% } %>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- contentFor('script') %>
+<script>
+async function toggleUser(id) {
+  const ok = await viperConfirm("Toggle this user's access status?",'Ban / Unban User');
+  if(!ok) return;
+  const r = await fetch('/admin/users/'+id+'/toggle',{method:'POST'});
+  const d = await r.json();
+  if(d.success){
+    const b=document.getElementById('ustatus-'+id);
+    if(b){b.textContent=d.is_active?'Active':'Banned';b.className='badge '+(d.is_active?'badge-green':'badge-red');}
+    viperToast('User '+(d.is_active?'unbanned':'banned')+'.', d.is_active?'success':'warning');
+  }
+}
+</script>
