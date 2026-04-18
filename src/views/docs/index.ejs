@@ -1,7 +1,7 @@
 <style>
 /* ── Layout ─────────────────────────────────────────────────────────────── */
-.docs-wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - var(--navbar-h));gap:0}
-@media(max-width:900px){.docs-wrap{grid-template-columns:1fr}}
+.docs-wrap{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - var(--navbar-h));gap:0;overflow-x:hidden;max-width:100%}
+@media(max-width:900px){.docs-wrap{grid-template-columns:minmax(0,1fr)}}
 
 /* ── Sidebar ────────────────────────────────────────────────────────────── */
 .docs-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 12px;position:sticky;top:var(--navbar-h);height:calc(100vh - var(--navbar-h));overflow-y:auto}
@@ -15,21 +15,21 @@
 .base-box code{font-family:var(--mono);font-size:.72rem;color:var(--purple);word-break:break-all}
 
 /* ── Main — fills column width, no dead zone ────────────────────────────── */
-.docs-main{padding:32px 36px;width:100%}
+.docs-main{padding:32px 36px;width:100%;min-width:0;overflow-x:hidden}
 @media(max-width:1200px){.docs-main{padding:28px 24px}}
 @media(max-width:600px){.docs-main{padding:16px 14px}}
 
 /* ── Global API Key Bar ─────────────────────────────────────────────────── */
-.global-key-bar{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 16px;margin-bottom:28px;flex-wrap:wrap}
+.global-key-bar{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 16px;margin-bottom:28px;flex-wrap:wrap;width:100%}
 .gk-label{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
-.gk-input-wrap{flex:1;min-width:200px;display:flex;align-items:center;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:border-color var(--transition)}
+.gk-input-wrap{flex:1;min-width:0;display:flex;align-items:center;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:border-color var(--transition)}
 .gk-input-wrap:focus-within{border-color:var(--purple);box-shadow:var(--shadow-glow)}
 .gk-input{flex:1;border:none;outline:none;background:transparent;padding:8px 12px;font-family:var(--mono);font-size:.82rem;color:var(--text)}
 .gk-input::placeholder{color:var(--text-muted);font-family:var(--font);font-size:.8rem}
 .gk-toggle{background:none;border:none;border-left:1.5px solid var(--border);padding:8px 10px;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;transition:color var(--transition);flex-shrink:0}
 .gk-toggle:hover{color:var(--purple)}
 .apikey-bar{display:flex;align-items:center;gap:10px;background:var(--purple-bg);border:1.5px solid rgba(139,92,246,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:28px;flex-wrap:wrap}
-.apikey-bar input{flex:1;min-width:200px;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;font-family:var(--mono);font-size:.83rem;color:var(--purple);outline:none;transition:border-color var(--transition)}
+.apikey-bar input{flex:1;min-width:0;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;font-family:var(--mono);font-size:.83rem;color:var(--purple);outline:none;transition:border-color var(--transition)}
 .apikey-bar input:focus{border-color:var(--purple);box-shadow:var(--shadow-glow)}
 .apikey-bar input::placeholder{color:var(--text-muted);font-family:var(--font)}
 
@@ -76,7 +76,7 @@
 .opt-badge{display:inline-block;font-size:.65rem;font-weight:700;color:var(--text-muted);background:var(--bg-3);padding:1px 6px;border-radius:4px;margin-left:5px}
 
 /* ── Code Block ─────────────────────────────────────────────────────────── */
-.code-block-wrap{border-radius:var(--radius);overflow:hidden;border:1.5px solid #1e293b;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3);margin:0}
+.code-block-wrap{border-radius:var(--radius);overflow:hidden;border:1.5px solid #1e293b;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3);margin:0;max-width:100%;width:100%}
 .code-block-chrome{display:flex;align-items:center;background:#131d2e;padding:0;border-bottom:1px solid #1e2d45}
 .code-chrome-dots{display:flex;align-items:center;gap:6px;padding:10px 14px}
 .code-chrome-dots span{width:12px;height:12px;border-radius:50%;display:block}
@@ -158,7 +158,7 @@
       <div style="display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:700;color:var(--purple);white-space:nowrap">
         <%- icon('globe',15) %> Base URL
       </div>
-      <code style="flex:1;font-family:var(--mono);font-size:.84rem;color:var(--text);background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;display:block;word-break:break-all">https://viper-api.name.ng/api/v1</code>
+      <code style="flex:1;min-width:0;font-family:var(--mono);font-size:.84rem;color:var(--text);background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;display:block;word-break:break-all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://viper-api.name.ng/api/v1</code>
       <button class="btn btn-outline btn-sm" onclick="copyBaseUrl(this)"><%- icon('copy',14) %> Copy</button>
     </div>
 
@@ -169,11 +169,6 @@
         <input type="password" id="globalApiKey" class="gk-input" placeholder="Paste your Viper API key once — used for all playground tests" autocomplete="off" />
         <button class="gk-toggle" id="gkToggle" onclick="toggleGlobalKey()" title="Show/hide key"><%- icon('eye',14) %></button>
       </div>
-      <% if (!user) { %>
-        <a href="/register" class="btn btn-primary btn-sm" style="white-space:nowrap"><%- icon('user-plus',14) %> Free Key</a>
-      <% } else { %>
-        <a href="/dashboard/api-keys" class="btn btn-ghost btn-sm" style="white-space:nowrap"><%- icon('settings',14) %> My Keys</a>
-      <% } %>
     </div>
 
     <!-- Auth section -->
