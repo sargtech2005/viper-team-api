@@ -115,6 +115,9 @@ const pricingRoutes   = require('./src/routes/web/pricing');
 const docsRoutes      = require('./src/routes/web/docs');
 const adminRoutes     = require('./src/routes/web/admin');
 const apiRouter       = require('./src/routes/api/index');
+const { maintenanceCheck } = require('./src/middleware/maintenance');
+
+app.use(maintenanceCheck);
 
 app.use('/',           authRoutes);
 app.use('/dashboard',  dashboardRoutes);

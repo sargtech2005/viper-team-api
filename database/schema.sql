@@ -101,3 +101,16 @@ CREATE TABLE IF NOT EXISTS settings (
   value      TEXT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Default values — safe to re-run; existing admin-set values are never overwritten
+INSERT INTO settings (key, value) VALUES
+  ('APP_NAME',             'Viper-Team API'),
+  ('MAINTENANCE_MODE',     'off'),
+  ('SMTP_HOST',            'smtp.gmail.com'),
+  ('SMTP_PORT',            '587'),
+  ('SMTP_USER',            ''),
+  ('SMTP_PASS',            ''),
+  ('SMTP_FROM',            ''),
+  ('RECAPTCHA_SITE_KEY',   ''),
+  ('RECAPTCHA_SECRET_KEY', '')
+ON CONFLICT (key) DO NOTHING;

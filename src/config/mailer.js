@@ -1,22 +1,28 @@
 const nodemailer = require('nodemailer');
+const { getSetting } = require('./settings');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+/**
+ * Build a transporter using DB settings (with process.env fallback).
+ * Called fresh on every send so admin changes take effect immediately.
+ */
+async function getTransporter() {
+  const host = await getSetting('SMTP_HOST', process.env.SMTP_HOST || 'smtp.gmail.com');
+  const port = parseInt(await getSetting('SMTP_PORT', process.env.SMTP_PORT || '587'));
+  const user = await getSetting('SMTP_USER', process.env.SMTP_USER || '');
+  const pass = await getSetting('SMTP_PASS', process.env.SMTP_PASS || '');
 
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ SMTP connection failed:', err.message);
-  } else {
-    console.log('✅ SMTP ready');
-  }
-});
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+}
+
+async function getFrom() {
+  const user = await getSetting('SMTP_USER', process.env.SMTP_USER || '');
+  return await getSetting('SMTP_FROM', process.env.SMTP_FROM || `Viper-Team API <${user}>`);
+}
 
 // ─── Email Templates ──────────────────────────────────────────────────────────
 
@@ -73,13 +79,9 @@ const sendPasswordReset = async (email, username, resetLink) => {
       If you didn't request this, your account is safe — just ignore this email.
     </p>
   `);
-
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM || `Viper-Team API <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: '🔐 Reset Your Viper-Team API Password',
-    html,
-  });
+  const transporter = await getTransporter();
+  const from = await getFrom();
+  return transporter.sendMail({ from, to: email, subject: '🔐 Reset Your Viper-Team API Password', html });
 };
 
 const sendWelcome = async (email, username) => {
@@ -91,13 +93,9 @@ const sendWelcome = async (email, username) => {
     </div>
     <p>If you have any questions, reach out to our support team anytime.</p>
   `);
-
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM || `Viper-Team API <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: '🐍 Welcome to Viper-Team API!',
-    html,
-  });
+  const transporter = await getTransporter();
+  const from = await getFrom();
+  return transporter.sendMail({ from, to: email, subject: '🐍 Welcome to Viper-Team API!', html });
 };
 
 module.exports = { sendPasswordReset, sendWelcome };

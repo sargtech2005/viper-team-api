@@ -1,0 +1,278 @@
+<style>
+.admin-main{padding:28px 24px}
+@media(max-width:600px){.admin-main{padding:16px}}
+.sset-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:20px}
+.sset-card-header{display:flex;align-items:center;gap:8px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.sset-card-title{font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.sset-card-title svg{color:var(--purple)}
+.sset-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.sset-grid{grid-template-columns:1fr}}
+.sset-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:700px){.sset-grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.sset-grid-3{grid-template-columns:1fr}}
+.sset-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:4px}
+.sset-toggle-info{flex:1}
+.sset-toggle-label{font-size:.87rem;font-weight:600;color:var(--text)}
+.sset-toggle-desc{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+/* Toggle switch */
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--bg-3);border:1.5px solid var(--border);border-radius:24px;transition:all .2s}
+.toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:2px;background:var(--text-muted);border-radius:50%;transition:all .2s}
+.toggle-switch input:checked+.toggle-slider{background:rgba(239,68,68,.15);border-color:#ef4444}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(19px);background:#ef4444}
+.sset-masked-row{display:flex;align-items:center;gap:8px}
+.sset-masked-val{font-family:var(--mono);font-size:.78rem;color:var(--text-subtle);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sset-note{font-size:.75rem;color:var(--text-muted);margin-top:10px;display:flex;align-items:flex-start;gap:5px;line-height:1.5}
+.sset-note svg{flex-shrink:0;margin-top:1px}
+.sset-actions{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.sset-save-msg{font-size:.8rem;display:none}
+</style>
+
+<div class="admin-main">
+  <%- include('../partials/admin-nav', { adminActive: 'settings' }) %>
+
+  <div class="page-header">
+    <h2>Site Settings</h2>
+    <p>Manage SMTP, reCAPTCHA, site name, and maintenance mode.</p>
+  </div>
+
+  <!-- ── Site Settings ── -->
+  <div class="sset-card">
+    <div class="sset-card-header">
+      <div class="sset-card-title"><%- icon('globe', 16) %> Site</div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label" style="font-size:.8rem">Site Name</label>
+      <input type="text" id="siteAppName" class="form-input" value="<%= s.APP_NAME %>" placeholder="Viper-Team API" />
+      <p style="font-size:.74rem;color:var(--text-muted);margin-top:4px">Displayed in the admin panel and email templates.</p>
+    </div>
+
+    <div class="sset-toggle-row">
+      <div class="sset-toggle-info">
+        <div class="sset-toggle-label"><%- icon('alert-triangle', 14) %> Maintenance Mode</div>
+        <div class="sset-toggle-desc">Visitors see a maintenance page. Admins can still access everything.</div>
+      </div>
+      <label class="toggle-switch" style="margin-left:16px">
+        <input type="checkbox" id="siteMaintenanceToggle" <%= s.MAINTENANCE_MODE === 'on' ? 'checked' : '' %>>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="sset-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveSiteSettings()"><%- icon('check', 13) %> Save Site Settings</button>
+      <span id="siteSaveMsg" class="sset-save-msg"></span>
+    </div>
+  </div>
+
+  <!-- ── SMTP ── -->
+  <div class="sset-card">
+    <div class="sset-card-header">
+      <div class="sset-card-title"><%- icon('mail', 16) %> SMTP / Email</div>
+      <button class="btn btn-outline btn-sm" id="smtpEditBtn" onclick="toggleSmtpEdit()" style="margin-left:auto">
+        <%- icon('edit-2', 13) %> Edit
+      </button>
+    </div>
+
+    <!-- Read-only preview -->
+    <div id="smtpPreview">
+      <div class="sset-grid-3" style="margin-bottom:12px">
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Host</div>
+          <div style="font-size:.84rem;color:var(--text)"><%= s.SMTP_HOST || '—' %></div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Port</div>
+          <div style="font-size:.84rem;color:var(--text)"><%= s.SMTP_PORT || '—' %></div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">User</div>
+          <div style="font-size:.84rem;color:var(--text)"><%= s.SMTP_USER || '—' %></div>
+        </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">From Address</div>
+        <div style="font-size:.84rem;color:var(--text)"><%= s.SMTP_FROM || '—' %></div>
+      </div>
+      <div>
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Password</div>
+        <div class="sset-masked-row">
+          <div class="sset-masked-val"><%= smtpPassSet ? smtpPassMasked : '— not set —' %></div>
+          <span class="badge <%= smtpPassSet ? 'badge-green' : 'badge-red' %>"><%= smtpPassSet ? 'Set' : 'Missing' %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit form -->
+    <div id="smtpEditForm" style="display:none">
+      <div class="sset-grid-3" style="margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Host</label>
+          <input type="text" id="smtpHost" class="form-input" value="<%= s.SMTP_HOST %>" placeholder="smtp.gmail.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Port</label>
+          <input type="number" id="smtpPort" class="form-input" value="<%= s.SMTP_PORT %>" placeholder="587" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Username</label>
+          <input type="text" id="smtpUser" class="form-input" value="<%= s.SMTP_USER %>" placeholder="you@gmail.com" autocomplete="off" />
+        </div>
+      </div>
+      <div class="sset-grid" style="margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Password <span style="color:var(--text-muted)">(leave blank to keep)</span></label>
+          <input type="password" id="smtpPass" class="form-input" placeholder="App password" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">From Address</label>
+          <input type="text" id="smtpFrom" class="form-input" value="<%= s.SMTP_FROM %>" placeholder="Viper-Team API <you@gmail.com>" />
+        </div>
+      </div>
+      <div class="sset-note">
+        <%- icon('info', 13) %>
+        For Gmail, use an <strong>App Password</strong> (not your real password). Leave the password field blank to keep the current one.
+      </div>
+      <div class="sset-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveSmtpSettings()"><%- icon('check', 13) %> Save SMTP</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleSmtpEdit()">Cancel</button>
+        <span id="smtpSaveMsg" class="sset-save-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── reCAPTCHA ── -->
+  <div class="sset-card">
+    <div class="sset-card-header">
+      <div class="sset-card-title"><%- icon('shield', 16) %> reCAPTCHA v2</div>
+      <button class="btn btn-outline btn-sm" id="rcEditBtn" onclick="toggleRcEdit()" style="margin-left:auto">
+        <%- icon('edit-2', 13) %> Edit
+      </button>
+    </div>
+
+    <!-- Read-only preview -->
+    <div id="rcPreview">
+      <div class="sset-grid">
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:5px">Site Key</div>
+          <div class="sset-masked-row">
+            <div class="sset-masked-val"><%= s.RECAPTCHA_SITE_KEY || '— not set —' %></div>
+            <span class="badge <%= s.RECAPTCHA_SITE_KEY ? 'badge-green' : 'badge-red' %>"><%= s.RECAPTCHA_SITE_KEY ? 'Set' : 'Missing' %></span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:5px">Secret Key</div>
+          <div class="sset-masked-row">
+            <div class="sset-masked-val"><%= recaptchaSecretSet ? recaptchaSecretMasked : '— not set —' %></div>
+            <span class="badge <%= recaptchaSecretSet ? 'badge-green' : 'badge-red' %>"><%= recaptchaSecretSet ? 'Set' : 'Missing' %></span>
+          </div>
+        </div>
+      </div>
+      <div class="sset-note" style="margin-top:12px">
+        <%- icon('info', 13) %>
+        When both keys are blank, reCAPTCHA is <strong>disabled</strong> (verification is skipped).
+        Get keys at <strong>google.com/recaptcha/admin</strong>.
+      </div>
+    </div>
+
+    <!-- Edit form -->
+    <div id="rcEditForm" style="display:none">
+      <div class="sset-grid">
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Site Key <span style="color:var(--text-muted)">(public)</span></label>
+          <input type="text" id="rcSiteKey" class="form-input" value="<%= s.RECAPTCHA_SITE_KEY %>" placeholder="6Lc..." autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.78rem">Secret Key <span style="color:var(--text-muted)">(leave blank to keep)</span></label>
+          <input type="password" id="rcSecretKey" class="form-input" placeholder="Leave blank to keep current" autocomplete="new-password" />
+        </div>
+      </div>
+      <div class="sset-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveRcSettings()"><%- icon('check', 13) %> Save reCAPTCHA</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleRcEdit()">Cancel</button>
+        <span id="rcSaveMsg" class="sset-save-msg"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  /* ── Helpers ── */
+  function showMsg(id, ok, text){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.style.color  = ok ? 'var(--green)' : 'var(--red)';
+    el.style.display = 'inline';
+    setTimeout(() => el.style.display = 'none', 3000);
+  }
+
+  async function postSettings(body, msgId){
+    try {
+      const r = await fetch('/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if(d.success) showMsg(msgId, true, '✓ Saved');
+      else showMsg(msgId, false, '✗ ' + (d.error || 'Error'));
+    } catch(e){
+      showMsg(msgId, false, '✗ Network error');
+    }
+  }
+
+  /* ── Site Settings ── */
+  window.saveSiteSettings = function(){
+    postSettings({
+      app_name: document.getElementById('siteAppName').value,
+      maintenance_mode: document.getElementById('siteMaintenanceToggle').checked ? '1' : '0',
+    }, 'siteSaveMsg');
+  };
+
+  /* ── SMTP ── */
+  window.toggleSmtpEdit = function(){
+    const form = document.getElementById('smtpEditForm');
+    const prev = document.getElementById('smtpPreview');
+    const btn  = document.getElementById('smtpEditBtn');
+    const open = form.style.display === 'none';
+    form.style.display = open ? '' : 'none';
+    prev.style.display = open ? 'none' : '';
+    btn.innerHTML      = open
+      ? `<%- icon('x', 13).replace(/'/g, "\\'") %> Cancel`
+      : `<%- icon('edit-2', 13).replace(/'/g, "\\'") %> Edit`;
+  };
+  window.saveSmtpSettings = async function(){
+    await postSettings({
+      smtp_host: document.getElementById('smtpHost').value,
+      smtp_port: document.getElementById('smtpPort').value,
+      smtp_user: document.getElementById('smtpUser').value,
+      smtp_pass: document.getElementById('smtpPass').value,
+      smtp_from: document.getElementById('smtpFrom').value,
+    }, 'smtpSaveMsg');
+  };
+
+  /* ── reCAPTCHA ── */
+  window.toggleRcEdit = function(){
+    const form = document.getElementById('rcEditForm');
+    const prev = document.getElementById('rcPreview');
+    const btn  = document.getElementById('rcEditBtn');
+    const open = form.style.display === 'none';
+    form.style.display = open ? '' : 'none';
+    prev.style.display = open ? 'none' : '';
+    btn.innerHTML      = open
+      ? `<%- icon('x', 13).replace(/'/g, "\\'") %> Cancel`
+      : `<%- icon('edit-2', 13).replace(/'/g, "\\'") %> Edit`;
+  };
+  window.saveRcSettings = async function(){
+    await postSettings({
+      recaptcha_site_key:   document.getElementById('rcSiteKey').value,
+      recaptcha_secret_key: document.getElementById('rcSecretKey').value,
+    }, 'rcSaveMsg');
+  };
+
+})();
+</script>

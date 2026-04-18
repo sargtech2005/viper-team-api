@@ -90,9 +90,10 @@ const autoMigrate = async () => {
       );
     `);
 
+    // Primary settings table — used by src/config/settings.js (getSetting / setSetting)
     await client.query(`
-      CREATE TABLE IF NOT EXISTS site_settings (
-        key        VARCHAR(80) PRIMARY KEY,
+      CREATE TABLE IF NOT EXISTS settings (
+        key        VARCHAR(100) PRIMARY KEY,
         value      TEXT,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
@@ -179,14 +180,28 @@ const autoMigrate = async () => {
       DELETE FROM plans WHERE name IN ('Basic', 'Business', 'Ultra') AND id NOT IN (SELECT DISTINCT plan_id FROM users WHERE plan_id IS NOT NULL);
     `);
 
+    // Seed default settings — DO NOTHING so admin-set values are never overwritten
     await client.query(`
-      INSERT INTO site_settings (key, value) VALUES
-        ('site_name',         'ViperAPI'),
-        ('site_tagline',      'Powerful APIs for African Automation'),
-        ('recaptcha_enabled', 'false'),
-        ('maintenance_mode',  'false')
+      INSERT INTO settings (key, value) VALUES
+        ('APP_NAME',            'Viper-Team API'),
+        ('MAINTENANCE_MODE',    'off'),
+        ('SMTP_HOST',           $1),
+        ('SMTP_PORT',           $2),
+        ('SMTP_USER',           $3),
+        ('SMTP_PASS',           $4),
+        ('SMTP_FROM',           $5),
+        ('RECAPTCHA_SITE_KEY',  $6),
+        ('RECAPTCHA_SECRET_KEY',$7)
       ON CONFLICT (key) DO NOTHING;
-    `);
+    `, [
+      process.env.SMTP_HOST           || '',
+      process.env.SMTP_PORT           || '587',
+      process.env.SMTP_USER           || '',
+      process.env.SMTP_PASS           || '',
+      process.env.SMTP_FROM           || '',
+      process.env.RECAPTCHA_SITE_KEY  || '',
+      process.env.RECAPTCHA_SECRET_KEY|| '',
+    ]);
 
     console.log('✅ Auto-migration complete');
   } catch (err) {

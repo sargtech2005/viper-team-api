@@ -116,3 +116,58 @@ router.get('/plans', async (req, res, next) => {
 });
 
 module.exports = router;
+
+// ── Site Settings ─────────────────────────────────────────────────────────────
+
+router.get('/settings', async (req, res, next) => {
+  try {
+    const keys = [
+      'APP_NAME', 'MAINTENANCE_MODE',
+      'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM',
+      'RECAPTCHA_SITE_KEY', 'RECAPTCHA_SECRET_KEY',
+    ];
+    const settings = {};
+    for (const k of keys) settings[k] = await getSetting(k, process.env[k] || '');
+
+    // Mask passwords/secrets — keep first 4 + last 4 chars visible
+    const maskSecret = v => v && v.length > 8
+      ? v.slice(0, 4) + '••••••••••••' + v.slice(-4)
+      : v ? '••••••••••••••••' : '';
+
+    res.render('admin/settings', {
+      title: 'Site Settings — Admin',
+      s: settings,
+      smtpPassMasked:         maskSecret(settings.SMTP_PASS),
+      recaptchaSecretMasked:  maskSecret(settings.RECAPTCHA_SECRET_KEY),
+      smtpPassSet:            !!settings.SMTP_PASS,
+      recaptchaSecretSet:     !!settings.RECAPTCHA_SECRET_KEY,
+    });
+  } catch (err) { next(err); }
+});
+
+router.post('/settings', async (req, res, next) => {
+  try {
+    const {
+      app_name, maintenance_mode,
+      smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from,
+      recaptcha_site_key, recaptcha_secret_key,
+    } = req.body;
+
+    // Site
+    if (app_name !== undefined)       await setSetting('APP_NAME',          app_name.trim() || 'Viper-Team API');
+    await setSetting('MAINTENANCE_MODE', maintenance_mode === '1' ? 'on' : 'off');
+
+    // SMTP — only update if non-empty (blank = keep existing)
+    if (smtp_host?.trim())     await setSetting('SMTP_HOST', smtp_host.trim());
+    if (smtp_port?.trim())     await setSetting('SMTP_PORT', smtp_port.trim());
+    if (smtp_user?.trim())     await setSetting('SMTP_USER', smtp_user.trim());
+    if (smtp_pass?.trim())     await setSetting('SMTP_PASS', smtp_pass.trim());
+    if (smtp_from?.trim())     await setSetting('SMTP_FROM', smtp_from.trim());
+
+    // reCAPTCHA
+    if (recaptcha_site_key?.trim())   await setSetting('RECAPTCHA_SITE_KEY',   recaptcha_site_key.trim());
+    if (recaptcha_secret_key?.trim()) await setSetting('RECAPTCHA_SECRET_KEY', recaptcha_secret_key.trim());
+
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
