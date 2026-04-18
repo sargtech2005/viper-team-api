@@ -16,11 +16,14 @@ const apiKeyCheck = async (req, res, next) => {
 
   // Accept key from Authorization header (Bearer) OR ?apikey= query
   let key = null;
-  const auth = req.headers['authorization'] || '';
-  if (auth.startsWith('Bearer ')) {
+  const xApiKey = req.headers['x-api-key'] || '';
+  const auth    = req.headers['authorization'] || '';
+  if (xApiKey) {
+    key = xApiKey.trim();
+  } else if (auth.startsWith('Bearer ')) {
     key = auth.slice(7).trim();
-  } else if (req.query.apikey) {
-    key = req.query.apikey.trim();
+  } else if (req.query.apikey || req.query.key) {
+    key = (req.query.apikey || req.query.key).trim();
   }
 
   if (!key) {
@@ -103,6 +106,11 @@ const apiKeyCheck = async (req, res, next) => {
         );
       } catch (_) {}
     });
+
+    // Tell clients how many calls remain this cycle
+    const remaining = Math.max(0, planLimit - r.api_calls_used - 1);
+    res.setHeader('X-Quota-Remaining', remaining);
+    res.setHeader('X-Quota-Limit', planLimit);
 
     next();
   } catch (err) {

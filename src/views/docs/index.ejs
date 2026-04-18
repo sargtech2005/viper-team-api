@@ -1,287 +1,480 @@
 <%- contentFor('style') %>
 <style>
-.docs-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - var(--navbar-h))}
-@media(max-width:860px){.docs-layout{grid-template-columns:1fr}}
-.docs-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px;position:sticky;top:var(--navbar-h);height:calc(100vh - var(--navbar-h));overflow-y:auto}
-@media(max-width:860px){.docs-sidebar{display:none}}
-.docs-main{padding:28px 24px}
-@media(max-width:600px){.docs-main{padding:16px}}
-.ds-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin:16px 0 6px}
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.docs-wrap{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - var(--navbar-h));gap:0}
+@media(max-width:900px){.docs-wrap{grid-template-columns:1fr}}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+.docs-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 12px;position:sticky;top:var(--navbar-h);height:calc(100vh - var(--navbar-h));overflow-y:auto}
+@media(max-width:900px){.docs-sidebar{display:none}}
+.ds-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);padding:0 8px;margin:20px 0 6px}
 .ds-label:first-child{margin-top:0}
-.ds-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.86rem;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all var(--transition)}
-.ds-btn:hover,.ds-btn.active{background:var(--purple-bg);color:var(--purple)}
-.ds-btn svg{flex-shrink:0}
-.base-url-box{margin:16px 8px 0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
-.base-url-box .bul{font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.base-url-box code{font-family:var(--mono);font-size:.73rem;color:var(--purple);word-break:break-all}
-/* Endpoint card */
-.ep-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:border-color var(--transition)}
-.ep-card.open{border-color:#c4b5fd}
-.ep-header{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;transition:background var(--transition)}
+.ds-link{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.84rem;font-weight:500;border:none;background:none;cursor:pointer;text-align:left;transition:all var(--transition)}
+.ds-link:hover,.ds-link.active{background:var(--purple-bg);color:var(--purple)}
+.base-box{margin:20px 8px 0;padding:12px 14px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm)}
+.base-box .bb-label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:5px}
+.base-box code{font-family:var(--mono);font-size:.72rem;color:var(--purple);word-break:break-all}
+
+/* ── Main ───────────────────────────────────────────────────────────────── */
+.docs-main{padding:32px 28px;max-width:900px}
+@media(max-width:600px){.docs-main{padding:16px 14px}}
+
+/* ── API Key Bar ────────────────────────────────────────────────────────── */
+.apikey-bar{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f5f3ff,#ecfdf5);border:1.5px solid #c4b5fd;border-radius:var(--radius);padding:12px 16px;margin-bottom:28px;flex-wrap:wrap}
+.apikey-bar input{flex:1;min-width:200px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;font-family:var(--mono);font-size:.83rem;color:var(--text);outline:none;transition:border-color var(--transition)}
+.apikey-bar input:focus{border-color:var(--purple);box-shadow:var(--shadow-glow)}
+
+/* ── Category section ───────────────────────────────────────────────────── */
+.cat-section{margin-bottom:44px}
+.cat-hd{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
+.cat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--purple-bg);border:1.5px solid #c4b5fd;flex-shrink:0}
+.cat-hd h3{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.cat-hd p{font-size:.82rem;color:var(--text-muted)}
+
+/* ── Endpoint accordion ─────────────────────────────────────────────────── */
+.ep-card{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:border-color var(--transition),box-shadow var(--transition)}
+.ep-card.open{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.07)}
+.ep-header{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;background:var(--bg-card);transition:background var(--transition)}
 .ep-header:hover{background:var(--bg-2)}
-.method-b{font-family:var(--mono);font-size:.69rem;font-weight:700;padding:3px 9px;border-radius:6px;flex-shrink:0;letter-spacing:.03em}
-.m-get{background:var(--green-bg);color:#065f46}
-.m-post{background:var(--blue-bg);color:#1e40af}
-.ep-path{font-family:var(--mono);font-size:.81rem;color:var(--text-subtle)}
-.ep-label{font-size:.86rem;font-weight:600;color:var(--text);margin-left:auto}
-.ep-chevron{display:flex;align-items:center;color:var(--text-muted);margin-left:6px;transition:transform var(--transition);flex-shrink:0}
-.ep-card.open .ep-chevron{transform:rotate(180deg)}
-.ep-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
+.ep-body{display:none;border-top:1.5px solid var(--border);background:var(--bg-card)}
 .ep-card.open .ep-body{display:block}
-.ep-desc{color:var(--text-subtle);font-size:.87rem;line-height:1.65;margin:14px 0 16px}
-/* Param table */
-.p-table{width:100%;border-collapse:collapse;font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:14px}
-.p-table th{text-align:left;padding:9px 14px;background:var(--bg-2);color:var(--text-muted);font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.p-table td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:top}
-.p-req{color:var(--red);font-size:.71rem;font-weight:700}
-.p-opt{color:var(--text-muted);font-size:.71rem}
-/* Test panel */
-.test-panel{background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:4px}
-.test-panel-title{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:7px}
-.test-panel-title svg{color:var(--purple)}
-.test-inputs{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.test-input-row{display:flex;flex-direction:column;gap:4px}
-.test-input-lbl{font-size:.74rem;color:var(--text-muted)}
-.t-input{width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:.83rem;font-family:var(--mono);outline:none;transition:border-color var(--transition)}
-.t-input:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.1)}
-.t-input::placeholder{color:#94a3b8;font-family:var(--font)}
-.run-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;background:var(--grad);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.84rem;font-weight:600;cursor:pointer;transition:all var(--transition)}
-.run-btn:hover{opacity:.9;transform:translateY(-1px)}
-.run-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.run-btn svg{flex-shrink:0}
-.test-result-wrap{margin-top:12px;position:relative;display:none}
-.test-result-wrap.visible{display:block}
-.res-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.res-time{font-size:.75rem;color:var(--text-muted);font-family:var(--mono)}
-.t-result{background:#0f172a;border-radius:var(--radius-sm);padding:14px;font-family:var(--mono);font-size:.79rem;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;line-height:1.7}
-/* Cat section */
-.cat-section{margin-bottom:40px}
-.cat-section-hd{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid var(--border)}
-.cat-icon-badge{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.method-badge{font-family:var(--mono);font-size:.67rem;font-weight:800;padding:3px 10px;border-radius:6px;letter-spacing:.04em;flex-shrink:0}
+.m-get{background:#dcfce7;color:#166534}
+.m-post{background:#dbeafe;color:#1d4ed8}
+.ep-path{font-family:var(--mono);font-size:.8rem;color:var(--text-subtle);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-name{font-size:.87rem;font-weight:600;color:var(--text);white-space:nowrap}
+.ep-chevron{color:var(--text-muted);transition:transform var(--transition);flex-shrink:0}
+.ep-card.open .ep-chevron{transform:rotate(180deg)}
+
+/* ── Endpoint body tabs ─────────────────────────────────────────────────── */
+.ep-tabs{display:flex;gap:2px;padding:14px 18px 0;border-bottom:1px solid var(--border);background:var(--bg-2)}
+.ep-tab{padding:7px 16px;font-size:.8rem;font-weight:600;border:none;background:none;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--transition);border-radius:6px 6px 0 0}
+.ep-tab.active{color:var(--purple);border-bottom-color:var(--purple);background:#fff}
+.ep-tab-panel{display:none;padding:18px}
+.ep-tab-panel.active{display:block}
+
+/* ── Params table ───────────────────────────────────────────────────────── */
+.p-table{width:100%;border-collapse:collapse;font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.p-table th{text-align:left;padding:9px 14px;background:var(--bg-2);color:var(--text-muted);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.p-table td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:top;color:var(--text-subtle);font-size:.83rem}
+.p-table td:first-child{font-family:var(--mono);color:var(--purple);font-weight:600}
+.req-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#dc2626;background:#fee2e2;padding:1px 6px;border-radius:4px;margin-left:5px}
+.opt-badge{display:inline-block;font-size:.65rem;font-weight:700;color:var(--text-muted);background:var(--bg-3);padding:1px 6px;border-radius:4px;margin-left:5px}
+
+/* ── MODERN Code Block ──────────────────────────────────────────────────── */
+.code-block-wrap{border-radius:var(--radius);overflow:hidden;border:1.5px solid #1e293b;box-shadow:0 8px 32px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.12);margin:0}
+.code-block-chrome{display:flex;align-items:center;gap:0;background:#1a1f2e;padding:0;border-bottom:1px solid #2d3748}
+.code-chrome-dots{display:flex;align-items:center;gap:6px;padding:10px 14px}
+.code-chrome-dots span{width:12px;height:12px;border-radius:50%;display:block}
+.ccd-r{background:#ff5f57}
+.ccd-y{background:#febc2e}
+.ccd-g{background:#28c840}
+.code-chrome-title{flex:1;text-align:center;font-family:var(--mono);font-size:.72rem;color:#64748b;letter-spacing:.05em;padding-right:80px}
+.code-copy-btn{margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;padding:10px 14px;font-size:.75rem;font-family:var(--mono);display:flex;align-items:center;gap:5px;transition:color var(--transition)}
+.code-copy-btn:hover{color:#a5b4fc}
+.code-copy-btn.copied{color:#34d399}
+.code-block-body{background:#0d1117;padding:18px 20px;overflow-x:auto}
+.code-block-body pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.75;color:#e2e8f0;white-space:pre;tab-size:2}
+/* Syntax highlights */
+.tok-comment{color:#6b7280;font-style:italic}
+.tok-string{color:#86efac}
+.tok-keyword{color:#c084fc}
+.tok-number{color:#fb923c}
+.tok-key{color:#93c5fd}
+.tok-url{color:#34d399;text-decoration:underline}
+.tok-method{color:#f472b6;font-weight:700}
+
+/* ── Playground panel ───────────────────────────────────────────────────── */
+.playground{background:var(--bg-2);border-radius:var(--radius);padding:18px;border:1.5px solid var(--border)}
+.pg-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.pg-key-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm)}
+.pg-key-row label{font-size:.75rem;font-weight:600;color:var(--text-muted);white-space:nowrap}
+.pg-key-row input{flex:1;border:none;outline:none;font-family:var(--mono);font-size:.8rem;color:var(--text);background:transparent}
+.pg-inputs{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.pg-input-wrap{display:flex;flex-direction:column;gap:3px}
+.pg-input-label{font-size:.74rem;color:var(--text-muted);font-weight:500}
+.pg-input{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;font-size:.83rem;font-family:var(--mono);color:var(--text);outline:none;width:100%;transition:border-color var(--transition)}
+.pg-input:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.09)}
+.run-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;background:var(--grad);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.84rem;font-weight:600;cursor:pointer;transition:all var(--transition)}
+.run-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.run-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.pg-result{margin-top:14px;display:none}
+.pg-result.show{display:block}
+.pg-res-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.pg-status{font-size:.74rem;font-weight:700;padding:2px 9px;border-radius:5px}
+.pg-status.ok{background:#dcfce7;color:#166534}
+.pg-status.err{background:#fee2e2;color:#991b1b}
+.pg-time{font-size:.73rem;color:var(--text-muted);font-family:var(--mono)}
+.pg-credits{font-size:.73rem;color:var(--purple);font-family:var(--mono);font-weight:600}
+.pg-out-wrap{border-radius:var(--radius-sm);overflow:hidden;border:1.5px solid #1e293b}
+.pg-out-chrome{display:flex;align-items:center;gap:6px;background:#1a1f2e;padding:7px 12px;border-bottom:1px solid #2d3748}
+.pg-out-chrome span{width:10px;height:10px;border-radius:50%}
+.pg-out{background:#0d1117;padding:14px;font-family:var(--mono);font-size:.78rem;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
 </style>
 
-<div class="docs-layout">
+<div class="docs-wrap">
 
-  <!-- Sidebar -->
-  <div class="docs-sidebar">
-    <div class="ds-label">Navigation</div>
-    <button class="ds-btn" onclick="scrollToTop()"><%- icon('file-text',14) %> All Endpoints</button>
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="docs-sidebar">
+    <div class="ds-label">Getting Started</div>
+    <button class="ds-link" onclick="jumpTo('auth-section')"><%- icon('shield',14) %> Authentication</button>
+    <button class="ds-link" onclick="jumpTo('errors-section')"><%- icon('alert-circle',14) %> Error Codes</button>
 
     <div class="ds-label">Categories</div>
-    <button class="ds-btn" onclick="jumpTo('utility')"><%- icon('tool',14) %> Utilities</button>
-    <button class="ds-btn" onclick="jumpTo('fun')"><%- icon('smile',14) %> Fun & Games</button>
-    <button class="ds-btn" onclick="jumpTo('search-info')"><%- icon('search',14) %> Search & Info</button>
-    <button class="ds-btn" onclick="jumpTo('media-image')"><%- icon('image',14) %> Media & Images</button>
+    <% const catMeta = {
+      'Utility':       {icon:'🔧', id:'cat-utility'},
+      'Fun & Random':  {icon:'🎭', id:'cat-fun'},
+      'Search & Info': {icon:'🔍', id:'cat-search'},
+      'Media & Image': {icon:'🖼️', id:'cat-media'},
+    }; %>
+    <% catalog.forEach(cat => { const m = catMeta[cat.category] || {icon:'⚡',id:'cat-'+cat.category}; %>
+      <button class="ds-link" onclick="jumpTo('<%= m.id %>')"><%= m.icon %> <%= cat.category %></button>
+    <% }); %>
 
-    <div class="base-url-box">
-      <div class="bul">Base URL</div>
+    <div class="base-box">
+      <div class="bb-label">Base URL</div>
       <code>https://viper-api.name.ng/api/v1</code>
     </div>
-  </div>
+  </aside>
 
-  <!-- Main -->
-  <div class="docs-main">
+  <!-- ── Main ───────────────────────────────────────────────────────────── -->
+  <main class="docs-main">
 
-    <div class="page-header">
+    <div class="page-header" style="margin-bottom:24px">
       <h2>API Docs & Playground</h2>
-      <p>Browse all endpoints and test them live — paste your API key and run directly in the browser.</p>
+      <p style="color:var(--text-muted);margin-top:4px">Browse every endpoint and test live — paste your API key and run directly in the browser. Each test deducts 1 credit.</p>
     </div>
 
-    <!-- API Key bar -->
+    <!-- Global API key bar -->
     <div class="apikey-bar">
-      <div style="display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:600;color:var(--purple);white-space:nowrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:700;color:var(--purple);white-space:nowrap">
         <%- icon('key',15) %> API Key
       </div>
-      <input type="password" id="globalApiKey" placeholder="Paste your API key here to test endpoints live" />
+      <input type="password" id="globalApiKey" placeholder="Paste your Viper API key to test endpoints live…" autocomplete="off" />
       <button class="btn btn-outline btn-sm" onclick="toggleKeyVis()" id="keyToggleBtn"><%- icon('eye',14) %> Show</button>
       <% if (!user) { %>
-        <a href="/register" class="btn btn-primary btn-sm"><%- icon('user-plus',14) %> Get Free Key</a>
+        <a href="/register" class="btn btn-primary btn-sm"><%- icon('user-plus',14) %> Free Key</a>
       <% } else { %>
-        <a href="/dashboard/api-keys" class="btn btn-ghost btn-sm"><%- icon('settings',14) %> Manage Keys</a>
+        <a href="/dashboard/api-keys" class="btn btn-ghost btn-sm"><%- icon('settings',14) %> Manage</a>
       <% } %>
     </div>
 
-    <!-- ─── UTILITY ──────────────────────────────────────────────────────── -->
-    <div class="cat-section" id="utility">
-      <div class="cat-section-hd">
-        <div class="cat-icon-badge ci-purple"><%- icon('tool',20) %></div>
+    <!-- Auth section -->
+    <div id="auth-section" class="cat-section">
+      <div class="cat-hd">
+        <div class="cat-icon">🔐</div>
         <div>
-          <h3 style="margin:0">Utilities</h3>
-          <div style="font-size:.78rem;color:var(--text-muted)">8 endpoints</div>
+          <h3>Authentication</h3>
+          <p>How to pass your API key with every request</p>
         </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div>
-          <span style="font-size:.75rem;color:var(--green)">Online</span>
+      </div>
+      <p style="font-size:.87rem;color:var(--text-subtle);margin-bottom:16px;line-height:1.7">
+        Every API call must include your key either as an <code style="font-family:var(--mono);background:var(--bg-3);padding:1px 6px;border-radius:4px">X-API-Key</code> header
+        (recommended) or as a <code style="font-family:var(--mono);background:var(--bg-3);padding:1px 6px;border-radius:4px">?key=</code> query param. Each call deducts 1 credit from your monthly quota.
+      </p>
+      <div class="code-block-wrap">
+        <div class="code-block-chrome">
+          <div class="code-chrome-dots"><span class="ccd-r"></span><span class="ccd-y"></span><span class="ccd-g"></span></div>
+          <div class="code-chrome-title">authentication.sh</div>
+          <button class="code-copy-btn" onclick="copyCode(this)"><%- icon('copy',12) %> Copy</button>
+        </div>
+        <div class="code-block-body">
+<pre><span class="tok-comment"># Option 1 — Header (recommended)</span>
+curl -X GET \
+  "https://viper-api.name.ng/api/v1/utility/uuid" \
+  -H <span class="tok-string">"X-API-Key: viper_your_key_here"</span>
+
+<span class="tok-comment"># Option 2 — Query param</span>
+curl "https://viper-api.name.ng/api/v1/utility/uuid<span class="tok-string">?key=viper_your_key</span>"
+
+<span class="tok-comment"># Response headers tell you your remaining quota</span>
+<span class="tok-comment"># X-Quota-Remaining: 147</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── API Categories ──────────────────────────────────────────────── -->
+    <% const catIds = {
+      'Utility':       'cat-utility',
+      'Fun & Random':  'cat-fun',
+      'Search & Info': 'cat-search',
+      'Media & Image': 'cat-media',
+    }; %>
+    <% const catDescs = {
+      'Utility':       'General-purpose tools: QR codes, UUIDs, encoding, text analysis and more.',
+      'Fun & Random':  'Random jokes, quotes and facts to add fun to any app or bot.',
+      'Search & Info': 'Wikipedia summaries, country data and live currency exchange rates.',
+      'Media & Image': 'Generate placeholder images and letter avatars on the fly.',
+    }; %>
+
+    <% catalog.forEach((cat, ci) => {
+       const catId   = catIds[cat.category]   || ('cat-'+ci);
+       const catDesc = catDescs[cat.category] || '';
+       const catEmoji = (catMeta[cat.category] || {icon:'⚡'}).icon;
+    %>
+    <div id="<%= catId %>" class="cat-section">
+      <div class="cat-hd">
+        <div class="cat-icon"><%= catEmoji %></div>
+        <div>
+          <h3><%= cat.category %></h3>
+          <p><%= catDesc %></p>
         </div>
       </div>
 
-      <% [
-        {m:'POST',p:'/utility/qr',l:'QR Code Generator',d:'Generate a QR code image (Base64 PNG) from any text or URL.',params:[{n:'text',r:true,d:'Text or URL to encode into the QR code'}]},
-        {m:'POST',p:'/utility/base64/encode',l:'Base64 Encode',d:'Encode any plain text string to Base64 format.',params:[{n:'text',r:true,d:'Plain text string to encode'}]},
-        {m:'POST',p:'/utility/base64/decode',l:'Base64 Decode',d:'Decode a Base64 encoded string back to plain text.',params:[{n:'text',r:true,d:'Base64 encoded string to decode'}]},
-        {m:'GET', p:'/utility/uuid',l:'UUID Generator',d:'Generate one or more cryptographically secure UUID v4 strings.',params:[{n:'count',r:false,d:'How many UUIDs to generate (1–10, default: 1)'}]},
-        {m:'POST',p:'/utility/password',l:'Password Generator',d:'Generate a strong random password with configurable length and symbols.',params:[{n:'length',r:false,d:'Password length (8–128, default: 16)'},{n:'symbols',r:false,d:'Include symbols? true or false (default: true)'}]},
-        {m:'POST',p:'/utility/slugify',l:'Text Slugifier',d:'Convert any text to a clean, URL-friendly slug.',params:[{n:'text',r:true,d:'Text to convert to a slug'}]},
-        {m:'POST',p:'/utility/text/analyze',l:'Text Analyzer',d:'Get word count, character count, sentence count, and estimated reading time.',params:[{n:'text',r:true,d:'Text content to analyze'}]},
-        {m:'GET', p:'/utility/ip',l:'IP Lookup',d:'Get geolocation and ISP info for an IP address. Omit ip param to look up the caller\'s own IP.',params:[{n:'ip',r:false,d:'IP address to look up (optional — uses your IP if omitted)'}]},
-      ].forEach((ep, i) => { %>
-        <%- include('../partials/endpoint-card', { ep, catId: 'utility', idx: i }) %>
-      <% }) %>
-    </div>
+      <% cat.endpoints.forEach((ep, ei) => {
+        const cardId = 'ep-'+ci+'-'+ei;
+      %>
+      <div class="ep-card" id="<%= cardId %>">
+        <div class="ep-header" onclick="toggleEp('<%= cardId %>')">
+          <span class="method-badge <%= ep.method==='GET'?'m-get':'m-post' %>"><%= ep.method %></span>
+          <span class="ep-path"><%= ep.path %></span>
+          <span class="ep-name"><%= ep.label %></span>
+          <svg class="ep-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="ep-body">
+          <div class="ep-tabs">
+            <button class="ep-tab active" onclick="switchTab('<%= cardId %>','overview',this)">Overview</button>
+            <button class="ep-tab" onclick="switchTab('<%= cardId %>','example',this)">Code Example</button>
+            <button class="ep-tab" onclick="switchTab('<%= cardId %>','playground',this)">▶ Try it</button>
+          </div>
 
-    <!-- ─── FUN ──────────────────────────────────────────────────────────── -->
-    <div class="cat-section" id="fun">
-      <div class="cat-section-hd">
-        <div class="cat-icon-badge ci-orange"><%- icon('smile',20) %></div>
-        <div>
-          <h3 style="margin:0">Fun & Games</h3>
-          <div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div>
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div>
-          <span style="font-size:.75rem;color:var(--green)">Online</span>
-        </div>
+          <!-- Overview tab -->
+          <div class="ep-tab-panel active" data-panel="<%= cardId %>-overview">
+            <p style="color:var(--text-subtle);font-size:.87rem;line-height:1.7;margin-bottom:16px"><%= ep.desc %></p>
+            <% if (ep.params.length > 0) { %>
+            <table class="p-table">
+              <thead>
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <% ep.params.forEach(p => { %>
+                <tr>
+                  <td><%= p.name %><% if (p.required) { %><span class="req-badge">required</span><% } else { %><span class="opt-badge">optional</span><% } %></td>
+                  <td style="color:var(--text-muted);font-family:var(--mono);font-size:.78rem">string</td>
+                  <td><%= p.desc %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else { %>
+            <p style="font-size:.83rem;color:var(--text-muted);font-style:italic">No parameters required.</p>
+            <% } %>
+          </div>
+
+          <!-- Code Example tab -->
+          <div class="ep-tab-panel" data-panel="<%= cardId %>-example">
+            <div class="code-block-wrap">
+              <div class="code-block-chrome">
+                <div class="code-chrome-dots"><span class="ccd-r"></span><span class="ccd-y"></span><span class="ccd-g"></span></div>
+                <div class="code-chrome-title"><%= ep.path.replace('/api/v1/','') %>.sh</div>
+                <button class="code-copy-btn" onclick="copyCode(this)"><%- icon('copy',12) %> Copy</button>
+              </div>
+              <div class="code-block-body">
+<pre><span class="tok-method"><%= ep.method %></span> <span class="tok-url"><%= ep.path %></span>
+<span class="tok-key">X-API-Key:</span> <span class="tok-string">viper_your_key_here</span>
+<% if (ep.params.length > 0 && ep.method === 'GET') { %><span class="tok-comment">
+# Query params:</span>
+<% ep.params.forEach(p => { %><span class="tok-comment"># &nbsp; <%= p.name %>=<value>  <% if(!p.required){%>(optional)<% } %></span>
+<% }); %><% } %><% if (ep.method === 'POST') { %>
+<span class="tok-keyword">Content-Type:</span> <span class="tok-string">application/json</span>
+
+{<% ep.params.forEach((p,pi) => { %>
+  <span class="tok-key">"<%= p.name %>"</span>: <span class="tok-string">"<value>"</span><%= pi<ep.params.length-1?',':'' %><% }); %>
+}</pre>
+<% } else if (ep.params.length === 0) { %>
+<pre><span class="tok-comment"># No body or params needed — just the API key</span></pre>
+<% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Playground tab -->
+          <div class="ep-tab-panel" data-panel="<%= cardId %>-playground">
+            <div class="playground">
+              <div class="pg-title"><%- icon('zap',14) %> Live Playground — 1 credit per run</div>
+              <div class="pg-key-row">
+                <%- icon('key',13) %>
+                <label>API Key</label>
+                <input type="password" class="pg-key-input" placeholder="Using global key above — or paste here" autocomplete="off" />
+                <button type="button" onclick="togglePgKey(this)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px"><%- icon('eye',13) %></button>
+              </div>
+              <% if (ep.params.length > 0) { %>
+              <div class="pg-inputs">
+                <% ep.params.forEach(p => { %>
+                <div class="pg-input-wrap">
+                  <label class="pg-input-label"><%= p.name %><% if(p.required){%> <span style="color:#ef4444;font-size:.7rem">*required</span><%}%></label>
+                  <input type="text" class="pg-input" data-param="<%= p.name %>" placeholder="<%= p.desc %>" />
+                </div>
+                <% }); %>
+              </div>
+              <% } %>
+              <button class="run-btn" onclick="runEndpoint(this,'<%= ep.method %>','<%= ep.path %>')">
+                <%- icon('play',14) %> Run Request
+              </button>
+              <div class="pg-result">
+                <div class="pg-res-hd">
+                  <span class="pg-status">200 OK</span>
+                  <span class="pg-time"></span>
+                  <span class="pg-credits"></span>
+                </div>
+                <div class="pg-out-wrap">
+                  <div class="pg-out-chrome">
+                    <span style="background:#ff5f57"></span>
+                    <span style="background:#febc2e"></span>
+                    <span style="background:#28c840"></span>
+                    <span style="font-family:var(--mono);font-size:.7rem;color:#64748b;margin-left:8px">response.json</span>
+                  </div>
+                  <div class="pg-out"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- ep-body -->
+      </div><!-- ep-card -->
+      <% }); // endpoints %>
+    </div><!-- cat-section -->
+    <% }); // catalog %>
+
+    <!-- Errors section -->
+    <div id="errors-section" class="cat-section">
+      <div class="cat-hd">
+        <div class="cat-icon">⚠️</div>
+        <div><h3>Error Codes</h3><p>What each HTTP status means</p></div>
       </div>
-      <% [
-        {m:'GET',p:'/fun/joke',l:'Random Joke',d:'Returns a random safe-for-work two-part joke.',params:[{n:'category',r:false,d:'Joke category: Any, Programming, Misc, Pun (default: Any)'}]},
-        {m:'GET',p:'/fun/quote',l:'Random Quote',d:'Returns an inspiring quote with author attribution.',params:[{n:'tag',r:false,d:'Topic filter e.g. wisdom, success, love'}]},
-        {m:'GET',p:'/fun/fact',l:'Random Fact',d:'Returns a random interesting fact.',params:[]},
-      ].forEach((ep, i) => { %>
-        <%- include('../partials/endpoint-card', { ep, catId: 'fun', idx: i }) %>
-      <% }) %>
+      <table class="p-table">
+        <thead><tr><th>Code</th><th>Name</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>401</td><td>Unauthorized</td><td>Missing or invalid API key</td></tr>
+          <tr><td>403</td><td>Forbidden</td><td>Account suspended or key disabled</td></tr>
+          <tr><td>404</td><td>Not Found</td><td>Endpoint does not exist</td></tr>
+          <tr><td>429</td><td>Too Many Requests</td><td>Monthly quota exhausted — upgrade your plan</td></tr>
+          <tr><td>500</td><td>Server Error</td><td>Upstream error — retry after a moment</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- ─── SEARCH & INFO ────────────────────────────────────────────────── -->
-    <div class="cat-section" id="search-info">
-      <div class="cat-section-hd">
-        <div class="cat-icon-badge ci-blue"><%- icon('search',20) %></div>
-        <div>
-          <h3 style="margin:0">Search & Info</h3>
-          <div style="font-size:.78rem;color:var(--text-muted)">3 endpoints</div>
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div>
-          <span style="font-size:.75rem;color:var(--green)">Online</span>
-        </div>
-      </div>
-      <% [
-        {m:'GET',p:'/search/wikipedia',l:'Wikipedia Search',d:'Get a clean Wikipedia article summary for any search term.',params:[{n:'q',r:true,d:'Search term or article title'}]},
-        {m:'GET',p:'/info/country',l:'Country Info',d:'Get detailed information about any country — capital, population, currency, flag and more.',params:[{n:'name',r:true,d:'Country name e.g. Nigeria, France, Japan'}]},
-        {m:'GET',p:'/info/currency',l:'Currency Rates',d:'Get live exchange rates from a base currency against all major currencies.',params:[{n:'base',r:false,d:'Base currency code e.g. USD, NGN, EUR (default: USD)'}]},
-      ].forEach((ep, i) => { %>
-        <%- include('../partials/endpoint-card', { ep, catId: 'search-info', idx: i }) %>
-      <% }) %>
-    </div>
-
-    <!-- ─── MEDIA ─────────────────────────────────────────────────────────── -->
-    <div class="cat-section" id="media-image">
-      <div class="cat-section-hd">
-        <div class="cat-icon-badge ci-pink"><%- icon('image',20) %></div>
-        <div>
-          <h3 style="margin:0">Media & Images</h3>
-          <div style="font-size:.78rem;color:var(--text-muted)">2 endpoints</div>
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <div class="online-dot"></div>
-          <span style="font-size:.75rem;color:var(--green)">Online</span>
-        </div>
-      </div>
-      <% [
-        {m:'GET',p:'/media/placeholder',l:'Placeholder Image',d:'Generate a placeholder SVG image at any size, with custom background color and label text. Returns an SVG directly.',params:[{n:'width',r:false,d:'Width in px (default: 400)'},{n:'height',r:false,d:'Height in px (default: 300)'},{n:'text',r:false,d:'Label text shown on the image'},{n:'bg',r:false,d:'Background hex color without # (default: 1e1e2e)'}]},
-        {m:'GET',p:'/media/avatar',l:'Avatar Generator',d:'Generate a gradient letter avatar SVG for any username or name. Returns an SVG directly.',params:[{n:'name',r:true,d:'Name or username to generate initials from'},{n:'size',r:false,d:'Image size in px (32–512, default: 150)'}]},
-      ].forEach((ep, i) => { %>
-        <%- include('../partials/endpoint-card', { ep, catId: 'media-image', idx: i }) %>
-      <% }) %>
-    </div>
-
-  </div>
+  </main>
 </div>
 
 <%- contentFor('script') %>
 <script>
-// ── Scroll helpers ────────────────────────────────────────────────────────
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function jumpTo(id) {
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function jumpTo(id){
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── API key visibility toggle ─────────────────────────────────────────────
-function toggleKeyVis() {
-  const inp = document.getElementById('globalApiKey');
-  const btn = document.getElementById('keyToggleBtn');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    btn.innerHTML = '<%- icon("eye-off",14).replace(/'/g,"\\'") %> Hide';
-  } else {
-    inp.type = 'password';
-    btn.innerHTML = '<%- icon("eye",14).replace(/'/g,"\\'") %> Show';
-  }
-}
-
-// ── Endpoint accordion ────────────────────────────────────────────────────
-function toggleEp(card) {
+function toggleEp(id){
+  const card = document.getElementById(id);
   card.classList.toggle('open');
 }
 
-// ── Live test runner ──────────────────────────────────────────────────────
-async function runTest(method, path, cardId) {
-  const apiKey = document.getElementById('globalApiKey').value.trim();
-  if (!apiKey) {
-    return viperAlert('Paste your API key in the field at the top of the page to test endpoints.', 'warning');
+function switchTab(cardId, panel, btn){
+  const card = document.getElementById(cardId);
+  card.querySelectorAll('.ep-tab').forEach(t=>t.classList.remove('active'));
+  card.querySelectorAll('.ep-tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const target = card.querySelector(`[data-panel="${cardId}-${panel}"]`);
+  if(target) target.classList.add('active');
+}
+
+// ── API Key bar ──────────────────────────────────────────────────────────────
+function toggleKeyVis(){
+  const inp = document.getElementById('globalApiKey');
+  const btn = document.getElementById('keyToggleBtn');
+  if(inp.type==='password'){
+    inp.type='text';
+    btn.innerHTML='<%- icon("eye-off",14) %> Hide';
+  } else {
+    inp.type='password';
+    btn.innerHTML='<%- icon("eye",14) %> Show';
+  }
+}
+
+function togglePgKey(btn){
+  const inp = btn.previousElementSibling;
+  inp.type = inp.type==='password'?'text':'password';
+}
+
+function getApiKey(panel){
+  const local = panel.querySelector('.pg-key-input')?.value?.trim();
+  if(local) return local;
+  return document.getElementById('globalApiKey')?.value?.trim()||'';
+}
+
+// ── Copy code ────────────────────────────────────────────────────────────────
+function copyCode(btn){
+  const pre = btn.closest('.code-block-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.innerHTML='<%- icon("check",12) %> Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{
+      btn.innerHTML='<%- icon("copy",12) %> Copy';
+      btn.classList.remove('copied');
+    },2000);
+  });
+}
+
+// ── Run endpoint (playground) ────────────────────────────────────────────────
+async function runEndpoint(btn, method, path){
+  const panel  = btn.closest('.ep-tab-panel');
+  const result = panel.querySelector('.pg-result');
+  const out    = panel.querySelector('.pg-out');
+  const status = panel.querySelector('.pg-status');
+  const timer  = panel.querySelector('.pg-time');
+  const credits= panel.querySelector('.pg-credits');
+
+  const apiKey = getApiKey(panel);
+  if(!apiKey){
+    result.classList.add('show');
+    status.textContent='Error';status.className='pg-status err';
+    out.textContent='⚠️ Paste your API key in the bar above or in the field above.';
+    timer.textContent='';credits.textContent='';
+    return;
   }
 
-  const card      = document.getElementById(cardId);
-  const resultWrap = card.querySelector('.test-result-wrap');
-  const resultEl   = card.querySelector('.t-result');
-  const statusEl   = card.querySelector('.res-status');
-  const timeEl     = card.querySelector('.res-time');
-  const btn        = card.querySelector('.run-btn');
-  const inputs     = card.querySelectorAll('.t-input');
+  // Collect params
+  const inputs = panel.querySelectorAll('.pg-input[data-param]');
+  const params  = {};
+  inputs.forEach(i=>{if(i.value.trim()) params[i.dataset.param]=i.value.trim();});
 
-  const params = {};
-  inputs.forEach(inp => { if (inp.value.trim()) params[inp.dataset.param] = inp.value.trim(); });
+  btn.disabled=true;
+  btn.innerHTML='<%- icon("loader",14) %> Running…';
 
-  btn.disabled = true;
-  btn.innerHTML = '<%- icon("refresh-cw",14).replace(/'/g,"\\'") %> Sending...';
-  resultWrap.classList.add('visible');
-  resultEl.style.color = '#94a3b8';
-  resultEl.textContent = 'Waiting for response...';
-
-  try {
+  const start=Date.now();
+  try{
     let url = path;
-    const headers = { 'Authorization': 'Bearer ' + apiKey };
-    let body = undefined;
+    const headers = {'X-API-Key':apiKey,'Content-Type':'application/json'};
+    let opts = {method,headers};
 
-    if (method === 'GET') {
-      if (Object.keys(params).length) url += '?' + new URLSearchParams(params).toString();
-    } else {
-      headers['Content-Type'] = 'application/json';
-      body = JSON.stringify(params);
+    if(method==='GET' && Object.keys(params).length){
+      url += '?'+new URLSearchParams(params).toString();
+    } else if(method==='POST'){
+      opts.body=JSON.stringify(params);
     }
 
-    const t0  = Date.now();
-    const res = await fetch(url, { method, headers, body });
-    const ms  = Date.now() - t0;
-    const json = await res.json();
+    const res = await fetch(url,opts);
+    const ms  = Date.now()-start;
+    let data;
+    try{ data=await res.json(); }catch(e){ data={raw: await res.text()}; }
 
-    const cls = res.ok ? 'sp-2xx' : res.status < 500 ? 'sp-4xx' : 'sp-5xx';
-    statusEl.className = 'status-pill ' + cls;
-    statusEl.textContent = res.status + ' ' + res.statusText;
-    timeEl.textContent = ms + 'ms';
-    resultEl.style.color = res.ok ? '#86efac' : '#f87171';
-    resultEl.textContent = JSON.stringify(json, null, 2);
-  } catch (err) {
-    statusEl.className = 'status-pill sp-5xx';
-    statusEl.textContent = 'Network Error';
-    timeEl.textContent = '';
-    resultEl.style.color = '#f87171';
-    resultEl.textContent = 'Error: ' + err.message;
+    result.classList.add('show');
+    status.textContent = res.status+' '+(res.ok?'OK':'Error');
+    status.className   = 'pg-status '+(res.ok?'ok':'err');
+    timer.textContent  = ms+'ms';
+    const rem = res.headers.get('X-Quota-Remaining');
+    credits.textContent = rem!=null ? '● '+rem+' credits left' : '';
+    out.textContent    = JSON.stringify(data,null,2);
+  }catch(err){
+    const ms=Date.now()-start;
+    result.classList.add('show');
+    status.textContent='Network Error';status.className='pg-status err';
+    timer.textContent=ms+'ms';credits.textContent='';
+    out.textContent='Error: '+err.message;
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<%- icon("play",14) %> Run Request';
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<%- icon("play-circle",14).replace(/'/g,"\\'") %> Run Request';
 }
 </script>

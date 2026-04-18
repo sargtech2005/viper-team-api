@@ -6,11 +6,11 @@ const axios = require('axios');
  * @returns {Promise<boolean>}
  */
 const verifyRecaptcha = async (token) => {
-  // Skip in development if no key is set
-  if (!process.env.RECAPTCHA_SECRET_KEY || process.env.NODE_ENV === 'development') {
-    return true;
-  }
+  // Skip if no keys configured OR in development
+  if (!process.env.RECAPTCHA_SECRET_KEY || !process.env.RECAPTCHA_SITE_KEY) return true;
+  if (process.env.NODE_ENV === 'development') return true;
 
+  // If keys are set but token is empty, fail
   if (!token) return false;
 
   try {

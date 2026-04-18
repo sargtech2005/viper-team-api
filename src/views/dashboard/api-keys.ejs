@@ -2,36 +2,58 @@
 <style>
 .key-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;transition:border-color var(--transition)}
 .key-card:hover{border-color:#c4b5fd}
-.key-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.key-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .key-label-text{font-weight:700;font-size:.93rem;margin-bottom:3px}
 .key-meta{font-size:.76rem;color:var(--text-muted)}
 .key-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.gen-box{background:var(--bg-2);border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px 20px;text-align:center;margin-bottom:24px;transition:border-color var(--transition)}
+.gen-box{background:linear-gradient(135deg,var(--purple-bg),var(--green-bg));border:2px dashed #c4b5fd;border-radius:var(--radius-lg);padding:32px 20px;text-align:center;margin-bottom:24px;transition:border-color var(--transition)}
 .gen-box:hover{border-color:var(--purple)}
-.gen-box-icon{width:52px;height:52px;background:var(--purple-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.gen-box-icon svg{color:var(--purple)}
+.gen-box-icon{width:52px;height:52px;background:var(--grad);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.gen-box-icon svg{color:#fff}
 .gen-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:460px;margin:0 auto}
-.masked{letter-spacing:2px}
+.masked{letter-spacing:2px;font-family:var(--mono)}
+/* Modern code block (matches docs style) */
+.code-block-wrap{border-radius:var(--radius);overflow:hidden;border:1.5px solid #1e293b;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.code-block-chrome{display:flex;align-items:center;background:#1a1f2e;border-bottom:1px solid #2d3748}
+.code-chrome-dots{display:flex;align-items:center;gap:6px;padding:10px 14px}
+.code-chrome-dots span{width:12px;height:12px;border-radius:50%;display:block}
+.ccd-r{background:#ff5f57}.ccd-y{background:#febc2e}.ccd-g{background:#28c840}
+.code-chrome-title{flex:1;text-align:center;font-family:var(--mono);font-size:.72rem;color:#64748b}
+.code-copy-btn{margin-left:auto;background:none;border:none;color:#64748b;cursor:pointer;padding:10px 14px;font-size:.75rem;font-family:var(--mono);display:flex;align-items:center;gap:5px;transition:color .2s}
+.code-copy-btn:hover{color:#a5b4fc}
+.code-copy-btn.copied{color:#34d399}
+.code-block-body{background:#0d1117;padding:18px 20px;overflow-x:auto}
+.code-block-body pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.75;color:#e2e8f0;white-space:pre}
+.tok-comment{color:#6b7280;font-style:italic}
+.tok-string{color:#86efac}
+.tok-keyword{color:#c084fc}
+.tok-key{color:#93c5fd}
+.code-lang-tabs{display:flex;gap:2px;padding:10px 14px 0;background:#1a1f2e}
+.code-lang-tab{padding:5px 14px;font-size:.75rem;font-weight:600;border:none;background:none;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;border-radius:4px 4px 0 0;font-family:var(--mono)}
+.code-lang-tab.active{color:#a5b4fc;border-bottom-color:#7c3aed;background:#0d1117}
 </style>
 
 <div class="dashboard-layout">
   <%- include('../partials/sidebar', { active: 'api-keys' }) %>
   <div class="dashboard-main">
+
     <div class="page-header">
       <h2>API Keys</h2>
       <p>Generate keys to authenticate your requests. Maximum 5 active keys.</p>
     </div>
 
+    <!-- Generate box -->
     <div class="gen-box">
       <div class="gen-box-icon"><%- icon('plus', 24) %></div>
       <h3 style="margin-bottom:8px">Generate a New Key</h3>
-      <p style="font-size:.86rem;margin-bottom:20px">Give it a label so you know which project it's for.</p>
+      <p style="font-size:.86rem;margin-bottom:20px;color:var(--text-subtle)">Give it a label so you know which project it's for.</p>
       <div class="gen-row">
         <input type="text" id="keyLabel" class="form-input" placeholder="e.g. My WhatsApp Bot" style="max-width:280px" maxlength="80" />
         <button class="btn btn-primary" onclick="generateKey()"><%- icon('zap',15) %> Generate</button>
       </div>
     </div>
 
+    <!-- Key list -->
     <div id="keysList">
       <% if (!keys.length) { %>
         <div style="text-align:center;padding:40px;color:var(--text-muted)">
@@ -45,12 +67,12 @@
               <div class="key-label-text"><%= k.label %></div>
               <div class="key-meta">
                 Created <%= new Date(k.created_at).toLocaleDateString() %>
-                <% if (k.last_used) { %> &nbsp;·&nbsp; Last used <%= new Date(k.last_used).toLocaleDateString() %><% } %>
+                <% if (k.last_used) { %>&nbsp;·&nbsp; Last used <%= new Date(k.last_used).toLocaleDateString() %><% } %>
               </div>
             </div>
             <div class="key-actions">
               <span class="badge <%= k.is_active ? 'badge-green':'badge-red' %>"><%= k.is_active ? 'Active':'Inactive' %></span>
-              <button class="btn btn-outline btn-sm" onclick="viperCopy('<%= k.key_value %>','Copied!')"><%- icon('copy',13) %> Copy</button>
+              <button class="btn btn-outline btn-sm" onclick="viperCopy('<%= k.key_value %>','API key copied!')"><%- icon('copy',13) %> Copy</button>
               <button class="btn btn-danger btn-sm" onclick="deleteKey(<%= k.id %>)"><%- icon('trash',13) %></button>
             </div>
           </div>
@@ -63,50 +85,143 @@
       <% } %>
     </div>
 
+    <!-- Modern usage guide -->
     <div class="card mt-4">
-      <h4 style="margin-bottom:14px">How to use your key</h4>
-      <div class="code-block">
-        <button class="copy-btn" onclick="viperCopy('Authorization: Bearer YOUR_API_KEY','Copied!')"><%- icon('copy',11) %> Copy</button>
-        <pre style="color:#86efac">// Option 1 — Header (recommended)
-fetch('https://viper-api.name.ng/api/v1/utility/uuid', {
-  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
-})
+      <h4 style="margin-bottom:6px">How to use your key</h4>
+      <p style="font-size:.84rem;color:var(--text-muted);margin-bottom:16px">Pass it as a header in every request. Works in any language.</p>
 
-// Option 2 — Query param
-fetch('https://viper-api.name.ng/api/v1/utility/uuid?apikey=YOUR_API_KEY')</pre>
+      <!-- Language tabs -->
+      <div class="code-block-wrap">
+        <div class="code-block-chrome">
+          <div class="code-chrome-dots"><span class="ccd-r"></span><span class="ccd-y"></span><span class="ccd-g"></span></div>
+          <div class="code-lang-tabs" style="flex:1;padding:0">
+            <button class="code-lang-tab active" onclick="switchLang('js',this)">JS</button>
+            <button class="code-lang-tab" onclick="switchLang('py',this)">Python</button>
+            <button class="code-lang-tab" onclick="switchLang('php',this)">PHP</button>
+            <button class="code-lang-tab" onclick="switchLang('curl',this)">cURL</button>
+          </div>
+          <button class="code-copy-btn" id="usage-copy-btn" onclick="copyUsage()"><%- icon('copy',12) %> Copy</button>
+        </div>
+
+        <div class="code-block-body">
+          <pre id="usage-js"><span class="tok-comment">// JavaScript (fetch)</span>
+<span class="tok-keyword">const</span> response = <span class="tok-keyword">await</span> fetch(
+  <span class="tok-string">'https://viper-api.name.ng/api/v1/utility/uuid'</span>,
+  {
+    headers: {
+      <span class="tok-key">'X-API-Key'</span>: <span class="tok-string">'YOUR_API_KEY'</span>
+    }
+  }
+);
+<span class="tok-keyword">const</span> data = <span class="tok-keyword">await</span> response.json();
+console.log(data);</pre>
+
+          <pre id="usage-py" style="display:none"><span class="tok-comment"># Python (requests)</span>
+<span class="tok-keyword">import</span> requests
+
+response = requests.get(
+    <span class="tok-string">'https://viper-api.name.ng/api/v1/utility/uuid'</span>,
+    headers={<span class="tok-key">'X-API-Key'</span>: <span class="tok-string">'YOUR_API_KEY'</span>}
+)
+print(response.json())</pre>
+
+          <pre id="usage-php" style="display:none"><span class="tok-comment">// PHP (curl)</span>
+<span class="tok-keyword">$ch</span> = curl_init(<span class="tok-string">'https://viper-api.name.ng/api/v1/utility/uuid'</span>);
+curl_setopt(<span class="tok-keyword">$ch</span>, CURLOPT_HTTPHEADER, [
+    <span class="tok-string">'X-API-Key: YOUR_API_KEY'</span>
+]);
+curl_setopt(<span class="tok-keyword">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="tok-keyword">true</span>);
+<span class="tok-keyword">$data</span> = json_decode(curl_exec(<span class="tok-keyword">$ch</span>), <span class="tok-keyword">true</span>);</pre>
+
+          <pre id="usage-curl" style="display:none"><span class="tok-comment"># cURL</span>
+curl -X GET \
+  <span class="tok-string">"https://viper-api.name.ng/api/v1/utility/uuid"</span> \
+  -H <span class="tok-string">"X-API-Key: YOUR_API_KEY"</span></pre>
+        </div>
+      </div>
+
+      <div class="alert alert-info mt-3" style="font-size:.83rem">
+        <%- icon('info',14) %>
+        <span>You can also pass your key as <code style="font-family:var(--mono);background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">?key=YOUR_KEY</code> in the URL — useful for quick testing in a browser.</span>
       </div>
     </div>
+
   </div>
 </div>
 
 <%- contentFor('script') %>
 <script>
-async function generateKey() {
-  const label = document.getElementById('keyLabel').value.trim() || 'My API Key';
-  const r = await fetch('/dashboard/api-keys/generate', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label})
-  });
-  const d = await r.json();
-  if (!d.success) return viperAlert(d.error, 'error');
-  viperAlert('API key generated! Copy it from your list below.', 'success');
-  setTimeout(() => location.reload(), 1400);
+function generateKey() {
+  const label = document.getElementById('keyLabel').value.trim();
+  if (!label) { viperToast('Enter a label for your key first.', 'warning'); return; }
+  fetch('/dashboard/api-keys/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ label })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      viperToast('Key generated!', 'success');
+      setTimeout(() => location.reload(), 800);
+    } else {
+      viperAlert(d.error || 'Failed to generate key.', 'error');
+    }
+  })
+  .catch(() => viperAlert('Network error. Please try again.', 'error'));
 }
-async function deleteKey(id) {
-  const ok = await viperConfirm('Delete this API key? Apps using it will stop working immediately.','Delete Key');
-  if (!ok) return;
-  const r = await fetch('/dashboard/api-keys/'+id, {method:'DELETE'});
-  const d = await r.json();
-  if (!d.success) return viperAlert(d.error, 'error');
-  document.getElementById('keycard-'+id)?.remove();
-  viperToast('API key deleted.', 'success');
+
+function deleteKey(id) {
+  viperConfirm('Delete this API key? Any apps using it will immediately stop working.')
+    .then(ok => {
+      if (!ok) return;
+      fetch('/dashboard/api-keys/' + id, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            document.getElementById('keycard-' + id)?.remove();
+            viperToast('Key deleted.', 'success');
+          } else {
+            viperAlert(d.error || 'Failed to delete.', 'error');
+          }
+        });
+    });
 }
+
 function toggleReveal(id, full) {
-  const el  = document.getElementById('kv-'+id);
-  const btn = el.nextElementSibling;
-  if (el.classList.contains('masked')) {
-    el.textContent = full; el.classList.remove('masked'); btn.innerHTML = '<%- icon('eye-off',14).replace(/'/g,"\\'") %> Hide';
+  const el = document.getElementById('kv-' + id);
+  if (!el) return;
+  if (el.dataset.revealed === '1') {
+    el.textContent = full.substring(0, 10) + '••••••••••••••••••••••••••••';
+    el.dataset.revealed = '0';
   } else {
-    el.textContent = full.substring(0,10)+'••••••••••••••••••••••••••••'; el.classList.add('masked'); btn.innerHTML = '<%- icon('eye',14).replace(/'/g,"\\'") %> Reveal';
+    el.textContent = full;
+    el.dataset.revealed = '1';
   }
+}
+
+// Language tabs
+const langCode = {
+  js:   document.getElementById('usage-js'),
+  py:   document.getElementById('usage-py'),
+  php:  document.getElementById('usage-php'),
+  curl: document.getElementById('usage-curl'),
+};
+function switchLang(lang, btn) {
+  Object.values(langCode).forEach(el => { if(el) el.style.display='none'; });
+  if(langCode[lang]) langCode[lang].style.display='block';
+  document.querySelectorAll('.code-lang-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function copyUsage() {
+  const visible = Object.values(langCode).find(el => el && el.style.display !== 'none');
+  if (!visible) return;
+  navigator.clipboard.writeText(visible.innerText).then(() => {
+    const btn = document.getElementById('usage-copy-btn');
+    btn.innerHTML = '<%- icon("check",12) %> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = '<%- icon("copy",12) %> Copy'; btn.classList.remove('copied'); }, 2000);
+  });
 }
 </script>

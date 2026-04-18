@@ -15,15 +15,28 @@ pool.on('error', (err) => {
 const query = (text, params) => pool.query(text, params);
 const getClient = () => pool.connect();
 
-// ─── Auto Migration ───────────────────────────────────────────────────────────
-// Runs on startup — creates all tables if they don't exist. Safe to run many times.
 const autoMigrate = async () => {
   const client = await pool.connect();
   try {
     console.log('🔧 Running auto-migration...');
 
+    // DROP everything first — clean slate fix
     await client.query(`
-      CREATE TABLE IF NOT EXISTS plans (
+      DROP TABLE IF EXISTS api_logs         CASCADE;
+      DROP TABLE IF EXISTS payments         CASCADE;
+      DROP TABLE IF EXISTS api_keys         CASCADE;
+      DROP TABLE IF EXISTS users            CASCADE;
+      DROP TABLE IF EXISTS plans            CASCADE;
+      DROP TABLE IF EXISTS subscriptions    CASCADE;
+      DROP TABLE IF EXISTS credit_purchases CASCADE;
+      DROP TABLE IF EXISTS api_categories   CASCADE;
+      DROP TABLE IF EXISTS api_endpoints    CASCADE;
+      DROP TABLE IF EXISTS site_settings    CASCADE;
+    `);
+    console.log('🗑️  Old tables dropped');
+
+    await client.query(`
+      CREATE TABLE plans (
         id           SERIAL PRIMARY KEY,
         name         VARCHAR(50)  NOT NULL UNIQUE,
         price_ngn    INTEGER      NOT NULL DEFAULT 0,
@@ -36,7 +49,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE users (
         id               SERIAL PRIMARY KEY,
         username         VARCHAR(30)   NOT NULL UNIQUE,
         email            VARCHAR(255)  NOT NULL UNIQUE,
@@ -53,7 +66,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS api_keys (
+      CREATE TABLE api_keys (
         id          SERIAL PRIMARY KEY,
         user_id     INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         key_value   TEXT          NOT NULL UNIQUE,
@@ -65,7 +78,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS payments (
+      CREATE TABLE payments (
         id            SERIAL PRIMARY KEY,
         user_id       INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         plan_id       INTEGER       REFERENCES plans(id) ON DELETE SET NULL,
@@ -78,7 +91,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS api_logs (
+      CREATE TABLE api_logs (
         id          BIGSERIAL PRIMARY KEY,
         user_id     INTEGER     REFERENCES users(id) ON DELETE SET NULL,
         api_key_id  INTEGER     REFERENCES api_keys(id) ON DELETE SET NULL,
@@ -91,14 +104,20 @@ const autoMigrate = async () => {
       );
     `);
 
-    // Indexes
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email       ON users(email);`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_api_keys_value    ON api_keys(key_value);`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_api_logs_user     ON api_logs(user_id);`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_ref      ON payments(paystack_ref);`);
+    await client.query(`
+      CREATE TABLE site_settings (
+        key        VARCHAR(80) PRIMARY KEY,
+        value      TEXT,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
 
-    // Trigger
+    await client.query(`CREATE INDEX idx_users_email       ON users(email);`);
+    await client.query(`CREATE INDEX idx_users_reset_token ON users(reset_token);`);
+    await client.query(`CREATE INDEX idx_api_keys_value    ON api_keys(key_value);`);
+    await client.query(`CREATE INDEX idx_api_logs_user     ON api_logs(user_id);`);
+    await client.query(`CREATE INDEX idx_payments_ref      ON payments(paystack_ref);`);
+
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at()
       RETURNS TRIGGER AS $$
@@ -114,29 +133,34 @@ const autoMigrate = async () => {
       END $$;
     `);
 
-    // Seed default plans if table is empty
-    const { rows } = await client.query('SELECT COUNT(*) FROM plans');
-    if (parseInt(rows[0].count) === 0) {
-      await client.query(`
-        INSERT INTO plans (name, price_ngn, api_limit, rate_per_min, features) VALUES
-          ('Free',    0,      500,    5,   '["500 API calls/month","5 req/min","All endpoints","Community support"]'),
-          ('Starter', 1500,   5000,   20,  '["5,000 API calls/month","20 req/min","All endpoints","Email support"]'),
-          ('Pro',     4000,   25000,  60,  '["25,000 API calls/month","60 req/min","All endpoints","Priority support","Analytics"]'),
-          ('Ultra',   9000,   100000, 200, '["100,000 API calls/month","200 req/min","All endpoints","24/7 support","Analytics","Custom limits"]')
-        ON CONFLICT (name) DO NOTHING;
-      `);
-      console.log('✅ Default plans seeded');
-    }
+    await client.query(`
+      INSERT INTO plans (name, price_ngn, api_limit, rate_per_min, features) VALUES
+        ('Free',     0,     5,   2,  '["5 API calls/month","2 req/min","All endpoints","Community support"]'),
+        ('Starter',  5000,  150, 10, '["150 API calls/month","10 req/min","All endpoints","Email support"]'),
+        ('Basic',    9000,  300, 20, '["300 API calls/month","20 req/min","All endpoints","Email support"]'),
+        ('Pro',      15000, 500, 40, '["500 API calls/month","40 req/min","All endpoints","Priority support","Analytics"]'),
+        ('Business', 25000, 800, 80, '["800 API calls/month","80 req/min","All endpoints","24/7 support","Analytics","Custom limits"]')
+      ON CONFLICT (name) DO NOTHING;
+    `);
 
-    console.log('✅ Auto-migration complete');
+    await client.query(`
+      INSERT INTO site_settings (key, value) VALUES
+        ('site_name',         'ViperAPI'),
+        ('site_tagline',      'Powerful APIs for African Automation'),
+        ('recaptcha_enabled', 'false'),
+        ('maintenance_mode',  'false')
+      ON CONFLICT (key) DO NOTHING;
+    `);
+
+    console.log('✅ Auto-migration complete — fresh tables ready');
   } catch (err) {
     console.error('❌ Migration error:', err.message);
+    throw err;
   } finally {
     client.release();
   }
 };
 
-// Connect and migrate on startup
 pool.connect()
   .then(async (client) => {
     console.log('✅ PostgreSQL connected');
@@ -145,7 +169,7 @@ pool.connect()
   })
   .catch(err => {
     console.error('❌ PostgreSQL connection failed:', err.message);
-    console.error('Set DATABASE_URL in your environment variables.');
+    process.exit(1);
   });
 
 module.exports = { query, getClient, pool };
