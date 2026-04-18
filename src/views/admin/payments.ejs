@@ -1,17 +1,87 @@
 <style>
 .admin-main{padding:28px 24px}
 @media(max-width:600px){.admin-main{padding:16px}}
+.psk-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:24px}
+.psk-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.psk-title{display:flex;align-items:center;gap:8px;font-size:1rem;font-weight:700}
+.psk-title svg{color:var(--purple)}
+.psk-keys{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:600px){.psk-keys{grid-template-columns:1fr}}
+.psk-key-box{background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.psk-key-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.psk-key-val{font-family:var(--mono);font-size:.78rem;color:var(--text-subtle);word-break:break-all}
+.psk-key-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:20px}
+.psk-edit-form{display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:4px}
+.psk-edit-form.open{display:block}
+.psk-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.psk-edit-grid{grid-template-columns:1fr}}
+.psk-note{font-size:.77rem;color:var(--text-muted);margin-top:6px}
 </style>
 
 <div class="admin-main">
   <%- include('../partials/admin-nav', { adminActive: 'payments' }) %>
 
-  <div class="page-header"><h2>Payments</h2><p>All transactions.</p></div>
+  <div class="page-header"><h2>Payments</h2><p>Paystack configuration and all transactions.</p></div>
 
+  <!-- Paystack Config Card -->
+  <div class="psk-card">
+    <div class="psk-header">
+      <div class="psk-title"><%- icon('shield', 16) %> Paystack Configuration</div>
+      <button class="btn btn-outline btn-sm" id="pskEditBtn" onclick="togglePskEdit()">
+        <%- icon('settings', 13) %> Edit Keys
+      </button>
+    </div>
+
+    <div class="psk-keys">
+      <div class="psk-key-box">
+        <div class="psk-key-label">
+          <%- icon('lock', 12) %> Secret Key
+          <span class="psk-key-status <%= secretKeySet ? 'badge badge-green' : 'badge badge-red' %>">
+            <%= secretKeySet ? 'Set' : 'Missing' %>
+          </span>
+        </div>
+        <div class="psk-key-val"><%= secretKeySet ? secretKeyMasked : '— not configured —' %></div>
+      </div>
+      <div class="psk-key-box">
+        <div class="psk-key-label">
+          <%- icon('key', 12) %> Public Key
+          <span class="psk-key-status <%= publicKeySet ? 'badge badge-green' : 'badge badge-red' %>">
+            <%= publicKeySet ? 'Set' : 'Missing' %>
+          </span>
+        </div>
+        <div class="psk-key-val"><%= publicKeySet ? publicKeyMasked : '— not configured —' %></div>
+      </div>
+    </div>
+
+    <div class="psk-edit-form" id="pskEditForm">
+      <div class="psk-edit-grid">
+        <div class="form-group">
+          <label class="form-label" style="font-size:.8rem">New Secret Key <span style="color:var(--text-muted)">(sk_...)</span></label>
+          <input type="password" id="pskSecretInput" class="form-input" placeholder="Leave blank to keep current" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.8rem">New Public Key <span style="color:var(--text-muted)">(pk_...)</span></label>
+          <input type="text" id="pskPublicInput" class="form-input" placeholder="Leave blank to keep current" autocomplete="off" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="savePskKeys()"><%- icon('check', 13) %> Save Keys</button>
+        <button class="btn btn-outline btn-sm" onclick="togglePskEdit()">Cancel</button>
+        <span id="pskSaveMsg" style="font-size:.8rem;display:none"></span>
+      </div>
+      <p class="psk-note"><%- icon('info', 12) %> Keys are stored encrypted in the database and override .env values. Blank fields keep the existing key unchanged.</p>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
   <div class="card" style="padding:0">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h4>All Transactions</h4></div>
     <div class="table-wrap"><table>
       <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead>
       <tbody>
+        <% if (!payments.length) { %>
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">No transactions yet.</td></tr>
+        <% } %>
         <% payments.forEach(p => { %>
         <tr>
           <td><strong><%= p.username %></strong><br><span style="font-size:.74rem;color:var(--text-muted)"><%= p.email %></span></td>
@@ -26,3 +96,51 @@
     </table></div>
   </div>
 </div>
+
+<script>
+function togglePskEdit() {
+  const form = document.getElementById('pskEditForm');
+  const btn  = document.getElementById('pskEditBtn');
+  const open = form.classList.toggle('open');
+  btn.textContent = open ? 'Cancel' : '⚙ Edit Keys';
+  if (!open) {
+    document.getElementById('pskSecretInput').value = '';
+    document.getElementById('pskPublicInput').value  = '';
+    document.getElementById('pskSaveMsg').style.display = 'none';
+  }
+}
+
+async function savePskKeys() {
+  const secret = document.getElementById('pskSecretInput').value.trim();
+  const pub    = document.getElementById('pskPublicInput').value.trim();
+  const msg    = document.getElementById('pskSaveMsg');
+
+  if (!secret && !pub) {
+    msg.style.display = 'inline';
+    msg.style.color   = 'var(--yellow)';
+    msg.textContent   = 'Enter at least one key to update.';
+    return;
+  }
+
+  try {
+    const r = await fetch('/admin/payments/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret_key: secret, public_key: pub })
+    });
+    const d = await r.json();
+    if (d.success) {
+      viperToast('Paystack keys updated successfully.', 'success');
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      msg.style.display = 'inline';
+      msg.style.color   = 'var(--red)';
+      msg.textContent   = d.error || 'Save failed.';
+    }
+  } catch (e) {
+    msg.style.display = 'inline';
+    msg.style.color   = 'var(--red)';
+    msg.textContent   = 'Network error.';
+  }
+}
+</script>

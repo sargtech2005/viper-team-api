@@ -1,8 +1,9 @@
-const axios   = require('axios');
-const Plan    = require('../models/Plan');
-const Payment = require('../models/Payment');
-const Credit  = require('../models/Credit');
-const { query } = require('../config/db');
+const axios          = require('axios');
+const Plan           = require('../models/Plan');
+const Payment        = require('../models/Payment');
+const Credit         = require('../models/Credit');
+const { query }      = require('../config/db');
+const { getSetting } = require('../config/settings');
 
 // GET /dashboard/billing
 exports.getBilling = async (req, res, next) => {
@@ -12,10 +13,10 @@ exports.getBilling = async (req, res, next) => {
     const planResult = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
     const currentPlan = planResult.rows[0] || null;
 
-    // Credit wallet data
     const creditBalance = await Credit.getBalance(req.user.id);
     const creditTxns    = await Credit.listTransactions(req.user.id, 10);
     const isSubscriber  = currentPlan && currentPlan.price_ngn > 0;
+    const publicKey     = await getSetting('PAYSTACK_PUBLIC_KEY', process.env.PAYSTACK_PUBLIC_KEY || '');
 
     res.render('dashboard/billing', {
       title:             'Credits & Billing — Viper-Team API',
@@ -23,7 +24,7 @@ exports.getBilling = async (req, res, next) => {
       payments,
       currentPlan,
       user:              req.user,
-      PAYSTACK_PUBLIC_KEY: process.env.PAYSTACK_PUBLIC_KEY || '',
+      PAYSTACK_PUBLIC_KEY: publicKey,
       creditBalance,
       creditTxns,
       creditPacks:       Credit.PACKS,
@@ -54,9 +55,10 @@ exports.verifyPayment = async (req, res, next) => {
   }
 
   try {
+    const secretKey = await getSetting('PAYSTACK_SECRET_KEY', process.env.PAYSTACK_SECRET_KEY || '');
     const { data } = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
-      { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }, timeout: 10000 }
+      { headers: { Authorization: `Bearer ${secretKey}` }, timeout: 10000 }
     );
 
     if (!data.status || data.data.status !== 'success') {
@@ -99,9 +101,10 @@ exports.verifyCredit = async (req, res, next) => {
     const pack = Credit.findPack(pack_id);
     if (!pack) return res.json({ success: false, error: 'Credit pack not found.' });
 
+    const secretKey = await getSetting('PAYSTACK_SECRET_KEY', process.env.PAYSTACK_SECRET_KEY || '');
     const { data } = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
-      { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }, timeout: 10000 }
+      { headers: { Authorization: `Bearer ${secretKey}` }, timeout: 10000 }
     );
 
     if (!data.status || data.data.status !== 'success') {

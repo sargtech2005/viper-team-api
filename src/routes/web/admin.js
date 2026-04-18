@@ -4,6 +4,7 @@ const { requireAuth } = require('../../middleware/auth');
 const { adminOnly }   = require('../../middleware/adminOnly');
 const { query }       = require('../../config/db');
 const Plan            = require('../../models/Plan');
+const { getSetting, setSetting } = require('../../config/settings');
 
 router.use(requireAuth, adminOnly);
 
@@ -67,7 +68,7 @@ router.post('/users/:id/toggle', async (req, res, next) => {
   }
 });
 
-// Payments list
+// Payments list + Paystack config
 router.get('/payments', async (req, res, next) => {
   try {
     const payments = await query(
@@ -75,7 +76,30 @@ router.get('/payments', async (req, res, next) => {
        FROM payments p JOIN users u ON u.id = p.user_id LEFT JOIN plans pl ON pl.id = p.plan_id
        ORDER BY p.created_at DESC LIMIT 50`
     );
-    res.render('admin/payments', { title: 'Payments — Admin', payments: payments.rows });
+    const secretKey = await getSetting('PAYSTACK_SECRET_KEY', process.env.PAYSTACK_SECRET_KEY || '');
+    const publicKey = await getSetting('PAYSTACK_PUBLIC_KEY', process.env.PAYSTACK_PUBLIC_KEY || '');
+    // Mask keys — show only last 6 chars so admin can identify which key is active
+    const mask = v => v ? v.slice(0, 8) + '••••••••••••••••' + v.slice(-6) : '';
+    res.render('admin/payments', {
+      title: 'Payments — Admin',
+      payments: payments.rows,
+      secretKeyMasked: mask(secretKey),
+      publicKeyMasked: mask(publicKey),
+      secretKeySet: !!secretKey,
+      publicKeySet: !!publicKey,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /admin/payments/keys — update Paystack keys
+router.post('/payments/keys', async (req, res, next) => {
+  try {
+    const { secret_key, public_key } = req.body;
+    if (secret_key && secret_key.trim()) await setSetting('PAYSTACK_SECRET_KEY', secret_key.trim());
+    if (public_key && public_key.trim()) await setSetting('PAYSTACK_PUBLIC_KEY', public_key.trim());
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }

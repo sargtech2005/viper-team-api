@@ -94,3 +94,10 @@ CREATE TABLE IF NOT EXISTS credit_transactions (
 
 CREATE INDEX IF NOT EXISTS idx_credit_tx_user ON credit_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_credit_tx_created ON credit_transactions(created_at);
+
+-- ─── Platform Settings ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS settings (
+  key        VARCHAR(100) PRIMARY KEY,
+  value      TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
