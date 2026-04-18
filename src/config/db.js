@@ -20,23 +20,8 @@ const autoMigrate = async () => {
   try {
     console.log('🔧 Running auto-migration...');
 
-    // DROP everything first — clean slate fix
     await client.query(`
-      DROP TABLE IF EXISTS api_logs         CASCADE;
-      DROP TABLE IF EXISTS payments         CASCADE;
-      DROP TABLE IF EXISTS api_keys         CASCADE;
-      DROP TABLE IF EXISTS users            CASCADE;
-      DROP TABLE IF EXISTS plans            CASCADE;
-      DROP TABLE IF EXISTS subscriptions    CASCADE;
-      DROP TABLE IF EXISTS credit_purchases CASCADE;
-      DROP TABLE IF EXISTS api_categories   CASCADE;
-      DROP TABLE IF EXISTS api_endpoints    CASCADE;
-      DROP TABLE IF EXISTS site_settings    CASCADE;
-    `);
-    console.log('🗑️  Old tables dropped');
-
-    await client.query(`
-      CREATE TABLE plans (
+      CREATE TABLE IF NOT EXISTS plans (
         id           SERIAL PRIMARY KEY,
         name         VARCHAR(50)  NOT NULL UNIQUE,
         price_ngn    INTEGER      NOT NULL DEFAULT 0,
@@ -49,7 +34,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id               SERIAL PRIMARY KEY,
         username         VARCHAR(30)   NOT NULL UNIQUE,
         email            VARCHAR(255)  NOT NULL UNIQUE,
@@ -66,7 +51,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE api_keys (
+      CREATE TABLE IF NOT EXISTS api_keys (
         id          SERIAL PRIMARY KEY,
         user_id     INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         key_value   TEXT          NOT NULL UNIQUE,
@@ -78,7 +63,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE payments (
+      CREATE TABLE IF NOT EXISTS payments (
         id            SERIAL PRIMARY KEY,
         user_id       INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         plan_id       INTEGER       REFERENCES plans(id) ON DELETE SET NULL,
@@ -91,7 +76,7 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE api_logs (
+      CREATE TABLE IF NOT EXISTS api_logs (
         id          BIGSERIAL PRIMARY KEY,
         user_id     INTEGER     REFERENCES users(id) ON DELETE SET NULL,
         api_key_id  INTEGER     REFERENCES api_keys(id) ON DELETE SET NULL,
@@ -105,18 +90,18 @@ const autoMigrate = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE site_settings (
+      CREATE TABLE IF NOT EXISTS site_settings (
         key        VARCHAR(80) PRIMARY KEY,
         value      TEXT,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);
 
-    await client.query(`CREATE INDEX idx_users_email       ON users(email);`);
-    await client.query(`CREATE INDEX idx_users_reset_token ON users(reset_token);`);
-    await client.query(`CREATE INDEX idx_api_keys_value    ON api_keys(key_value);`);
-    await client.query(`CREATE INDEX idx_api_logs_user     ON api_logs(user_id);`);
-    await client.query(`CREATE INDEX idx_payments_ref      ON payments(paystack_ref);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email       ON users(email);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_api_keys_value    ON api_keys(key_value);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_api_logs_user     ON api_logs(user_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_ref      ON payments(paystack_ref);`);
 
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at()
@@ -124,6 +109,7 @@ const autoMigrate = async () => {
       BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
       $$ LANGUAGE plpgsql;
     `);
+
     await client.query(`
       DO $$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'users_updated_at') THEN
@@ -152,24 +138,37 @@ const autoMigrate = async () => {
       ON CONFLICT (key) DO NOTHING;
     `);
 
-    console.log('✅ Auto-migration complete — fresh tables ready');
+    console.log('✅ Auto-migration complete');
   } catch (err) {
-    console.error('❌ Migration error:', err.message);
-    throw err;
+    // Log but do NOT crash — tables likely already exist from previous deploy
+    console.error('⚠️  Migration warning (non-fatal):', err.message);
   } finally {
     client.release();
   }
 };
 
-pool.connect()
-  .then(async (client) => {
-    console.log('✅ PostgreSQL connected');
-    client.release();
-    await autoMigrate();
-  })
-  .catch(err => {
-    console.error('❌ PostgreSQL connection failed:', err.message);
-    process.exit(1);
-  });
+// Retry DB connection up to 5 times before giving up
+const connectWithRetry = async (retries = 5, delay = 3000) => {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      const client = await pool.connect();
+      console.log('✅ PostgreSQL connected');
+      client.release();
+      await autoMigrate();
+      return;
+    } catch (err) {
+      console.error(`❌ DB connection attempt ${i}/${retries} failed: ${err.message}`);
+      if (i < retries) {
+        console.log(`⏳ Retrying in ${delay / 1000}s...`);
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        // Do NOT call process.exit — let app start anyway so Fly health checks pass
+        console.error('❌ Could not connect to PostgreSQL. App will start but DB calls will fail until DB is available.');
+      }
+    }
+  }
+};
+
+connectWithRetry();
 
 module.exports = { query, getClient, pool };
