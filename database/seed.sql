@@ -3,18 +3,17 @@
 -- Run AFTER schema.sql
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Default Plans
+-- Plans (upsert so re-runs are safe)
 INSERT INTO plans (name, price_ngn, api_limit, rate_per_min, features) VALUES
-  ('Free',    0,     500,   5,   '["500 API calls/month","5 req/min","Basic endpoints","Community support"]'),
-  ('Starter', 1500,  5000,  20,  '["5,000 API calls/month","20 req/min","All endpoints","Email support"]'),
-  ('Pro',     4000,  25000, 60,  '["25,000 API calls/month","60 req/min","All endpoints","Priority support","Analytics"]'),
-  ('Ultra',   9000,  100000,200, '["100,000 API calls/month","200 req/min","All endpoints","24/7 support","Analytics","Custom limits"]')
-ON CONFLICT (name) DO NOTHING;
+  ('Free',    0,      500,    10,  '["500 API calls/month","10 req/min","All endpoints","Community support","No watermark"]'),
+  ('Hobby',   2000,   4000,   30,  '["4,000 API calls/month","30 req/min","All endpoints","Email support"]'),
+  ('Starter', 7500,   25000,  120, '["25,000 API calls/month","120 req/min","All endpoints","Priority email support"]'),
+  ('Pro',     20000,  100000, 400, '["100,000 API calls/month","400 req/min","All endpoints","24/7 priority support","Analytics"]')
+ON CONFLICT (name) DO UPDATE SET
+  price_ngn    = EXCLUDED.price_ngn,
+  api_limit    = EXCLUDED.api_limit,
+  rate_per_min = EXCLUDED.rate_per_min,
+  features     = EXCLUDED.features;
 
 -- NOTE: The admin user is auto-promoted on first login if their email matches
 -- ADMIN_EMAIL in your .env file. No manual insert needed.
--- But you can manually insert one here if preferred:
---
--- INSERT INTO users (username, email, password_hash, role, plan_id)
--- VALUES ('admin', 'confidencerich97@gmail.com', '<bcrypt_hash>', 'admin', 4)
--- ON CONFLICT (email) DO NOTHING;

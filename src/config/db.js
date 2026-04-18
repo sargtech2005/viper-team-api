@@ -160,14 +160,23 @@ const autoMigrate = async () => {
       END $$;
     `);
 
+    // Upsert correct plans — DO UPDATE ensures existing rows are fixed on /startup
     await client.query(`
       INSERT INTO plans (name, price_ngn, api_limit, rate_per_min, features) VALUES
-        ('Free',     0,     5,   2,  '["5 API calls/month","2 req/min","All endpoints","Community support"]'),
-        ('Starter',  5000,  150, 10, '["150 API calls/month","10 req/min","All endpoints","Email support"]'),
-        ('Basic',    9000,  300, 20, '["300 API calls/month","20 req/min","All endpoints","Email support"]'),
-        ('Pro',      15000, 500, 40, '["500 API calls/month","40 req/min","All endpoints","Priority support","Analytics"]'),
-        ('Business', 25000, 800, 80, '["800 API calls/month","80 req/min","All endpoints","24/7 support","Analytics","Custom limits"]')
-      ON CONFLICT (name) DO NOTHING;
+        ('Free',    0,      500,    10,  '["500 API calls/month","10 req/min","All endpoints","Community support","No watermark"]'),
+        ('Hobby',   2000,   4000,   30,  '["4,000 API calls/month","30 req/min","All endpoints","Email support"]'),
+        ('Starter', 7500,   25000,  120, '["25,000 API calls/month","120 req/min","All endpoints","Priority email support"]'),
+        ('Pro',     20000,  100000, 400, '["100,000 API calls/month","400 req/min","All endpoints","24/7 priority support","Analytics"]')
+      ON CONFLICT (name) DO UPDATE SET
+        price_ngn    = EXCLUDED.price_ngn,
+        api_limit    = EXCLUDED.api_limit,
+        rate_per_min = EXCLUDED.rate_per_min,
+        features     = EXCLUDED.features;
+    `);
+
+    // Remove old plan names no longer in use
+    await client.query(`
+      DELETE FROM plans WHERE name IN ('Basic', 'Business', 'Ultra') AND id NOT IN (SELECT DISTINCT plan_id FROM users WHERE plan_id IS NOT NULL);
     `);
 
     await client.query(`
