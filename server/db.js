@@ -37,6 +37,24 @@ async function initDB() {
       );
     `);
 
+    // ── Patch existing users table if columns are missing (safe to run every boot)
+    const userPatches = [
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan             VARCHAR(20)  NOT NULL DEFAULT 'free'`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key          VARCHAR(80)  UNIQUE`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS credits_remaining INT         NOT NULL DEFAULT 5`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS credits_used      INT         NOT NULL DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS credits_reset_at  TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days')`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin          BOOLEAN     NOT NULL DEFAULT false`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active         BOOLEAN     NOT NULL DEFAULT true`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified    BOOLEAN     NOT NULL DEFAULT false`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_token      VARCHAR(120)`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token       VARCHAR(120)`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires     TIMESTAMPTZ`,
+    ];
+    for (const patch of userPatches) {
+      await client.query(patch).catch(() => {}); // ignore if column already exists
+    }
+
     // Subscriptions (plan purchases)
     await client.query(`
       CREATE TABLE IF NOT EXISTS subscriptions (
