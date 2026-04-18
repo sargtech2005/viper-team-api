@@ -35,10 +35,8 @@
 
 /* ── Category section ───────────────────────────────────────────────────── */
 .cat-section{margin-bottom:44px}
-.cat-hd{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
-.cat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--purple-bg);border:1.5px solid rgba(139,92,246,0.25);flex-shrink:0}
-.cat-hd h3{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:2px}
-.cat-hd p{font-size:.82rem;color:var(--text-muted)}
+.cat-hd{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
+.cat-hd h3{font-size:1.1rem;font-weight:700;color:var(--text);margin:0}
 
 /* ── Endpoint accordion ─────────────────────────────────────────────────── */
 .ep-card{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:border-color var(--transition),box-shadow var(--transition)}
@@ -174,11 +172,7 @@
     <!-- Auth section -->
     <div id="auth-section" class="cat-section">
       <div class="cat-hd">
-        <div class="cat-icon">🔐</div>
-        <div>
-          <h3>Authentication</h3>
-          <p>How to pass your API key with every request</p>
-        </div>
+        <h3>🔐 Authentication</h3>
       </div>
       <p style="font-size:.87rem;color:var(--text-subtle);margin-bottom:16px;line-height:1.7">
         Every API call must include your key either as an <code style="font-family:var(--mono);background:var(--bg-3);padding:1px 6px;border-radius:4px">X-API-Key</code> header
@@ -226,11 +220,7 @@ curl "https://viper-api.name.ng/api/v1/utility/uuid<span class="tok-string">?key
     %>
     <div id="<%= catId %>" class="cat-section">
       <div class="cat-hd">
-        <div class="cat-icon"><%= catEmoji %></div>
-        <div>
-          <h3><%= cat.category %></h3>
-          <p><%= catDesc %></p>
-        </div>
+        <h3><%= catEmoji %> <%= cat.category %></h3>
       </div>
 
       <% cat.endpoints.forEach((ep, ei) => {
@@ -353,8 +343,7 @@ curl "https://viper-api.name.ng/api/v1/utility/uuid<span class="tok-string">?key
     <!-- Errors section -->
     <div id="errors-section" class="cat-section">
       <div class="cat-hd">
-        <div class="cat-icon">⚠️</div>
-        <div><h3>Error Codes</h3><p>What each HTTP status means</p></div>
+        <h3>⚠️ Error Codes</h3>
       </div>
       <div class="p-table-wrap">
       <table class="p-table">
