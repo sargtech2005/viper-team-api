@@ -27,13 +27,17 @@ router.delete('/api-keys/:id',    apiKeyCtrl.deleteKey);
 router.get('/billing',            paymentCtrl.getBilling);
 router.post('/billing/verify',    paymentCtrl.verifyPayment);
 
-router.get('/logs', async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const limit = 30, offset = (page - 1) * limit;
-  const logs = await query(`SELECT l.*, k.label as key_label FROM api_logs l LEFT JOIN api_keys k ON k.id = l.api_key_id WHERE l.user_id = $1 ORDER BY l.created_at DESC LIMIT $2 OFFSET $3`, [req.user.id, limit, offset]);
-  const countResult = await query(`SELECT COUNT(*) FROM api_logs WHERE user_id = $1`, [req.user.id]);
-  const total = parseInt(countResult.rows[0].count);
-  res.render('dashboard/logs', { title: 'Logs — Viper-Team API', logs: logs.rows, page, total, limit, totalPages: Math.ceil(total / limit) });
+router.get('/logs', async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = 30, offset = (page - 1) * limit;
+    const logs = await query(`SELECT l.*, k.label as key_label FROM api_logs l LEFT JOIN api_keys k ON k.id = l.api_key_id WHERE l.user_id = $1 ORDER BY l.created_at DESC LIMIT $2 OFFSET $3`, [req.user.id, limit, offset]);
+    const countResult = await query(`SELECT COUNT(*) FROM api_logs WHERE user_id = $1`, [req.user.id]);
+    const total = parseInt(countResult.rows[0].count);
+    res.render('dashboard/logs', { title: 'Logs — Viper-Team API', logs: logs.rows, page, total, limit, totalPages: Math.ceil(total / limit) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

@@ -4,31 +4,41 @@ const Payment = require('../models/Payment');
 const { query } = require('../config/db');
 
 // GET /dashboard/billing
-exports.getBilling = async (req, res) => {
-  const plans    = await Plan.all();
-  const payments = await Payment.listByUser(req.user.id);
-  const planResult = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
-  const currentPlan = planResult.rows[0] || null;
+exports.getBilling = async (req, res, next) => {
+  try {
+    const plans    = await Plan.all();
+    const payments = await Payment.listByUser(req.user.id);
+    const planResult = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
+    const currentPlan = planResult.rows[0] || null;
 
-  res.render('dashboard/billing', {
-    title: 'Billing — Viper-Team API',
-    plans,
-    payments,
-    currentPlan,
-    user: req.user,
-    PAYSTACK_PUBLIC_KEY: process.env.PAYSTACK_PUBLIC_KEY || '',
-  });
+    res.render('dashboard/billing', {
+      title: 'Billing — Viper-Team API',
+      plans,
+      payments,
+      currentPlan,
+      user: req.user,
+      PAYSTACK_PUBLIC_KEY: process.env.PAYSTACK_PUBLIC_KEY || '',
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // POST /dashboard/billing/verify  (called after Paystack popup closes)
-exports.verifyPayment = async (req, res) => {
+exports.verifyPayment = async (req, res, next) => {
   const { reference, plan_id } = req.body;
   if (!reference || !plan_id) {
     return res.json({ success: false, error: 'Missing reference or plan.' });
   }
 
   // Check not already processed
-  const existing = await Payment.verify(reference);
+  let existing;
+  try {
+    existing = await Payment.verify(reference);
+  } catch (err) {
+    return next(err);
+  }
+
   if (existing && existing.status === 'success') {
     return res.json({ success: true, message: 'Already applied.' });
   }
