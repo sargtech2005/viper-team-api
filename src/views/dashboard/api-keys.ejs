@@ -1,4 +1,3 @@
-<%- contentFor('style') %>
 <style>
 .key-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;transition:border-color var(--transition)}
 .key-card:hover{border-color:#c4b5fd}
@@ -149,7 +148,6 @@ curl -X GET \
   </div>
 </div>
 
-<%- contentFor('script') %>
 <script>
 function generateKey() {
   const label = document.getElementById('keyLabel').value.trim();
