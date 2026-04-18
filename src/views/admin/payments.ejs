@@ -122,25 +122,39 @@ async function savePskKeys() {
     return;
   }
 
+  msg.style.display = 'inline';
+  msg.style.color   = 'var(--text-muted)';
+  msg.textContent   = 'Saving…';
+
   try {
-    const r = await fetch('/admin/payments/keys', {
-      method: 'POST',
+    const r    = await fetch('/admin/payments/keys', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ secret_key: secret, public_key: pub })
+      body:    JSON.stringify({ secret_key: secret, public_key: pub })
     });
-    const d = await r.json();
-    if (d.success) {
+
+    // Read body as text first — prevents JSON.parse crash on HTML error pages
+    const raw = await r.text();
+    let d;
+    try { d = JSON.parse(raw); } catch (_) {
+      // Server returned non-JSON (HTML error page) — show status + first 120 chars
+      msg.style.color = 'var(--red)';
+      msg.textContent = `Server error ${r.status}: ${raw.replace(/<[^>]+>/g,'').trim().slice(0,120)}`;
+      return;
+    }
+
+    if (r.ok && d.success) {
       viperToast('Paystack keys updated successfully.', 'success');
       setTimeout(() => location.reload(), 1200);
     } else {
-      msg.style.display = 'inline';
-      msg.style.color   = 'var(--red)';
-      msg.textContent   = d.error || 'Save failed.';
+      msg.style.color = 'var(--red)';
+      msg.textContent = d.error || `Error ${r.status}`;
     }
   } catch (e) {
-    msg.style.display = 'inline';
-    msg.style.color   = 'var(--red)';
-    msg.textContent   = 'Network error.';
+    // Only a genuine network/DNS failure lands here
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Could not reach server — check your connection.';
+    console.error('savePskKeys fetch error:', e);
   }
 }
 </script>
