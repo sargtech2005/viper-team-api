@@ -8,15 +8,23 @@ const { getSetting } = require('../config/settings');
 // GET /dashboard/billing
 exports.getBilling = async (req, res, next) => {
   try {
-    const plans    = await Plan.all();
-    const payments = await Payment.listByUser(req.user.id);
+    const [plans, payments, creditPacks] = await Promise.all([
+      Plan.all(),
+      Payment.listByUser(req.user.id),
+      Credit.activePacks(),
+    ]);
+
     const planResult = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
     const currentPlan = planResult.rows[0] || null;
 
-    const creditBalance = await Credit.getBalance(req.user.id);
-    const creditTxns    = await Credit.listTransactions(req.user.id, 10);
-    const isSubscriber  = currentPlan && currentPlan.price_ngn > 0;
-    const publicKey     = await getSetting('PAYSTACK_PUBLIC_KEY', process.env.PAYSTACK_PUBLIC_KEY || '');
+    const [creditBalance, creditTxns, subscriberBonus] = await Promise.all([
+      Credit.getBalance(req.user.id),
+      Credit.listTransactions(req.user.id, 10),
+      Credit.getSubscriberBonus(),
+    ]);
+
+    const isSubscriber = currentPlan && currentPlan.price_ngn > 0;
+    const publicKey    = await getSetting('PAYSTACK_PUBLIC_KEY', process.env.PAYSTACK_PUBLIC_KEY || '');
 
     res.render('dashboard/billing', {
       title:             'Credits & Billing — Viper-Team API',
@@ -27,9 +35,9 @@ exports.getBilling = async (req, res, next) => {
       PAYSTACK_PUBLIC_KEY: publicKey,
       creditBalance,
       creditTxns,
-      creditPacks:       Credit.PACKS,
+      creditPacks,
       isSubscriber,
-      subscriberBonus:   Credit.SUBSCRIBER_BONUS,
+      subscriberBonus,
     });
   } catch (err) {
     next(err);
@@ -98,7 +106,7 @@ exports.verifyCredit = async (req, res, next) => {
       return res.json({ success: true, message: 'Already applied.' });
     }
 
-    const pack = Credit.findPack(pack_id);
+    const pack = await Credit.findPack(pack_id);
     if (!pack) return res.json({ success: false, error: 'Credit pack not found.' });
 
     const secretKey = await getSetting('PAYSTACK_SECRET_KEY', process.env.PAYSTACK_SECRET_KEY || '');
@@ -119,9 +127,8 @@ exports.verifyCredit = async (req, res, next) => {
     const planResult  = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
     const currentPlan = planResult.rows[0];
     const isSubscriber = currentPlan && currentPlan.price_ngn > 0;
-    const { grand, subscriberBonus } = Credit.calcCredits(pack, isSubscriber);
+    const { grand, subscriberBonus } = await Credit.calcCredits(pack, isSubscriber);
 
-    // Record in payments table first (so admin sees it), then credit the balance
     const existingPayment = await Payment.verify(reference);
     if (!existingPayment) {
       await Payment.create({

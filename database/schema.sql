@@ -78,26 +78,45 @@ CREATE TRIGGER users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- ─── Credit Wallet ───────────────────────────────────────────────────────────
-
--- Add credit_balance column to users (idempotent)
+-- ─── Credit Wallet ────────────────────────────────────────────────────────────
 ALTER TABLE users ADD COLUMN IF NOT EXISTS credit_balance INTEGER NOT NULL DEFAULT 0;
-
--- Add type column to existing payments tables (idempotent)
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS type VARCHAR(10) NOT NULL DEFAULT 'plan';
 
 CREATE TABLE IF NOT EXISTS credit_transactions (
   id            SERIAL PRIMARY KEY,
   user_id       INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   type          VARCHAR(20)   NOT NULL CHECK (type IN ('topup','usage','bonus','refund')),
-  amount        INTEGER       NOT NULL,                    -- positive = credit added, negative = deducted
+  amount        INTEGER       NOT NULL,
   description   TEXT,
   paystack_ref  VARCHAR(100),
   created_at    TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_credit_tx_user ON credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_tx_user    ON credit_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_credit_tx_created ON credit_transactions(created_at);
+
+-- ─── Credit Packs (admin-editable) ───────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS credit_packs (
+  id          SERIAL PRIMARY KEY,
+  pack_id     VARCHAR(30)  NOT NULL UNIQUE,
+  label       VARCHAR(50)  NOT NULL,
+  price_ngn   INTEGER      NOT NULL DEFAULT 500,
+  base        INTEGER      NOT NULL DEFAULT 600,
+  bonus       INTEGER      NOT NULL DEFAULT 0,
+  bonus_pct   INTEGER      NOT NULL DEFAULT 0,
+  is_active   BOOLEAN      NOT NULL DEFAULT true,
+  sort_order  INTEGER      NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_credit_packs_active ON credit_packs(is_active);
+
+INSERT INTO credit_packs (pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order) VALUES
+  ('topup',  'Top-up',  500,   600,   0,     0,  1),
+  ('bundle', 'Bundle',  2000,  3000,  450,   15, 2),
+  ('stack',  'Stack',   7500,  15000, 3750,  25, 3),
+  ('bulk',   'Bulk',    20000, 50000, 17500, 35, 4)
+ON CONFLICT (pack_id) DO NOTHING;
 
 -- ─── Platform Settings ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS settings (
@@ -106,7 +125,6 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Default values — safe to re-run; existing admin-set values are never overwritten
 INSERT INTO settings (key, value) VALUES
   ('APP_NAME',             'Viper-Team API'),
   ('MAINTENANCE_MODE',     'off'),
@@ -116,5 +134,6 @@ INSERT INTO settings (key, value) VALUES
   ('SMTP_PASS',            ''),
   ('SMTP_FROM',            ''),
   ('RECAPTCHA_SITE_KEY',   ''),
-  ('RECAPTCHA_SECRET_KEY', '')
+  ('RECAPTCHA_SECRET_KEY', ''),
+  ('SUBSCRIBER_BONUS_PCT', '20')
 ON CONFLICT (key) DO NOTHING;

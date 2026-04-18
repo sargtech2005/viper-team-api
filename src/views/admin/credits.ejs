@@ -1,0 +1,261 @@
+<style>
+.admin-main{padding:28px 24px}
+@media(max-width:600px){.admin-main{padding:16px}}
+
+/* ── Shared modal ── */
+.pm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.pm-overlay.open{opacity:1;pointer-events:all}
+.pm-modal{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);width:100%;max-width:480px;max-height:92vh;overflow-y:auto;transform:translateY(18px) scale(.97);transition:transform .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.pm-overlay.open .pm-modal{transform:translateY(0) scale(1)}
+.pm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.pm-header h3{font-size:.95rem;font-weight:700;margin:0}
+.pm-close{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;transition:color .15s;font-size:1rem;line-height:1}
+.pm-close:hover{color:var(--text)}
+.pm-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.pm-field{display:flex;flex-direction:column;gap:5px}
+.pm-field label{font-size:.78rem;font-weight:600;color:var(--text-muted)}
+.pm-field input,.pm-field select{font-size:.84rem;padding:8px 11px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);transition:border-color .15s;width:100%;box-sizing:border-box}
+.pm-field input:focus,.pm-field select:focus{border-color:var(--purple);outline:none}
+.pm-field .pm-hint{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.pm-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pm-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border)}
+
+/* ── Pack cards ── */
+.packs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:28px}
+.pack-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;transition:border-color .15s}
+.pack-card:hover{border-color:var(--purple)}
+.pack-card.inactive{opacity:.55}
+.pack-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.pack-label{font-size:1rem;font-weight:800}
+.pack-price{font-size:1.35rem;font-weight:900;color:var(--purple)}
+.pack-stats{display:flex;flex-direction:column;gap:4px;font-size:.79rem;color:var(--text-subtle);margin-bottom:14px}
+.pack-stats span{display:flex;justify-content:space-between}
+.pack-stats strong{color:var(--text)}
+.pack-actions{display:flex;gap:7px}
+.btn-icon{background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;color:var(--text-muted);font-size:.78rem;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-icon:hover{border-color:var(--purple);color:var(--purple)}
+.btn-icon.danger:hover{border-color:#ef4444;color:#ef4444}
+
+/* ── Subscriber bonus card ── */
+.bonus-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+.bonus-card .bonus-info{flex:1;min-width:180px}
+.bonus-card .bonus-info h4{margin:0 0 4px;font-size:.95rem}
+.bonus-card .bonus-info p{margin:0;font-size:.8rem;color:var(--text-muted)}
+.bonus-row{display:flex;align-items:center;gap:8px}
+.bonus-row input{width:80px;font-size:.9rem;padding:7px 10px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);text-align:center}
+.bonus-row input:focus{border-color:var(--purple);outline:none}
+</style>
+
+<div class="admin-main">
+  <%- include('../partials/admin-nav', { adminActive: 'credits' }) %>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+    <div><h2>Credit Packs</h2><p><strong><%= packs.length %></strong> pack<%= packs.length!==1?'s':'' %> — users buy these to top up their credit wallet.</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openCreate()">+ Add Pack</button>
+  </div>
+
+  <!-- Subscriber Bonus -->
+  <div class="bonus-card">
+    <div class="bonus-info">
+      <h4>⭐ Subscriber Bonus</h4>
+      <p>Active plan subscribers receive extra % credits on every pack purchase. Currently <strong id="bonusDisplay"><%= Math.round(subscriberBonus*100) %>%</strong>.</p>
+    </div>
+    <div class="bonus-row">
+      <input type="number" id="bonusPctInput" min="0" max="100" value="<%= Math.round(subscriberBonus*100) %>" placeholder="20">
+      <span style="font-size:.85rem;color:var(--text-muted)">%</span>
+      <button class="btn btn-sm btn-primary" onclick="saveBonus()">Save</button>
+    </div>
+  </div>
+
+  <!-- Packs grid -->
+  <div class="packs-grid" id="packsGrid">
+    <% packs.forEach(p => { %>
+    <div class="pack-card <%= p.is_active?'':'inactive' %>" id="packcard-<%= p.id %>">
+      <div class="pack-card-top">
+        <div>
+          <div class="pack-label"><%= p.label %></div>
+          <div style="font-size:.73rem;color:var(--text-muted);margin-top:2px">ID: <code><%= p.pack_id %></code></div>
+        </div>
+        <span class="badge <%= p.is_active?'badge-green':'badge-red' %>" id="packstatus-<%= p.id %>"><%= p.is_active?'Active':'Hidden' %></span>
+      </div>
+      <div class="pack-price" id="packprice-<%= p.id %>">₦<%= p.price_ngn.toLocaleString() %></div>
+      <div class="pack-stats">
+        <span>Base credits <strong id="packbase-<%= p.id %>"><%= p.base.toLocaleString() %></strong></span>
+        <span>Bonus credits <strong id="packbonus-<%= p.id %>"><%= p.bonus.toLocaleString() %></strong></span>
+        <span>Bonus % <strong id="packbonuspct-<%= p.id %>"><%= p.bonus_pct %>%</strong></span>
+        <span>Total credits <strong id="packtotal-<%= p.id %>"><%= (p.base+p.bonus).toLocaleString() %></strong></span>
+        <span>Per credit <strong>₦<%= (p.price_ngn/(p.base+p.bonus||1)).toFixed(2) %></strong></span>
+      </div>
+      <div class="pack-actions">
+        <button class="btn-icon" onclick='editPack(<%- JSON.stringify(p) %>)'>✏️ Edit</button>
+        <button class="btn-icon danger" onclick="deletePack(<%= p.id %>, '<%= p.label.replace(/'/g,\"\\'\")||\"\" %>')">🗑 Delete</button>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- ══ Pack Modal ═════════════════════════════════════════════════════════════ -->
+<div class="pm-overlay" id="pmOverlay" onclick="closeIfBg(event)">
+  <div class="pm-modal">
+    <div class="pm-header">
+      <h3 id="pmTitle">Add Credit Pack</h3>
+      <button class="pm-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="pm-body">
+      <input type="hidden" id="pmDbId">
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>Pack ID (slug) *</label>
+          <input type="text" id="pmPackId" placeholder="e.g. mega" maxlength="30">
+          <div class="pm-hint">Lowercase letters/numbers only. Cannot be changed after creation.</div>
+        </div>
+        <div class="pm-field">
+          <label>Display Label *</label>
+          <input type="text" id="pmLabel" placeholder="e.g. Mega Pack">
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>Price (₦) *</label>
+          <input type="number" id="pmPrice" min="0" placeholder="5000">
+        </div>
+        <div class="pm-field">
+          <label>Status</label>
+          <select id="pmActive">
+            <option value="true">Active</option>
+            <option value="false">Hidden</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>Base Credits *</label>
+          <input type="number" id="pmBase" min="0" placeholder="1000">
+        </div>
+        <div class="pm-field">
+          <label>Fixed Bonus Credits</label>
+          <input type="number" id="pmBonus" min="0" placeholder="0">
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>Bonus % (display only)</label>
+          <input type="number" id="pmBonusPct" min="0" max="100" placeholder="0">
+          <div class="pm-hint">Shown as a badge on the pricing page (e.g. "15% Bonus").</div>
+        </div>
+        <div class="pm-field">
+          <label>Sort Order</label>
+          <input type="number" id="pmSort" min="0" placeholder="1">
+          <div class="pm-hint">Lower number = appears first.</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:.8rem;color:var(--text-muted)">
+        💡 <strong>Total credits</strong> = Base + Bonus. Subscribers get an additional <strong id="subBonusPct"><%= Math.round(subscriberBonus*100) %>%</strong> on top of the total (configurable above).
+      </div>
+    </div>
+    <div class="pm-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="savePack()">Save Pack</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _editing = false;
+
+function openCreate() {
+  _editing = false;
+  document.getElementById('pmTitle').textContent = 'Add Credit Pack';
+  ['pmDbId','pmPackId','pmLabel','pmPrice','pmBase','pmBonus','pmBonusPct','pmSort'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('pmActive').value = 'true';
+  document.getElementById('pmPackId').disabled = false;
+  document.getElementById('pmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function editPack(p) {
+  _editing = true;
+  document.getElementById('pmTitle').textContent = 'Edit Pack: ' + p.label;
+  document.getElementById('pmDbId').value     = p.id;
+  document.getElementById('pmPackId').value   = p.pack_id;
+  document.getElementById('pmPackId').disabled = true; // can't change slug after creation
+  document.getElementById('pmLabel').value    = p.label;
+  document.getElementById('pmPrice').value    = p.price_ngn;
+  document.getElementById('pmBase').value     = p.base;
+  document.getElementById('pmBonus').value    = p.bonus;
+  document.getElementById('pmBonusPct').value = p.bonus_pct;
+  document.getElementById('pmSort').value     = p.sort_order;
+  document.getElementById('pmActive').value   = p.is_active ? 'true' : 'false';
+  document.getElementById('pmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('pmOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeIfBg(e) { if (e.target === document.getElementById('pmOverlay')) closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+async function savePack() {
+  const dbId     = document.getElementById('pmDbId').value;
+  const pack_id  = document.getElementById('pmPackId').value.trim();
+  const label    = document.getElementById('pmLabel').value.trim();
+  const price_ngn= document.getElementById('pmPrice').value;
+  const base     = document.getElementById('pmBase').value;
+  const bonus    = document.getElementById('pmBonus').value;
+  const bonus_pct= document.getElementById('pmBonusPct').value;
+  const sort_order= document.getElementById('pmSort').value;
+  const is_active= document.getElementById('pmActive').value;
+
+  if (!label) { viperToast('Label is required.', 'warning'); return; }
+  if (!_editing && !pack_id) { viperToast('Pack ID is required.', 'warning'); return; }
+
+  const url = _editing ? `/admin/credits/${dbId}/edit` : '/admin/credits/create';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order, is_active }),
+  });
+  const d = await r.json();
+  if (!d.success) { viperToast(d.error || 'Save failed.', 'error'); return; }
+  viperToast(_editing ? 'Pack updated.' : 'Pack created.', 'success');
+  closeModal();
+  setTimeout(() => location.reload(), 600);
+}
+
+async function deletePack(id, label) {
+  const ok = await viperConfirm(`Delete credit pack "${label}"? This will not affect existing user balances.`, 'Delete Pack');
+  if (!ok) return;
+  const r = await fetch(`/admin/credits/${id}/delete`, { method: 'POST' });
+  const d = await r.json();
+  if (d.success) {
+    viperToast('Pack deleted.', 'success');
+    const card = document.getElementById('packcard-' + id);
+    if (card) card.remove();
+  } else { viperToast(d.error || 'Failed.', 'error'); }
+}
+
+async function saveBonus() {
+  const pct = document.getElementById('bonusPctInput').value;
+  const r = await fetch('/admin/credits/subscriber-bonus', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bonus_pct: pct }),
+  });
+  const d = await r.json();
+  if (d.success) {
+    document.getElementById('bonusDisplay').textContent = d.pct + '%';
+    document.getElementById('subBonusPct').textContent  = d.pct + '%';
+    viperToast('Subscriber bonus updated to ' + d.pct + '%.', 'success');
+  } else { viperToast(d.error || 'Failed.', 'error'); }
+}
+</script>

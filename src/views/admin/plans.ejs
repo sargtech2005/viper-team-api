@@ -1,29 +1,217 @@
 <style>
 .admin-main{padding:28px 24px}
 @media(max-width:600px){.admin-main{padding:16px}}
+
+/* ── Toolbar ── */
+.plans-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+
+/* ── Feature pills ── */
+.feat-pills{display:flex;flex-wrap:wrap;gap:4px}
+.feat-pill{background:var(--bg-3);border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:.7rem;color:var(--text-subtle);white-space:nowrap}
+
+/* ── Shared modal styles ── */
+.pm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.pm-overlay.open{opacity:1;pointer-events:all}
+.pm-modal{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;transform:translateY(18px) scale(.97);transition:transform .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.pm-overlay.open .pm-modal{transform:translateY(0) scale(1)}
+.pm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.pm-header h3{font-size:.95rem;font-weight:700;margin:0}
+.pm-close{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;transition:color .15s;font-size:1rem;line-height:1}
+.pm-close:hover{color:var(--text)}
+.pm-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.pm-field{display:flex;flex-direction:column;gap:5px}
+.pm-field label{font-size:.78rem;font-weight:600;color:var(--text-muted)}
+.pm-field input,.pm-field select,.pm-field textarea{font-size:.84rem;padding:8px 11px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);transition:border-color .15s;width:100%;box-sizing:border-box}
+.pm-field input:focus,.pm-field select:focus,.pm-field textarea:focus{border-color:var(--purple);outline:none}
+.pm-field textarea{resize:vertical;min-height:90px;font-family:inherit}
+.pm-field .pm-hint{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.pm-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pm-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border)}
+.btn-icon{background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:4px 9px;cursor:pointer;color:var(--text-muted);font-size:.8rem;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-icon:hover{border-color:var(--purple);color:var(--purple)}
+.btn-icon.danger:hover{border-color:#ef4444;color:#ef4444}
 </style>
 
 <div class="admin-main">
   <%- include('../partials/admin-nav', { adminActive: 'plans' }) %>
 
-  <div class="page-header"><h2>Plans</h2><p>Plan configuration. Edit via SQL in the Fly.io Postgres console.</p></div>
+  <div class="plans-toolbar">
+    <div><h2>Plans</h2><p><strong><%= plans.length %></strong> plan<%= plans.length!==1?'s':'' %> configured.</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openCreate()">+ Add Plan</button>
+  </div>
 
   <div class="card" style="padding:0">
     <div class="table-wrap"><table>
-      <thead><tr><th>Name</th><th>Price (&#8358;)</th><th>API Limit</th><th>Rate /min</th><th>Status</th></tr></thead>
-      <tbody>
+      <thead>
+        <tr><th>Name</th><th>Price (₦)</th><th>API Limit</th><th>Rate/min</th><th>Features</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="plansBody">
         <% plans.forEach(p => { %>
-        <tr>
-          <td><strong><%= p.name %></strong></td>
-          <td>&#8358;<%= p.price_ngn.toLocaleString() %></td>
-          <td><%= p.api_limit.toLocaleString() %></td>
-          <td><%= p.rate_per_min %></td>
-          <td><span class="badge <%= p.is_active?'badge-green':'badge-red' %>"><%= p.is_active?'Active':'Hidden' %></span></td>
+        <%
+          const feats = typeof p.features === 'string' ? JSON.parse(p.features||'[]') : (p.features||[]);
+        %>
+        <tr id="prow-<%= p.id %>">
+          <td><strong id="pname-<%= p.id %>"><%= p.name %></strong></td>
+          <td id="pprice-<%= p.id %>">₦<%= p.price_ngn.toLocaleString() %></td>
+          <td id="plimit-<%= p.id %>"><%= p.api_limit.toLocaleString() %></td>
+          <td id="prate-<%= p.id %>"><%= p.rate_per_min %></td>
+          <td>
+            <div class="feat-pills" id="pfeats-<%= p.id %>">
+              <% feats.slice(0,3).forEach(f => { %><span class="feat-pill"><%= f %></span><% }) %>
+              <% if(feats.length>3){%><span class="feat-pill">+<%= feats.length-3 %> more</span><%}%>
+            </div>
+          </td>
+          <td><span class="badge <%= p.is_active?'badge-green':'badge-red' %>" id="pstatus-<%= p.id %>"><%= p.is_active?'Active':'Hidden' %></span></td>
+          <td style="white-space:nowrap">
+            <button class="btn-icon" onclick='editPlan(<%= JSON.stringify(p) %>)' title="Edit">✏️ Edit</button>
+            <button class="btn-icon" onclick="togglePlan(<%= p.id %>)" title="Toggle status">⏸</button>
+            <button class="btn-icon danger" onclick="deletePlan(<%= p.id %>, '<%= p.name.replace(/'/g,\"\\'\")||\"\" %>')" title="Delete">🗑</button>
+          </td>
         </tr>
         <% }) %>
       </tbody>
     </table></div>
   </div>
-
-  <div class="alert alert-info mt-3"><%- icon('info',15) %> To edit plans: <code>fly postgres connect -a viper-db</code> then run SQL UPDATE queries.</div>
 </div>
+
+<!-- ══ Plan Modal ══════════════════════════════════════════════════════════════ -->
+<div class="pm-overlay" id="pmOverlay" onclick="closeIfBgPlan(event)">
+  <div class="pm-modal">
+    <div class="pm-header">
+      <h3 id="pmTitle">Add Plan</h3>
+      <button class="pm-close" onclick="closePlanModal()">✕</button>
+    </div>
+    <div class="pm-body">
+      <input type="hidden" id="pmId">
+
+      <div class="pm-field">
+        <label>Plan Name *</label>
+        <input type="text" id="pmName" placeholder="e.g. Pro, Enterprise">
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>Price (₦/month)</label>
+          <input type="number" id="pmPrice" min="0" placeholder="0 = Free">
+        </div>
+        <div class="pm-field">
+          <label>Status</label>
+          <select id="pmActive">
+            <option value="true">Active (visible)</option>
+            <option value="false">Hidden</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-field">
+          <label>API Call Limit / month</label>
+          <input type="number" id="pmLimit" min="1" placeholder="500">
+        </div>
+        <div class="pm-field">
+          <label>Rate Limit (req/min)</label>
+          <input type="number" id="pmRate" min="1" placeholder="10">
+        </div>
+      </div>
+
+      <div class="pm-field">
+        <label>Features (one per line)</label>
+        <textarea id="pmFeatures" placeholder="500 API calls/month&#10;10 req/min&#10;Email support"></textarea>
+        <div class="pm-hint">Each line becomes one feature bullet shown on the pricing page.</div>
+      </div>
+    </div>
+    <div class="pm-footer">
+      <button class="btn btn-outline btn-sm" onclick="closePlanModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="savePlan()">Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _pmEditing = false;
+
+function openCreate() {
+  _pmEditing = false;
+  document.getElementById('pmTitle').textContent = 'Add New Plan';
+  document.getElementById('pmId').value    = '';
+  document.getElementById('pmName').value  = '';
+  document.getElementById('pmPrice').value = '';
+  document.getElementById('pmLimit').value = '';
+  document.getElementById('pmRate').value  = '';
+  document.getElementById('pmFeatures').value = '';
+  document.getElementById('pmActive').value   = 'true';
+  document.getElementById('pmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function editPlan(p) {
+  _pmEditing = true;
+  const feats = typeof p.features === 'string' ? JSON.parse(p.features || '[]') : (p.features || []);
+  document.getElementById('pmTitle').textContent  = 'Edit Plan: ' + p.name;
+  document.getElementById('pmId').value           = p.id;
+  document.getElementById('pmName').value         = p.name;
+  document.getElementById('pmPrice').value        = p.price_ngn;
+  document.getElementById('pmLimit').value        = p.api_limit;
+  document.getElementById('pmRate').value         = p.rate_per_min;
+  document.getElementById('pmFeatures').value     = feats.join('\n');
+  document.getElementById('pmActive').value       = p.is_active ? 'true' : 'false';
+  document.getElementById('pmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlanModal() {
+  document.getElementById('pmOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeIfBgPlan(e) { if (e.target === document.getElementById('pmOverlay')) closePlanModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlanModal(); });
+
+async function savePlan() {
+  const id       = document.getElementById('pmId').value;
+  const name     = document.getElementById('pmName').value.trim();
+  const price    = document.getElementById('pmPrice').value;
+  const limit    = document.getElementById('pmLimit').value;
+  const rate     = document.getElementById('pmRate').value;
+  const features = document.getElementById('pmFeatures').value.trim();
+  const active   = document.getElementById('pmActive').value;
+
+  if (!name) { viperToast('Plan name is required.', 'warning'); return; }
+
+  const url = _pmEditing ? `/admin/plans/${id}/edit` : '/admin/plans/create';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, price_ngn: price, api_limit: limit, rate_per_min: rate, features, is_active: active }),
+  });
+  const d = await r.json();
+  if (!d.success) { viperToast(d.error || 'Save failed.', 'error'); return; }
+
+  viperToast(_pmEditing ? 'Plan updated.' : 'Plan created.', 'success');
+  closePlanModal();
+  setTimeout(() => location.reload(), 600);
+}
+
+async function togglePlan(id) {
+  const ok = await viperConfirm('Toggle this plan\'s visibility?', 'Toggle Plan');
+  if (!ok) return;
+  const r = await fetch(`/admin/plans/${id}/toggle`, { method: 'POST' });
+  const d = await r.json();
+  if (d.success) {
+    const badge = document.getElementById('pstatus-' + id);
+    if (badge) { badge.textContent = d.is_active ? 'Active' : 'Hidden'; badge.className = 'badge ' + (d.is_active ? 'badge-green' : 'badge-red'); }
+    viperToast('Plan ' + (d.is_active ? 'activated' : 'hidden') + '.', 'success');
+  } else { viperToast(d.error || 'Failed.', 'error'); }
+}
+
+async function deletePlan(id, name) {
+  const ok = await viperConfirm(`Delete plan "${name}"? Users on this plan will have no plan assigned.`, 'Delete Plan');
+  if (!ok) return;
+  const r = await fetch(`/admin/plans/${id}/delete`, { method: 'POST' });
+  const d = await r.json();
+  if (d.success) {
+    viperToast('Plan deleted.', 'success');
+    const row = document.getElementById('prow-' + id);
+    if (row) row.remove();
+  } else { viperToast(d.error || 'Failed.', 'error'); }
+}
+</script>

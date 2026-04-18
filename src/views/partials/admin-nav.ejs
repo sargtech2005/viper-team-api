@@ -1,11 +1,12 @@
 <%
   const an = typeof adminActive !== 'undefined' ? adminActive : '';
   const pages = [
-    { href: '/admin',          key: 'overview',  label: 'Overview',  iconName: 'bar-chart'   },
-    { href: '/admin/users',    key: 'users',     label: 'Users',     iconName: 'users'       },
-    { href: '/admin/payments', key: 'payments',  label: 'Payments',  iconName: 'credit-card' },
-    { href: '/admin/plans',    key: 'plans',     label: 'Plans',     iconName: 'package'     },
-    { href: '/admin/settings', key: 'settings',  label: 'Settings',  iconName: 'settings'    },
+    { href: '/admin',          key: 'overview',  label: 'Overview',      iconName: 'bar-chart'   },
+    { href: '/admin/users',    key: 'users',     label: 'Users',         iconName: 'users'       },
+    { href: '/admin/payments', key: 'payments',  label: 'Payments',      iconName: 'credit-card' },
+    { href: '/admin/plans',    key: 'plans',     label: 'Plans',         iconName: 'package'     },
+    { href: '/admin/credits',  key: 'credits',   label: 'Credit Packs',  iconName: 'zap'         },
+    { href: '/admin/settings', key: 'settings',  label: 'Settings',      iconName: 'settings'    },
   ];
   const current = pages.find(p => p.key === an) || pages[0];
 %>
@@ -18,7 +19,7 @@
 .admin-nav-btn .anb-left svg{color:var(--purple)}
 .admin-nav-chevron{transition:transform .18s ease;color:var(--text-muted)}
 .admin-nav-btn.open .admin-nav-chevron{transform:rotate(180deg)}
-.admin-nav-menu{position:absolute;top:calc(100% + 6px);left:0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:200;overflow:hidden;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.admin-nav-menu{position:absolute;top:calc(100% + 6px);left:0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);min-width:185px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:200;overflow:hidden;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
 .admin-nav-menu.open{opacity:1;transform:translateY(0);pointer-events:all}
 .admin-nav-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:.85rem;font-weight:500;color:var(--text-subtle);transition:all var(--transition);text-decoration:none}
 .admin-nav-item:hover{background:var(--bg-3);color:var(--text)}

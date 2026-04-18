@@ -1,30 +1,92 @@
 const { query } = require('../config/db');
 
-// Credit packs definition (source of truth)
-const CREDIT_PACKS = [
-  { id: 'topup',  label: 'Top-up',  price: 500,   base: 600,   bonus: 0,   bonusPct: 0,   total: 600,   perCall: 0.83, minTopup: true  },
-  { id: 'bundle', label: 'Bundle',  price: 2000,  base: 3000,  bonus: 450, bonusPct: 15,  total: 3450,  perCall: 0.58, minTopup: false },
-  { id: 'stack',  label: 'Stack',   price: 7500,  base: 15000, bonus: 3750, bonusPct: 25, total: 18750, perCall: 0.40, minTopup: false },
-  { id: 'bulk',   label: 'Bulk',    price: 20000, base: 50000, bonus: 17500, bonusPct: 35, total: 67500, perCall: 0.30, minTopup: false },
-];
-
-const SUBSCRIBER_BONUS = 0.20; // 20% extra credits for active subscribers
+const SUBSCRIBER_BONUS_DEFAULT = 0.20; // fallback if not in DB
 
 const Credit = {
-  PACKS: CREDIT_PACKS,
-  SUBSCRIBER_BONUS,
 
-  findPack: (packId) => CREDIT_PACKS.find(p => p.id === packId) || null,
+  // ─── Pack CRUD (DB-backed) ──────────────────────────────────────────────────
 
-  // Get user's current balance
+  allPacks: async () => {
+    const r = await query(
+      `SELECT *, (base + bonus) AS total FROM credit_packs ORDER BY sort_order ASC, id ASC`
+    );
+    return r.rows.map(p => ({
+      ...p,
+      total:   p.base + p.bonus,
+      perCall: p.price_ngn / (p.base + p.bonus || 1),
+    }));
+  },
+
+  activePacks: async () => {
+    const r = await query(
+      `SELECT *, (base + bonus) AS total FROM credit_packs WHERE is_active = true ORDER BY sort_order ASC, id ASC`
+    );
+    return r.rows.map(p => ({
+      ...p,
+      total:   p.base + p.bonus,
+      perCall: p.price_ngn / (p.base + p.bonus || 1),
+    }));
+  },
+
+  findPack: async (packId) => {
+    const r = await query(
+      `SELECT *, (base + bonus) AS total FROM credit_packs WHERE pack_id = $1`,
+      [packId]
+    );
+    if (!r.rows[0]) return null;
+    const p = r.rows[0];
+    return {
+      ...p,
+      id:      p.pack_id,       // keep old interface (id = pack_id string)
+      total:   p.base + p.bonus,
+      price:   p.price_ngn,     // old interface used .price
+      perCall: p.price_ngn / (p.base + p.bonus || 1),
+    };
+  },
+
+  findPackById: async (dbId) => {
+    const r = await query(
+      `SELECT *, (base + bonus) AS total FROM credit_packs WHERE id = $1`,
+      [dbId]
+    );
+    if (!r.rows[0]) return null;
+    const p = r.rows[0];
+    return { ...p, total: p.base + p.bonus, price: p.price_ngn, perCall: p.price_ngn / (p.base + p.bonus || 1) };
+  },
+
+  createPack: async ({ packId, label, priceNgn, base, bonus, bonusPct, sortOrder }) => {
+    const r = await query(
+      `INSERT INTO credit_packs (pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [packId, label, priceNgn, base, bonus, bonusPct, sortOrder || 0]
+    );
+    return r.rows[0];
+  },
+
+  updatePack: async (id, { label, priceNgn, base, bonus, bonusPct, isActive, sortOrder }) => {
+    const r = await query(
+      `UPDATE credit_packs SET
+         label = $1, price_ngn = $2, base = $3, bonus = $4,
+         bonus_pct = $5, is_active = $6, sort_order = $7
+       WHERE id = $8 RETURNING *`,
+      [label, priceNgn, base, bonus, bonusPct, isActive, sortOrder, id]
+    );
+    return r.rows[0];
+  },
+
+  deletePack: async (id) => {
+    const r = await query(`DELETE FROM credit_packs WHERE id = $1 RETURNING id`, [id]);
+    return r.rows[0];
+  },
+
+  // ─── Balance & Transactions ─────────────────────────────────────────────────
+
   getBalance: async (userId) => {
     const r = await query('SELECT credit_balance FROM users WHERE id = $1', [userId]);
     return r.rows[0]?.credit_balance ?? 0;
   },
 
-  // Credit or debit user balance
   adjustBalance: async (userId, amount, type, description, paystackRef = null) => {
-    // Update balance (prevent going below 0)
     if (amount < 0) {
       await query(
         'UPDATE users SET credit_balance = GREATEST(0, credit_balance + $1) WHERE id = $2',
@@ -36,7 +98,6 @@ const Credit = {
         [amount, userId]
       );
     }
-    // Log transaction
     const r = await query(
       `INSERT INTO credit_transactions (user_id, type, amount, description, paystack_ref)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -45,7 +106,6 @@ const Credit = {
     return r.rows[0];
   },
 
-  // Check if a paystack ref was already processed
   refAlreadyUsed: async (paystackRef) => {
     const r = await query(
       'SELECT id FROM credit_transactions WHERE paystack_ref = $1 AND type = $2',
@@ -54,7 +114,6 @@ const Credit = {
     return r.rows.length > 0;
   },
 
-  // List recent transactions for a user
   listTransactions: async (userId, limit = 20) => {
     const r = await query(
       `SELECT * FROM credit_transactions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`,
@@ -63,10 +122,22 @@ const Credit = {
     return r.rows;
   },
 
-  // Calculate total credits for a purchase (with optional subscriber bonus)
-  calcCredits: (pack, isSubscriber) => {
-    const bonus = isSubscriber ? Math.floor(pack.total * SUBSCRIBER_BONUS) : 0;
-    return { base: pack.total, subscriberBonus: bonus, grand: pack.total + bonus };
+  // ─── Subscriber bonus ───────────────────────────────────────────────────────
+
+  getSubscriberBonus: async () => {
+    try {
+      const { getSetting } = require('../config/settings');
+      const val = await getSetting('SUBSCRIBER_BONUS_PCT', '20');
+      return parseInt(val) / 100 || SUBSCRIBER_BONUS_DEFAULT;
+    } catch {
+      return SUBSCRIBER_BONUS_DEFAULT;
+    }
+  },
+
+  calcCredits: async (pack, isSubscriber) => {
+    const bonusPct = isSubscriber ? await Credit.getSubscriberBonus() : 0;
+    const subBonus = isSubscriber ? Math.floor(pack.total * bonusPct) : 0;
+    return { base: pack.total, subscriberBonus: subBonus, grand: pack.total + subBonus };
   },
 };
 
