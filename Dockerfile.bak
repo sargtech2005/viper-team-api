@@ -15,4 +15,4 @@ RUN npm prune --production
 
 EXPOSE 8080
 
-CMD ["node", "app.js"]
+CMD ["node", "server/index.js"]
