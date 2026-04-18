@@ -55,13 +55,13 @@
         <% } %>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Active Keys</div>
-        <div class="stat-value"><%= apiKeys.length %></div>
-        <div class="stat-sub">of 5 max</div>
+        <div class="stat-label">Credit Wallet</div>
+        <div class="stat-value stat-grad"><%= (creditBalance||0).toLocaleString() %></div>
+        <div class="stat-sub"><a href="/dashboard/billing#topup" style="color:var(--purple);font-size:.78rem">Top up credits <%- icon('arrow-right',11) %></a></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Rate Limit</div>
-        <div class="stat-value"><%= plan.rate_per_min || 5 %></div>
+        <div class="stat-value"><%= plan.rate_per_min || 10 %></div>
         <div class="stat-sub">requests / minute</div>
       </div>
     </div>
@@ -69,7 +69,7 @@
     <div class="quick-links">
       <a href="/docs"               class="quick-link"><%- icon('book',18) %><span class="quick-label">Docs & Test</span></a>
       <a href="/dashboard/api-keys" class="quick-link"><%- icon('key',18) %><span class="quick-label">API Keys</span></a>
-      <a href="/pricing"            class="quick-link"><%- icon('dollar',18) %><span class="quick-label">Upgrade</span></a>
+      <a href="/dashboard/billing"  class="quick-link"><%- icon('credit-card',18) %><span class="quick-label">Credits & Billing</span></a>
       <a href="/dashboard/logs"     class="quick-link"><%- icon('bar-chart',18) %><span class="quick-label">Usage Logs</span></a>
     </div>
 

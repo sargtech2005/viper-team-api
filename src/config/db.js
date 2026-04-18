@@ -116,6 +116,34 @@ const autoMigrate = async () => {
       END $$;
     `);
 
+    // Add credit_balance to users (safe: ignored if already exists)
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='credit_balance'
+        ) THEN
+          ALTER TABLE users ADD COLUMN credit_balance INTEGER NOT NULL DEFAULT 0;
+        END IF;
+      END $$;
+    `);
+
+    // Create credit_transactions table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS credit_transactions (
+        id            SERIAL PRIMARY KEY,
+        user_id       INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type          VARCHAR(20)   NOT NULL CHECK (type IN ('topup','usage','bonus','refund')),
+        amount        INTEGER       NOT NULL,
+        description   TEXT,
+        paystack_ref  VARCHAR(100),
+        created_at    TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_tx_user    ON credit_transactions(user_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_tx_created ON credit_transactions(created_at);`);
+
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at()
       RETURNS TRIGGER AS $$

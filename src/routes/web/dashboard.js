@@ -9,14 +9,16 @@ router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   try {
-    const planResult = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
-    const plan       = planResult.rows[0] || { name: 'Free', api_limit: 500, rate_per_min: 5 };
-    const keysResult = await query('SELECT * FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5', [req.user.id]);
-    const logsResult = await query(`SELECT endpoint, status_code, duration_ms, created_at FROM api_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10`, [req.user.id]);
-    res.render('dashboard/index', { title: 'Dashboard — Viper-Team API', plan, apiKeys: keysResult.rows, recentLogs: logsResult.rows, showWelcome: req.query.welcome === '1' });
+    const planResult   = await query('SELECT * FROM plans WHERE id = $1', [req.user.plan_id]);
+    const plan         = planResult.rows[0] || { name: 'Free', api_limit: 500, rate_per_min: 10 };
+    const keysResult   = await query('SELECT * FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5', [req.user.id]);
+    const logsResult   = await query(`SELECT endpoint, status_code, duration_ms, created_at FROM api_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10`, [req.user.id]);
+    const creditResult = await query('SELECT credit_balance FROM users WHERE id = $1', [req.user.id]);
+    const creditBalance = creditResult.rows[0]?.credit_balance ?? 0;
+    res.render('dashboard/index', { title: 'Dashboard — Viper-Team API', plan, apiKeys: keysResult.rows, recentLogs: logsResult.rows, showWelcome: req.query.welcome === '1', creditBalance });
   } catch (err) {
     console.error(err);
-    res.render('dashboard/index', { title: 'Dashboard — Viper-Team API', plan: { name: 'Free', api_limit: 500, rate_per_min: 5 }, apiKeys: [], recentLogs: [], showWelcome: false });
+    res.render('dashboard/index', { title: 'Dashboard — Viper-Team API', plan: { name: 'Free', api_limit: 500, rate_per_min: 10 }, apiKeys: [], recentLogs: [], showWelcome: false, creditBalance: 0 });
   }
 });
 
@@ -24,8 +26,9 @@ router.get('/api-keys',           apiKeyCtrl.list);
 router.post('/api-keys/generate', apiKeyCtrl.generate);
 router.delete('/api-keys/:id',    apiKeyCtrl.deleteKey);
 
-router.get('/billing',            paymentCtrl.getBilling);
-router.post('/billing/verify',    paymentCtrl.verifyPayment);
+router.get('/billing',                      paymentCtrl.getBilling);
+router.post('/billing/verify',             paymentCtrl.verifyPayment);
+router.post('/billing/credits/verify',     paymentCtrl.verifyCredit);
 
 router.get('/logs', async (req, res, next) => {
   try {

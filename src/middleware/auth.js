@@ -11,7 +11,7 @@ const requireAuth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await query(
-      'SELECT id, username, email, role, plan_id, api_calls_used, is_active FROM users WHERE id = $1',
+      'SELECT id, username, email, role, plan_id, api_calls_used, credit_balance, is_active FROM users WHERE id = $1',
       [decoded.id]
     );
 
@@ -39,7 +39,7 @@ const optionalAuth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await query(
-      'SELECT id, username, email, role, plan_id, api_calls_used, is_active FROM users WHERE id = $1',
+      'SELECT id, username, email, role, plan_id, api_calls_used, credit_balance, is_active FROM users WHERE id = $1',
       [decoded.id]
     );
 

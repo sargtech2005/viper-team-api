@@ -1,4 +1,5 @@
 <style>
+/* ── Plan grid ───────────────────────────────────────────── */
 .plan-grid{display:grid;grid-template-columns:1fr;gap:14px;margin:20px 0}
 @media(min-width:520px){.plan-grid{grid-template-columns:repeat(2,1fr);gap:16px}}
 @media(min-width:1024px){.plan-grid{grid-template-columns:repeat(4,1fr)}}
@@ -13,26 +14,139 @@
 .plan-feats{display:flex;flex-direction:column;gap:8px;flex:1}
 .plan-feat{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--text-subtle)}
 .plan-feat svg{color:var(--green);flex-shrink:0}
+
+/* ── Credit wallet ───────────────────────────────────────── */
+.wallet-hero{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.wallet-balance-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:4px}
+.wallet-balance-val{font-size:2.6rem;font-weight:900;line-height:1;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.wallet-balance-sub{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.wallet-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── Credit pack grid ────────────────────────────────────── */
+.pack-grid{display:grid;grid-template-columns:1fr;gap:14px;margin:16px 0}
+@media(min-width:520px){.pack-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.pack-grid{grid-template-columns:repeat(4,1fr)}}
+.pack-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:22px;display:flex;flex-direction:column;gap:14px;transition:all var(--transition);position:relative;cursor:pointer}
+.pack-card:hover{border-color:rgba(139,92,246,0.5);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pack-card.popular-pack{border-color:var(--purple)}
+.pack-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)}
+.pack-price{font-size:1.6rem;font-weight:900;line-height:1;color:var(--text)}
+.pack-credits{font-size:.9rem;font-weight:700;color:var(--purple);margin-top:2px}
+.pack-bonus{font-size:.76rem;color:var(--green);font-weight:600}
+.pack-per{font-size:.73rem;color:var(--text-muted)}
+.pack-tag{position:absolute;top:12px;right:12px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;color:#fff;background:var(--grad)}
+.sub-bonus-banner{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);border-radius:var(--radius);padding:10px 14px;font-size:.82rem;color:#6ee7b7;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+
+/* ── Credit tx table ─────────────────────────────────────── */
+.tx-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px}
+.tx-topup{background:rgba(52,211,153,.12);color:#6ee7b7;border:1px solid rgba(52,211,153,.2)}
+.tx-usage{background:rgba(96,165,250,.1);color:#93c5fd;border:1px solid rgba(96,165,250,.2)}
+.tx-bonus{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.tx-refund{background:rgba(251,191,36,.1);color:#fcd34d;border:1px solid rgba(251,191,36,.2)}
+.tx-amount-pos{color:#6ee7b7;font-weight:700}
+.tx-amount-neg{color:#fca5a5;font-weight:700}
 </style>
 
 <div class="dashboard-layout">
   <%- include('../partials/sidebar', { active: 'billing' }) %>
   <div class="dashboard-main">
+
     <div class="page-header">
-      <h2>Billing & Plans</h2>
-      <p>Upgrade to unlock more API calls and higher rate limits.</p>
+      <h2>Credits & Billing</h2>
+      <p>Top up your credit wallet or upgrade your subscription plan.</p>
     </div>
 
-    <div class="alert alert-info mb-3">
+    <!-- ── CREDIT WALLET ─────────────────────────────────── -->
+    <div class="wallet-hero">
+      <div>
+        <div class="wallet-balance-label">Credit Wallet</div>
+        <div class="wallet-balance-val"><%= (creditBalance || 0).toLocaleString() %></div>
+        <div class="wallet-balance-sub">credits &nbsp;·&nbsp; 1 credit = 1 API call &nbsp;·&nbsp; never expire</div>
+      </div>
+      <div class="wallet-actions">
+        <a href="#topup" class="btn btn-primary"><%- icon('plus',15) %> Top Up Credits</a>
+        <a href="#plans" class="btn btn-outline"><%- icon('zap',15) %> Upgrade Plan</a>
+      </div>
+    </div>
+
+    <!-- Auto-dip info -->
+    <div class="alert alert-info mb-3" style="margin-bottom:24px">
       <%- icon('info',15) %>
-      <span>You are on the <strong><%= currentPlan ? currentPlan.name : 'Free' %></strong> plan.
-      <% if (currentPlan && currentPlan.name !== 'Ultra') { %>
-        <a href="#plans" style="color:inherit;text-decoration:underline;margin-left:4px">Upgrade below</a> for more calls.
-      <% } else { %> You're on our top plan! <% } %></span>
+      <span>
+        You are on the <strong><%= currentPlan ? currentPlan.name : 'Free' %></strong> plan.
+        <% if (currentPlan) { %>
+          When you hit your monthly limit, credits are automatically used so your app keeps running.
+        <% } %>
+      </span>
     </div>
 
-    <h3 id="plans" style="margin-bottom:4px">Choose a Plan</h3>
-    <p style="font-size:.86rem;margin-bottom:0">One-time monthly payment via Paystack. Quota resets when you upgrade.</p>
+    <!-- ── TOP UP SECTION ────────────────────────────────── -->
+    <h3 id="topup" style="margin-bottom:4px">Top Up Credits</h3>
+    <p style="font-size:.86rem;color:var(--text-muted);margin-bottom:12px">One credit = one API call. Credits never expire and stack with your plan quota.</p>
+
+    <% if (isSubscriber) { %>
+    <div class="sub-bonus-banner">
+      <%- icon('check-circle',15) %>
+      <span>You're a subscriber — you'll receive <strong>+20% bonus credits</strong> on every top-up!</span>
+    </div>
+    <% } %>
+
+    <div class="pack-grid">
+      <% creditPacks.forEach((pack, i) => {
+           const isSubscriberCalc = isSubscriber;
+           const subBonus  = isSubscriberCalc ? Math.floor(pack.total * subscriberBonus) : 0;
+           const grandTotal = pack.total + subBonus;
+      %>
+      <div class="pack-card <%= i === 1 ? 'popular-pack' : '' %>" onclick="startCreditPay('<%= pack.id %>','<%= pack.price %>','<%= pack.label %>')">
+        <% if (i === 1) { %><div class="pack-tag">Best Value</div><% } %>
+        <% if (pack.minTopup) { %><div class="pack-tag" style="background:var(--green)">Min. Top-up</div><% } %>
+        <div class="pack-label"><%= pack.label %></div>
+        <div>
+          <div class="pack-price">&#8358;<%= pack.price.toLocaleString() %></div>
+          <div class="pack-credits">
+            <%= grandTotal.toLocaleString() %> credits
+          </div>
+          <% if (subBonus > 0) { %>
+          <div class="pack-bonus">+<%= subBonus.toLocaleString() %> subscriber bonus included</div>
+          <% } else { %>
+          <div class="pack-bonus"><%= pack.bonusPct > 0 ? '+' + pack.bonusPct + '% bonus credits' : 'Base pack' %></div>
+          <% } %>
+          <div class="pack-per">&#8358;<%= pack.perCall %>/call</div>
+        </div>
+        <button class="btn btn-primary btn-block btn-sm" onclick="event.stopPropagation();startCreditPay('<%= pack.id %>','<%= pack.price %>','<%= pack.label %>')">
+          <%- icon('zap',13) %> Buy <%= pack.label %>
+        </button>
+      </div>
+      <% }) %>
+    </div>
+
+    <!-- ── CREDIT TRANSACTION HISTORY ───────────────────── -->
+    <div class="card mt-4" style="margin-bottom:24px">
+      <h4 style="margin-bottom:14px">Credit History</h4>
+      <% if (!creditTxns || !creditTxns.length) { %>
+        <p style="text-align:center;padding:20px;font-size:.86rem;color:var(--text-muted)">No credit transactions yet.</p>
+      <% } else { %>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Credits</th><th>Description</th><th>Date</th></tr></thead>
+        <tbody>
+          <% creditTxns.forEach(tx => { %>
+          <tr>
+            <td><span class="tx-type-badge tx-<%= tx.type %>"><%= tx.type %></span></td>
+            <td class="<%= tx.amount >= 0 ? 'tx-amount-pos' : 'tx-amount-neg' %>">
+              <%= tx.amount >= 0 ? '+' : '' %><%= tx.amount.toLocaleString() %>
+            </td>
+            <td style="font-size:.82rem;color:var(--text-subtle)"><%= tx.description || '—' %></td>
+            <td style="font-size:.76rem;color:var(--text-muted)"><%= new Date(tx.created_at).toLocaleDateString() %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table></div>
+      <% } %>
+    </div>
+
+    <!-- ── SUBSCRIPTION PLANS ────────────────────────────── -->
+    <h3 id="plans" style="margin-bottom:4px">Subscription Plans</h3>
+    <p style="font-size:.86rem;color:var(--text-muted);margin-bottom:0">Monthly plan — quota resets each billing cycle. Credits auto-used for overages.</p>
 
     <div class="plan-grid">
       <% plans.forEach(plan => { %>
@@ -58,8 +172,9 @@
       <% }) %>
     </div>
 
+    <!-- ── PAYMENT HISTORY ───────────────────────────────── -->
     <div class="card mt-4">
-      <h4 style="margin-bottom:14px">Payment History</h4>
+      <h4 style="margin-bottom:14px">Subscription Payment History</h4>
       <% if (!payments.length) { %>
         <p style="text-align:center;padding:20px;font-size:.86rem;color:var(--text-muted)">No payments yet.</p>
       <% } else { %>
@@ -79,12 +194,15 @@
       </table></div>
       <% } %>
     </div>
+
   </div>
 </div>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 var PSKEY = '<%- (typeof PAYSTACK_PUBLIC_KEY !== "undefined" ? PAYSTACK_PUBLIC_KEY : "") %>';
+
+/* ── Plan subscription payment ─────────────────────────── */
 function startPay(planId, amountNgn, planName) {
   if (!PSKEY) return viperAlert('Payments not configured. Contact support.', 'error');
   var ref = 'VIPER_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -115,9 +233,44 @@ function startPay(planId, amountNgn, planName) {
         viperAlert('Network error. Contact support with ref: ' + response.reference, 'error');
       });
     },
-    onClose: function () {
-      viperToast('Payment window closed.', 'warning');
-    }
+    onClose: function () { viperToast('Payment window closed.', 'warning'); }
+  });
+  handler.openIframe();
+}
+
+/* ── Credit top-up payment ──────────────────────────────── */
+function startCreditPay(packId, amountNgn, packLabel) {
+  if (!PSKEY) return viperAlert('Payments not configured. Contact support.', 'error');
+  var ref = 'VIPER_CR_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8).toUpperCase();
+  var handler = PaystackPop.setup({
+    key:      PSKEY,
+    email:    '<%= user.email %>',
+    amount:   parseInt(amountNgn) * 100,
+    ref:      ref,
+    currency: 'NGN',
+    metadata: { credit_pack_id: packId, credit_pack: packLabel },
+    callback: function (response) {
+      viperToast('Crediting your wallet...', 'info');
+      fetch('/dashboard/billing/credits/verify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ reference: response.reference, pack_id: packId })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) {
+          var msg = d.credits.toLocaleString() + ' credits added to your wallet';
+          if (d.bonus > 0) msg += ' (including ' + d.bonus.toLocaleString() + ' subscriber bonus!)';
+          viperAlert(msg, 'success').then(function () { location.reload(); });
+        } else {
+          viperAlert('Verification failed: ' + (d.error || 'Unknown error'), 'error');
+        }
+      })
+      .catch(function () {
+        viperAlert('Network error. Contact support with ref: ' + response.reference, 'error');
+      });
+    },
+    onClose: function () { viperToast('Payment window closed.', 'warning'); }
   });
   handler.openIframe();
 }

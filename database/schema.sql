@@ -76,3 +76,21 @@ DROP TRIGGER IF EXISTS users_updated_at ON users;
 CREATE TRIGGER users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ─── Credit Wallet ───────────────────────────────────────────────────────────
+
+-- Add credit_balance column to users (idempotent)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS credit_balance INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS credit_transactions (
+  id            SERIAL PRIMARY KEY,
+  user_id       INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type          VARCHAR(20)   NOT NULL CHECK (type IN ('topup','usage','bonus','refund')),
+  amount        INTEGER       NOT NULL,                    -- positive = credit added, negative = deducted
+  description   TEXT,
+  paystack_ref  VARCHAR(100),
+  created_at    TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_credit_tx_user ON credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_tx_created ON credit_transactions(created_at);
