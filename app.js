@@ -6,9 +6,11 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const expressLayouts = require('express-ejs-layouts');
 const { icon } = require('./src/config/icons');
-const { startQuotaScheduler } = require('./src/config/scheduler');
 
 const app = express();
+
+// ── Track DB readiness ────────────────────────────────────────────────────────
+let dbReady = false;
 
 app.use(helmet({ contentSecurityPolicy: false }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
@@ -24,17 +26,17 @@ app.set('layout', 'layouts/main');
 app.set('layout extractScripts', true);
 app.set('layout extractStyles', true);
 
-// ── Global locals available in every EJS template ──────────────────────────
+// ── Global locals ─────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.locals.user        = null;
   res.locals.APP_NAME    = 'ViperAPI';
   res.locals.APP_URL     = process.env.APP_URL || 'https://viper-api.name.ng';
   res.locals.currentPath = req.path;
-  res.locals.icon        = icon;   // ← icon('name', size) in every template
+  res.locals.icon        = icon;
   next();
 });
 
-// ── Subdomain routing ─────────────────────────────────────────────────────
+// ── Subdomain routing ─────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const host = req.hostname || '';
   if (host.startsWith('dashboard.') && !req.path.startsWith('/dashboard')) {
@@ -47,6 +49,38 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── DB readiness gate — show friendly error instead of crashing ───────────────
+app.use((req, res, next) => {
+  // Always allow static files and health checks through
+  if (req.path === '/health' || req.path.startsWith('/css') || req.path.startsWith('/js') || req.path.startsWith('/img')) {
+    return next();
+  }
+  if (!dbReady) {
+    if (req.path.startsWith('/api/')) {
+      return res.status(503).json({ success: false, error: 'Service starting up, please retry in a moment.' });
+    }
+    return res.status(503).send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>ViperAPI — Starting...</title>
+        <style>
+          body { font-family: sans-serif; background: #0a0a12; color: #e2e8f0; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+          .box { text-align:center; }
+          h1 { color: #10b981; } p { color: #94a3b8; }
+        </style>
+        <meta http-equiv="refresh" content="4">
+        </head>
+        <body><div class="box"><h1>🐍 ViperAPI</h1><p>Starting up, connecting to database...</p><p>This page will refresh automatically.</p></div></body>
+      </html>
+    `);
+  }
+  next();
+});
+
+// ── Health check (always responds, even before DB is ready) ───────────────────
+app.get('/health', (req, res) => res.json({ status: 'ok', db: dbReady }));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
 const authRoutes      = require('./src/routes/web/auth');
 const dashboardRoutes = require('./src/routes/web/dashboard');
 const pricingRoutes   = require('./src/routes/web/pricing');
@@ -82,8 +116,21 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { title: '500 — Error', code: 500, message: 'Something went wrong. Please try again.' });
 });
 
+// ── START: bind port FIRST, connect DB after ──────────────────────────────────
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ ViperAPI running → http://0.0.0.0:${PORT}`);
-  startQuotaScheduler();
+
+  // Connect to DB in background AFTER port is open
+  const { connectWithRetry, startQuotaScheduler } = require('./src/config/db');
+  connectWithRetry()
+    .then(() => {
+      dbReady = true;
+      console.log('✅ DB ready — app fully operational');
+      startQuotaScheduler();
+    })
+    .catch(err => {
+      console.error('❌ DB connection ultimately failed:', err.message);
+      // App keeps running — DB calls will just error individually
+    });
 });

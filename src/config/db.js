@@ -140,35 +140,53 @@ const autoMigrate = async () => {
 
     console.log('✅ Auto-migration complete');
   } catch (err) {
-    // Log but do NOT crash — tables likely already exist from previous deploy
     console.error('⚠️  Migration warning (non-fatal):', err.message);
   } finally {
     client.release();
   }
 };
 
-// Retry DB connection up to 5 times before giving up
-const connectWithRetry = async (retries = 5, delay = 3000) => {
+// ── Retry connection — exported so app.js calls it AFTER port is open ─────────
+const connectWithRetry = async (retries = 10, delay = 3000) => {
   for (let i = 1; i <= retries; i++) {
     try {
       const client = await pool.connect();
       console.log('✅ PostgreSQL connected');
       client.release();
       await autoMigrate();
-      return;
+      return; // success
     } catch (err) {
-      console.error(`❌ DB connection attempt ${i}/${retries} failed: ${err.message}`);
+      console.error(`❌ DB attempt ${i}/${retries}: ${err.message}`);
       if (i < retries) {
         console.log(`⏳ Retrying in ${delay / 1000}s...`);
         await new Promise(res => setTimeout(res, delay));
-      } else {
-        // Do NOT call process.exit — let app start anyway so Fly health checks pass
-        console.error('❌ Could not connect to PostgreSQL. App will start but DB calls will fail until DB is available.');
       }
     }
   }
+  throw new Error('Could not connect to PostgreSQL after all retries.');
 };
 
-connectWithRetry();
+// ── Quota scheduler — also exported, started after DB is ready ────────────────
+const startQuotaScheduler = () => {
+  let lastResetMonth = null;
 
-module.exports = { query, getClient, pool };
+  const checkAndReset = async () => {
+    const now = new Date();
+    const month = `${now.getFullYear()}-${now.getMonth()}`;
+    if (lastResetMonth === month) return;
+    if (now.getDate() !== 1) return;
+    try {
+      const result = await query(`UPDATE users SET api_calls_used = 0 WHERE api_calls_used > 0 RETURNING id`);
+      lastResetMonth = month;
+      console.log(`✅ Monthly quota reset: ${result.rowCount} users reset.`);
+    } catch (err) {
+      console.error('❌ Quota reset error:', err.message);
+    }
+  };
+
+  checkAndReset();
+  setInterval(checkAndReset, 6 * 60 * 60 * 1000);
+  console.log('✅ Monthly quota scheduler started.');
+};
+
+module.exports = { query, getClient, pool, connectWithRetry, startQuotaScheduler };
