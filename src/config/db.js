@@ -117,7 +117,18 @@ const autoMigrate = async () => {
       END $$;
     `);
 
-    // Add credit_balance to users (safe: ignored if already exists)
+    // Add type column to payments — distinguishes plan subscriptions from credit top-ups
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='payments' AND column_name='type'
+        ) THEN
+          ALTER TABLE payments ADD COLUMN type VARCHAR(10) NOT NULL DEFAULT 'plan'
+            CHECK (type IN ('plan','credits'));
+        END IF;
+      END $$;
+    `);
     await client.query(`
       DO $$ BEGIN
         IF NOT EXISTS (

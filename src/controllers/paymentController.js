@@ -121,11 +121,24 @@ exports.verifyCredit = async (req, res, next) => {
     const isSubscriber = currentPlan && currentPlan.price_ngn > 0;
     const { grand, subscriberBonus } = Credit.calcCredits(pack, isSubscriber);
 
+    // Record in payments table first (so admin sees it), then credit the balance
+    const existingPayment = await Payment.verify(reference);
+    if (!existingPayment) {
+      await Payment.create({
+        userId:    req.user.id,
+        planId:    null,
+        reference,
+        amountNgn: paidNaira,
+        type:      'credits',
+      });
+    }
+    await Payment.markCreditSuccess(reference);
+
     await Credit.adjustBalance(
       req.user.id,
       grand,
       'topup',
-      pack.label + ' pack (' + pack.total + ' credits' + (subscriberBonus > 0 ? ' + ' + subscriberBonus + ' subscriber bonus' : '') + ')',
+      `${pack.label} pack (${pack.total} credits${subscriberBonus > 0 ? ` + ${subscriberBonus} subscriber bonus` : ''})`,
       reference
     );
 

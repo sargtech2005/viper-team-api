@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS payments (
   plan_id       INTEGER       REFERENCES plans(id) ON DELETE SET NULL,
   paystack_ref  VARCHAR(100)  NOT NULL UNIQUE,
   amount_ngn    INTEGER       NOT NULL,
+  type          VARCHAR(10)   NOT NULL DEFAULT 'plan' CHECK (type IN ('plan','credits')),
   status        VARCHAR(10)   NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','success','failed')),
   verified_at   TIMESTAMPTZ,
   created_at    TIMESTAMPTZ   NOT NULL DEFAULT NOW()
@@ -81,6 +82,9 @@ CREATE TRIGGER users_updated_at
 
 -- Add credit_balance column to users (idempotent)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS credit_balance INTEGER NOT NULL DEFAULT 0;
+
+-- Add type column to existing payments tables (idempotent)
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS type VARCHAR(10) NOT NULL DEFAULT 'plan';
 
 CREATE TABLE IF NOT EXISTS credit_transactions (
   id            SERIAL PRIMARY KEY,
