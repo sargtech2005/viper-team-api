@@ -1,0 +1,67 @@
+<%
+  const an = typeof adminActive !== 'undefined' ? adminActive : '';
+  const pages = [
+    { href: '/admin',          key: 'overview',  label: 'Overview',  iconName: 'bar-chart'   },
+    { href: '/admin/users',    key: 'users',     label: 'Users',     iconName: 'users'       },
+    { href: '/admin/payments', key: 'payments',  label: 'Payments',  iconName: 'credit-card' },
+    { href: '/admin/plans',    key: 'plans',     label: 'Plans',     iconName: 'package'     },
+  ];
+  const current = pages.find(p => p.key === an) || pages[0];
+%>
+<style>
+.admin-nav-wrap{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.admin-nav-dropdown{position:relative;display:inline-block}
+.admin-nav-btn{display:inline-flex;align-items:center;gap:8px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 14px;font-size:.86rem;font-weight:600;color:var(--text);cursor:pointer;transition:all var(--transition);min-width:160px;justify-content:space-between;user-select:none}
+.admin-nav-btn:hover,.admin-nav-btn.open{border-color:var(--purple);background:var(--purple-bg)}
+.admin-nav-btn .anb-left{display:flex;align-items:center;gap:7px}
+.admin-nav-btn .anb-left svg{color:var(--purple)}
+.admin-nav-chevron{transition:transform .18s ease;color:var(--text-muted)}
+.admin-nav-btn.open .admin-nav-chevron{transform:rotate(180deg)}
+.admin-nav-menu{position:absolute;top:calc(100% + 6px);left:0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:200;overflow:hidden;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.admin-nav-menu.open{opacity:1;transform:translateY(0);pointer-events:all}
+.admin-nav-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:.85rem;font-weight:500;color:var(--text-subtle);transition:all var(--transition);text-decoration:none}
+.admin-nav-item:hover{background:var(--bg-3);color:var(--text)}
+.admin-nav-item.active{background:var(--purple-bg);color:var(--purple)}
+.admin-nav-item svg{flex-shrink:0}
+.admin-nav-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
+.admin-nav-back{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-muted);padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition)}
+.admin-nav-back:hover{color:var(--text);border-color:var(--text-muted)}
+</style>
+
+<div class="admin-nav-wrap">
+  <div class="admin-nav-dropdown" id="adminNavDD">
+    <div class="admin-nav-btn" id="adminNavBtn" onclick="toggleAdminNavDD()" role="button" aria-haspopup="true">
+      <span class="anb-left"><%- icon(current.iconName, 15) %> <%= current.label %></span>
+      <span class="admin-nav-chevron"><%- icon('chevron-down', 14) %></span>
+    </div>
+    <div class="admin-nav-menu" id="adminNavMenu">
+      <% pages.forEach(p => { %>
+      <a href="<%= p.href %>" class="admin-nav-item <%= p.key === an ? 'active' : '' %>">
+        <%- icon(p.iconName, 15) %> <%= p.label %>
+      </a>
+      <% }) %>
+      <hr class="admin-nav-divider">
+      <a href="/dashboard" class="admin-nav-item"><%- icon('arrow-left', 14) %> Back to Dashboard</a>
+    </div>
+  </div>
+  <a href="/dashboard" class="admin-nav-back"><%- icon('grid', 13) %> Dashboard</a>
+</div>
+
+<script>
+(function(){
+  function toggleAdminNavDD(){
+    const btn  = document.getElementById('adminNavBtn');
+    const menu = document.getElementById('adminNavMenu');
+    const open = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+  }
+  window.toggleAdminNavDD = toggleAdminNavDD;
+  document.addEventListener('click', function(e){
+    const dd = document.getElementById('adminNavDD');
+    if(dd && !dd.contains(e.target)){
+      document.getElementById('adminNavMenu')?.classList.remove('open');
+      document.getElementById('adminNavBtn')?.classList.remove('open');
+    }
+  });
+})();
+</script>

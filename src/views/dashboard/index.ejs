@@ -75,8 +75,14 @@
 
     <div class="card mb-3">
       <div class="flex-between mb-2">
-        <h4>API Keys</h4>
-        <a href="/dashboard/api-keys" class="btn btn-outline btn-sm">Manage</a>
+        <div style="display:flex;align-items:center;gap:8px">
+          <h4>API Keys</h4>
+          <% if (totalKeys > 2) { %><span class="badge badge-gray" style="font-size:.72rem"><%= totalKeys %> total</span><% } %>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <% if (totalKeys > 2) { %><a href="/dashboard/api-keys" class="btn btn-ghost btn-sm" style="color:var(--purple);font-size:.8rem">View all <%- icon('arrow-right',12) %></a><% } %>
+          <a href="/dashboard/api-keys" class="btn btn-outline btn-sm">Manage</a>
+        </div>
       </div>
       <% if (!apiKeys.length) { %>
         <div class="empty-state">
@@ -94,12 +100,20 @@
           </div>
           <% }) %>
         </div>
+        <% if (totalKeys > 2) { %>
+        <div style="margin-top:12px;text-align:center">
+          <a href="/dashboard/api-keys" class="btn btn-outline btn-sm" style="width:100%"><%- icon('key',13) %> View all <%= totalKeys %> keys</a>
+        </div>
+        <% } %>
       <% } %>
     </div>
 
     <div class="card">
       <div class="flex-between mb-2">
-        <h4>Recent API Calls</h4>
+        <div style="display:flex;align-items:center;gap:8px">
+          <h4>Recent API Calls</h4>
+          <% if (totalLogs > 2) { %><span class="badge badge-gray" style="font-size:.72rem"><%= totalLogs.toLocaleString() %> total</span><% } %>
+        </div>
         <a href="/dashboard/logs" class="btn btn-outline btn-sm">All logs</a>
       </div>
       <% if (!recentLogs.length) { %>
@@ -121,6 +135,11 @@
             <% }) %>
           </tbody>
         </table></div>
+        <% if (totalLogs > 2) { %>
+        <div style="margin-top:12px;text-align:center">
+          <a href="/dashboard/logs" class="btn btn-outline btn-sm" style="width:100%"><%- icon('bar-chart',13) %> View all <%= totalLogs.toLocaleString() %> log entries</a>
+        </div>
+        <% } %>
       <% } %>
     </div>
   </div>

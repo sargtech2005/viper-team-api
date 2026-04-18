@@ -1,53 +1,43 @@
 <style>
-.admin-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - var(--navbar-h))}
-@media(max-width:860px){.admin-layout{grid-template-columns:1fr}}
-.admin-sidebar{background:var(--bg-2);border-right:1.5px solid var(--border);padding:20px 10px}
-.admin-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--radius-sm);color:var(--text-subtle);font-size:.87rem;font-weight:500;margin-bottom:2px;transition:all var(--transition)}
-.admin-link:hover{background:var(--bg-3);color:var(--text)}
-.admin-link.active{background:var(--purple-bg);color:var(--purple)}
-.admin-link svg{flex-shrink:0}
 .admin-main{padding:28px 24px}
 @media(max-width:600px){.admin-main{padding:16px}}
 </style>
-<div class="admin-layout">
-  <nav class="admin-sidebar">
-    <a href="/admin"          class="admin-link"><%- icon('bar-chart',15) %> Overview</a>
-    <a href="/admin/users"    class="admin-link active"><%- icon('users',15) %> Users</a>
-    <a href="/admin/payments" class="admin-link"><%- icon('credit-card',15) %> Payments</a>
-    <a href="/admin/plans"    class="admin-link"><%- icon('package',15) %> Plans</a>
-    <a href="/dashboard"      class="admin-link" style="margin-top:12px"><%- icon('arrow-right',15) %> Dashboard</a>
-  </nav>
-  <div class="admin-main">
-    <div class="page-header flex-between flex-wrap gap-1">
-      <div><h2>Users</h2><p>Total: <strong><%= total %></strong> accounts.</p></div>
-    </div>
-    <div class="card" style="padding:0">
-      <div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Calls</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
-        <tbody>
-          <% users.forEach(u => { %>
-          <tr id="urow-<%= u.id %>">
-            <td style="color:var(--text-muted)">#<%= u.id %></td>
-            <td><strong><%= u.username %></strong></td>
-            <td style="font-size:.81rem"><%= u.email %></td>
-            <td><span class="badge badge-blue"><%= u.plan_name||'Free' %></span></td>
-            <td><%= (u.api_calls_used||0).toLocaleString() %></td>
-            <td><span class="badge <%= u.role==='admin'?'badge-purple':'badge-gray' %>"><%= u.role %></span></td>
-            <td><span class="badge <%= u.is_active?'badge-green':'badge-red' %>" id="ustatus-<%= u.id %>"><%= u.is_active?'Active':'Banned' %></span></td>
-            <td style="font-size:.74rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></td>
-            <td><button class="btn btn-outline btn-sm" onclick="toggleUser(<%= u.id %>)"><%- icon('toggle-left',14) %></button></td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table></div>
-    </div>
-    <% if (totalPages>1) { %>
-    <div style="display:flex;gap:7px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-      <% for(let i=1;i<=totalPages;i++){ %><a href="?page=<%= i %>" class="btn <%= i===page?'btn-primary':'btn-outline' %> btn-sm"><%= i %></a><% } %>
-    </div>
-    <% } %>
+
+<div class="admin-main">
+  <%- include('../partials/admin-nav', { adminActive: 'users' }) %>
+
+  <div class="page-header flex-between flex-wrap gap-1">
+    <div><h2>Users</h2><p>Total: <strong><%= total %></strong> accounts.</p></div>
   </div>
+
+  <div class="card" style="padding:0">
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Calls</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+      <tbody>
+        <% users.forEach(u => { %>
+        <tr id="urow-<%= u.id %>">
+          <td style="color:var(--text-muted)">#<%= u.id %></td>
+          <td><strong><%= u.username %></strong></td>
+          <td style="font-size:.81rem"><%= u.email %></td>
+          <td><span class="badge badge-blue"><%= u.plan_name||'Free' %></span></td>
+          <td><%= (u.api_calls_used||0).toLocaleString() %></td>
+          <td><span class="badge <%= u.role==='admin'?'badge-purple':'badge-gray' %>"><%= u.role %></span></td>
+          <td><span class="badge <%= u.is_active?'badge-green':'badge-red' %>" id="ustatus-<%= u.id %>"><%= u.is_active?'Active':'Banned' %></span></td>
+          <td style="font-size:.74rem;color:var(--text-muted)"><%= new Date(u.created_at).toLocaleDateString() %></td>
+          <td><button class="btn btn-outline btn-sm" onclick="toggleUser(<%= u.id %>)"><%- icon('toggle-left',14) %></button></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table></div>
+  </div>
+
+  <% if (totalPages>1) { %>
+  <div style="display:flex;gap:7px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+    <% for(let i=1;i<=totalPages;i++){ %><a href="?page=<%= i %>" class="btn <%= i===page?'btn-primary':'btn-outline' %> btn-sm"><%= i %></a><% } %>
+  </div>
+  <% } %>
 </div>
+
 <script>
 async function toggleUser(id) {
   const ok = await viperConfirm("Toggle this user's access status?",'Ban / Unban User');

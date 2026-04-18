@@ -16,7 +16,8 @@ router.get('/', async (req, res, next) => {
       query(`SELECT COALESCE(SUM(amount_ngn),0) as total FROM payments WHERE status='success'`),
       query(`SELECT COUNT(*) FROM api_logs`),
     ]);
-    const recentUsers = await query(`SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 10`);
+    const recentUsers = await query(`SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 5`);
+    const totalUsersCount = parseInt(usersR.rows[0].count);
     res.render('admin/index', {
       title: 'Admin Panel — Viper-Team API',
       stats: {
@@ -26,6 +27,7 @@ router.get('/', async (req, res, next) => {
         apiCalls: logsR.rows[0].count,
       },
       recentUsers: recentUsers.rows,
+      totalUsersCount,
     });
   } catch (err) {
     next(err);
