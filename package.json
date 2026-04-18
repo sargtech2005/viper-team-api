@@ -5,9 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "build": "cd client && npm install && npm run build",
-    "dev:client": "cd client && npm run dev"
+    "dev": "nodemon app.js"
   },
   "dependencies": {
     "axios": "^1.7.2",

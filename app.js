@@ -6,11 +6,9 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const expressLayouts = require('express-ejs-layouts');
 const { icon } = require('./src/config/icons');
+const { startQuotaScheduler } = require('./src/config/scheduler');
 
 const app = express();
-
-// ── Track DB readiness ────────────────────────────────────────────────────────
-let dbReady = false;
 
 app.use(helmet({ contentSecurityPolicy: false }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
@@ -49,38 +47,69 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── DB readiness gate — show friendly error instead of crashing ───────────────
-app.use((req, res, next) => {
-  // Always allow static files and health checks through
-  if (req.path === '/health' || req.path.startsWith('/css') || req.path.startsWith('/js') || req.path.startsWith('/img')) {
-    return next();
-  }
-  if (!dbReady) {
-    if (req.path.startsWith('/api/')) {
-      return res.status(503).json({ success: false, error: 'Service starting up, please retry in a moment.' });
-    }
-    return res.status(503).send(`
+// ── /startup — run DB migrations on demand ────────────────────────────────────
+app.get('/startup', async (req, res) => {
+  try {
+    const { pool, autoMigrate } = require('./src/config/db');
+    // Test connection first
+    const client = await pool.connect();
+    client.release();
+    await autoMigrate();
+    res.send(`
       <!DOCTYPE html>
       <html>
-        <head><title>ViperAPI — Starting...</title>
+      <head>
+        <title>ViperAPI — DB Setup</title>
         <style>
           body { font-family: sans-serif; background: #0a0a12; color: #e2e8f0; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
-          .box { text-align:center; }
-          h1 { color: #10b981; } p { color: #94a3b8; }
+          .box { text-align:center; max-width: 500px; }
+          h1 { color: #10b981; font-size: 2rem; }
+          p { color: #94a3b8; margin: 12px 0; }
+          a { display:inline-block; margin-top:24px; background: linear-gradient(135deg,#7c3aed,#10b981); color:#fff; padding:12px 32px; border-radius:8px; text-decoration:none; font-weight:700; }
         </style>
-        <meta http-equiv="refresh" content="4">
-        </head>
-        <body><div class="box"><h1>🐍 ViperAPI</h1><p>Starting up, connecting to database...</p><p>This page will refresh automatically.</p></div></body>
+      </head>
+      <body>
+        <div class="box">
+          <h1>✅ Database Ready</h1>
+          <p>All tables created and seeded successfully.</p>
+          <p>You can now register an account and start using ViperAPI.</p>
+          <a href="/">Go to Homepage</a>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    console.error('Startup error:', err);
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>ViperAPI — Setup Error</title>
+        <style>
+          body { font-family: sans-serif; background: #0a0a12; color: #e2e8f0; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+          .box { text-align:center; max-width: 600px; }
+          h1 { color: #ef4444; }
+          pre { background:#12121e; padding:16px; border-radius:8px; text-align:left; color:#fca5a5; font-size:13px; overflow:auto; }
+          a { display:inline-block; margin-top:24px; background:#7c3aed; color:#fff; padding:12px 32px; border-radius:8px; text-decoration:none; font-weight:700; }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <h1>❌ Setup Failed</h1>
+          <p>Could not connect to the database. Check that DATABASE_URL is set correctly in your Fly.io secrets.</p>
+          <pre>${err.message}</pre>
+          <a href="/startup">Try Again</a>
+        </div>
+      </body>
       </html>
     `);
   }
-  next();
 });
 
-// ── Health check (always responds, even before DB is ready) ───────────────────
-app.get('/health', (req, res) => res.json({ status: 'ok', db: dbReady }));
+// ── /health ───────────────────────────────────────────────────────────────────
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// ── Routes ────────────────────────────────────────────────────────────────────
+// ── App routes ────────────────────────────────────────────────────────────────
 const authRoutes      = require('./src/routes/web/auth');
 const dashboardRoutes = require('./src/routes/web/dashboard');
 const pricingRoutes   = require('./src/routes/web/pricing');
@@ -101,6 +130,7 @@ app.get('/', optionalAuth, (req, res) => {
   res.render('index', { title: 'ViperAPI — Premium REST APIs for Every App & Bot' });
 });
 
+// ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, error: 'Endpoint not found.' });
@@ -108,6 +138,7 @@ app.use((req, res) => {
   res.status(404).render('error', { title: '404 — Not Found', code: 404, message: 'The page you are looking for does not exist.' });
 });
 
+// ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error(err.stack);
   if (req.path.startsWith('/api/')) {
@@ -116,21 +147,9 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { title: '500 — Error', code: 500, message: 'Something went wrong. Please try again.' });
 });
 
-// ── START: bind port FIRST, connect DB after ──────────────────────────────────
+// ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ ViperAPI running → http://0.0.0.0:${PORT}`);
-
-  // Connect to DB in background AFTER port is open
-  const { connectWithRetry, startQuotaScheduler } = require('./src/config/db');
-  connectWithRetry()
-    .then(() => {
-      dbReady = true;
-      console.log('✅ DB ready — app fully operational');
-      startQuotaScheduler();
-    })
-    .catch(err => {
-      console.error('❌ DB connection ultimately failed:', err.message);
-      // App keeps running — DB calls will just error individually
-    });
+  startQuotaScheduler();
 });
