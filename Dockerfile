@@ -3,9 +3,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-COPY client/package*.json ./client/
-
-RUN npm install --ignore-scripts
+RUN npm install --production=false
 
 COPY . .
 
