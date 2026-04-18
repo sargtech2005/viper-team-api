@@ -9,14 +9,13 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100%;
 }
-@media (min-width: 600px) {
-  .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 680px; }
+@media (min-width: 560px) {
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (min-width: 960px) {
-  .pricing-grid { grid-template-columns: repeat(4, 1fr); max-width: 1040px; }
+@media (min-width: 1024px) {
+  .pricing-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .pc {
@@ -28,7 +27,7 @@
   position: relative;
   transition: all var(--transition);
 }
-.pc:hover { border-color: #c4b5fd; box-shadow: var(--shadow-lg); }
+.pc:hover { border-color: rgba(139,92,246,0.5); box-shadow: var(--shadow-lg); }
 .pc.popular {
   border-color: var(--purple);
   box-shadow: 0 0 0 1px var(--purple), 0 8px 32px rgba(124,58,237,.14);

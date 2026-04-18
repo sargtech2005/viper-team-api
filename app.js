@@ -28,6 +28,7 @@ app.use((req, res, next) => {
   res.locals.APP_NAME    = 'ViperAPI';
   res.locals.APP_URL     = process.env.APP_URL || 'https://viper-api.name.ng';
   res.locals.currentPath = req.path;
+  res.locals.reqPath     = req.path;
   res.locals.icon        = icon;
   next();
 });

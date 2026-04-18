@@ -42,6 +42,7 @@ const autoMigrate = async () => {
         role             VARCHAR(10)   NOT NULL DEFAULT 'user' CHECK (role IN ('user','admin')),
         plan_id          INTEGER       REFERENCES plans(id) ON DELETE SET NULL,
         api_calls_used   INTEGER       NOT NULL DEFAULT 0,
+        subscription_day SMALLINT      DEFAULT NULL,
         is_active        BOOLEAN       NOT NULL DEFAULT true,
         reset_token      TEXT,
         reset_expires    TIMESTAMPTZ,
@@ -102,6 +103,18 @@ const autoMigrate = async () => {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_api_keys_value    ON api_keys(key_value);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_api_logs_user     ON api_logs(user_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_ref      ON payments(paystack_ref);`);
+
+    // Add subscription_day to existing tables (safe: ignored if column already exists)
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='subscription_day'
+        ) THEN
+          ALTER TABLE users ADD COLUMN subscription_day SMALLINT DEFAULT NULL;
+        END IF;
+      END $$;
+    `);
 
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at()

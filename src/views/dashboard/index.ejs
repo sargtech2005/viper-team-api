@@ -1,8 +1,9 @@
 <style>
-.welcome-banner{background:linear-gradient(135deg,var(--purple-bg),var(--green-bg));border:1.5px solid #ddd6fe;border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:14px}
+.welcome-banner{background:linear-gradient(135deg,var(--purple-bg),var(--green-bg));border:1.5px solid rgba(139,92,246,0.3);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:14px}
 .welcome-icon{width:44px;height:44px;background:var(--grad);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .welcome-icon svg{color:#fff}
-.quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.quick-links{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+@media(min-width:480px){.quick-links{grid-template-columns:repeat(4,1fr);gap:12px}}
 .quick-link{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;transition:all var(--transition);color:var(--text)}
 .quick-link:hover{border-color:var(--purple);background:var(--purple-bg)}
 .quick-link:hover svg{color:var(--purple)}

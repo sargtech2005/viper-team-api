@@ -4,12 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= typeof title !== 'undefined' ? title : 'ViperAPI' %></title>
-  <meta name="description" content="Premium REST APIs for any app, bot, or framework. 16 endpoints. One API key." />
+  <meta name="description" content="<%= typeof metaDesc !== 'undefined' ? metaDesc : 'Premium REST APIs for any app, bot, or framework. 16 endpoints, one API key. Utilities, AI fun, search, media and more.' %>" />
   <meta property="og:title"       content="<%= typeof title !== 'undefined' ? title : 'ViperAPI' %>" />
-  <meta property="og:description" content="Premium REST APIs for every framework. 16 endpoints, one key." />
-  <meta property="og:image"       content="/img/og-image.svg" />
+  <meta property="og:description" content="<%= typeof metaDesc !== 'undefined' ? metaDesc : 'Premium REST APIs for every framework. 16 real endpoints, one key. Works in any language.' %>" />
+  <meta property="og:image"       content="<%= (process.env.APP_URL || 'https://viper-api.name.ng') %>/img/og-image.svg" />
+  <meta property="og:url"         content="<%= (process.env.APP_URL || 'https://viper-api.name.ng') + reqPath %>" />
   <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="ViperAPI" />
   <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:title"      content="<%= typeof title !== 'undefined' ? title : 'ViperAPI' %>" />
+  <meta name="twitter:description" content="<%= typeof metaDesc !== 'undefined' ? metaDesc : 'Premium REST APIs for every framework. 16 endpoints, one key.' %>" />
+  <meta name="twitter:image"      content="<%= (process.env.APP_URL || 'https://viper-api.name.ng') %>/img/og-image.svg" />
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

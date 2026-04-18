@@ -20,9 +20,14 @@ const Payment = {
       `UPDATE payments SET status = 'success', verified_at = NOW() WHERE paystack_ref = $1`,
       [reference]
     );
-    // Upgrade user plan + reset call counter
+    // Upgrade plan, reset quota, and record which day-of-month they subscribed
+    // so the scheduler resets their quota on the same day each month.
     await query(
-      `UPDATE users SET plan_id = $1, api_calls_used = 0 WHERE id = $2`,
+      `UPDATE users
+       SET plan_id        = $1,
+           api_calls_used = 0,
+           subscription_day = EXTRACT(DAY FROM NOW())::SMALLINT
+       WHERE id = $2`,
       [planId, userId]
     );
   },
