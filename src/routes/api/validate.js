@@ -150,4 +150,80 @@ router.post('/bvn', (req, res) => {
   res.json({ success: true, data: { valid, bvn: n, format: '11-digit numeric' } });
 });
 
+// ─── Disposable Email Check ───────────────────────────────────────────────────
+router.post('/disposable', async (req, res) => {
+  const axios = require('axios');
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, error: 'email is required' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, error: 'Invalid email format' });
+
+  const domain = email.split('@')[1].toLowerCase();
+  const SAFE = ['gmail.com','yahoo.com','outlook.com','hotmail.com','icloud.com','protonmail.com','live.com','me.com'];
+  if (SAFE.includes(domain)) {
+    return res.json({ success: true, email, domain, disposable: false, source: 'safe-list', advice: 'Recognised trusted email provider.' });
+  }
+
+  try {
+    const { data } = await axios.get(`https://open.kickbox.com/v1/disposable/${domain}`, { timeout: 8000 });
+    res.json({ success: true, email, domain, disposable: data.disposable, source: 'kickbox',
+      advice: data.disposable ? 'This domain is associated with disposable/temporary email providers.' : 'Domain not found in disposable email lists.' });
+  } catch {
+    try {
+      const { data: list } = await axios.get('https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf', { timeout: 8000 });
+      const disposable = list.split('\n').map(d => d.trim().toLowerCase()).includes(domain);
+      res.json({ success: true, email, domain, disposable, source: 'blocklist' });
+    } catch (e2) {
+      res.status(500).json({ success: false, error: 'Disposable check unavailable: ' + e2.message });
+    }
+  }
+});
+
+// ─── Phone Lookup ─────────────────────────────────────────────────────────────
+// Full carrier + line-type lookup using libphonenumber-js (local, no API key)
+// npm install libphonenumber-js
+router.post('/phone-lookup', (req, res) => {
+  const { phone, country = 'NG' } = req.body;
+  if (!phone) return res.status(400).json({ success: false, error: 'phone is required' });
+
+  let parsePhoneNumber;
+  try { ({ parsePhoneNumber } = require('libphonenumber-js')); }
+  catch { return res.status(503).json({ success: false, error: 'libphonenumber-js not installed. Run: npm install libphonenumber-js' }); }
+
+  try {
+    const parsed = parsePhoneNumber(String(phone), country.toUpperCase());
+    if (!parsed) return res.status(400).json({ success: false, error: 'Could not parse phone number' });
+
+    // Nigerian carrier prefix map
+    const NG = {
+      '0701':'Airtel','0708':'Airtel','0802':'Airtel','0808':'Airtel','0812':'Airtel','0901':'Airtel','0902':'Airtel','0907':'Airtel','0912':'Airtel',
+      '0703':'MTN',   '0706':'MTN',   '0803':'MTN',   '0806':'MTN',   '0810':'MTN',   '0813':'MTN',   '0814':'MTN',   '0816':'MTN',   '0903':'MTN',   '0906':'MTN',
+      '0705':'Glo',   '0805':'Glo',   '0807':'Glo',   '0811':'Glo',   '0815':'Glo',   '0905':'Glo',
+      '0704':'9mobile','0809':'9mobile','0817':'9mobile','0818':'9mobile','0909':'9mobile','0908':'9mobile',
+    };
+
+    let carrier = null;
+    if (parsed.country === 'NG') {
+      const prefix = '0' + parsed.nationalNumber.slice(0, 3);
+      carrier = NG[prefix] || null;
+    }
+
+    res.json({
+      success:         true,
+      valid:           parsed.isValid(),
+      number:          parsed.number,
+      international:   parsed.formatInternational(),
+      national:        parsed.formatNational(),
+      e164:            parsed.format('E.164'),
+      country:         parsed.country,
+      country_code:    '+' + parsed.countryCallingCode,
+      national_number: parsed.nationalNumber,
+      carrier,
+      line_type:       carrier ? 'mobile' : 'unknown',
+      possible:        parsed.isPossible(),
+    });
+  } catch (e) {
+    res.status(400).json({ success: false, error: 'Parse error: ' + e.message });
+  }
+});
+
 module.exports = router;

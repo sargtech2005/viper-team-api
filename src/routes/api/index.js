@@ -41,6 +41,9 @@ router.use('/news',      require('./news'));      // top headlines, search (need
 router.use('/tempemail', require('./tempemail')); // generate temp email + read inbox
 router.use('/color',     require('./color'));     // convert, name, contrast, random, mix
 router.use('/code',      require('./code'));      // minify, format, count, escape/unescape
+router.use('/ai',        require('./ai'));         // complete, summarize, grammar, explain, tone
+router.use('/pdf',       require('./pdf'));        // generate, extract, merge
+router.use('/security',  require('./security'));   // pwned, headers, csp
 
 // ── Meta endpoint — returns caller's plan info ───────────────────
 router.get('/me', (req, res) => {

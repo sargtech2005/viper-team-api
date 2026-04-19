@@ -150,4 +150,49 @@ router.get('/ping', async (req, res) => {
   }
 });
 
+// ─── Domain Age ───────────────────────────────────────────────────────────────
+// GET /api/v1/network/domain-age?domain=google.com
+router.get('/domain-age', async (req, res) => {
+  const axios = require('axios');
+  const { domain } = req.query;
+  if (!domain) return res.status(400).json({ success: false, error: 'domain is required' });
+
+  const clean = domain.replace(/^https?:\/\//i,'').replace(/\/.*/,'').toLowerCase().trim();
+
+  try {
+    const { data } = await axios.get('https://www.whoisxmlapi.com/whoisserver/WhoisService', {
+      params: { apiKey: 'at_free', domainName: clean, outputFormat: 'JSON' },
+      timeout: 12000,
+    });
+
+    const wr = data?.WhoisRecord || data?.whoisRecord;
+    if (!wr) throw new Error('No WHOIS data');
+
+    const raw = wr.rawText || '';
+    const rd  = wr.registryData || wr;
+
+    const created   = rd.createdDate   || wr.createdDate   || raw.match(/creation date[:\s]+([^\n\r]+)/i)?.[1]?.trim() || raw.match(/registered[:\s]+([^\n\r]+)/i)?.[1]?.trim() || null;
+    const expires   = rd.expiresDate   || wr.expiresDate   || raw.match(/expir(?:y|ation|es)[^:]*:[:\s]+([^\n\r]+)/i)?.[1]?.trim() || null;
+    const updated   = rd.updatedDate   || wr.updatedDate   || raw.match(/updated[^:]*:[:\s]+([^\n\r]+)/i)?.[1]?.trim() || null;
+    const registrar = wr.registrarName || rd.registrarName || raw.match(/registrar[:\s]+([^\n\r]+)/i)?.[1]?.trim() || null;
+
+    let age_days = null, age_years = null;
+    if (created) {
+      const d = new Date(created);
+      if (!isNaN(d)) { age_days = Math.floor((Date.now()-d)/86400000); age_years = parseFloat((age_days/365.25).toFixed(1)); }
+    }
+
+    res.json({
+      success: true, domain: clean, created, expires, updated,
+      age_days, age_years,
+      age_label: age_years !== null ? `${age_years} year${age_years !== 1 ? 's' : ''}` : null,
+      registrar,
+      status: Array.isArray(rd.status) ? rd.status : (rd.status ? [rd.status] : []),
+    });
+  } catch (e) {
+    if (e.response?.status === 404 || e.response?.status === 400) return res.status(404).json({ success: false, error: `No WHOIS data found for "${clean}"` });
+    res.status(500).json({ success: false, error: 'WHOIS lookup failed: ' + e.message });
+  }
+});
+
 module.exports = router;

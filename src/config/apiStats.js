@@ -219,6 +219,30 @@ const CATEGORIES = [
     docs:    '#code',
     modules: ['code'],
   },
+  {
+    key:     'ai',
+    name:    'AI Text',
+    icon:    'zap',
+    color:   'ci-purple',
+    docs:    '#ai',
+    modules: ['ai'],
+  },
+  {
+    key:     'pdf',
+    name:    'PDF Tools',
+    icon:    'file-text',
+    color:   'ci-rose',
+    docs:    '#pdf',
+    modules: ['pdf'],
+  },
+  {
+    key:     'security',
+    name:    'Security',
+    icon:    'shield',
+    color:   'ci-green',
+    docs:    '#security',
+    modules: ['security'],
+  },
 ];
 
 // ── Route counter ────────────────────────────────────────────────────────────

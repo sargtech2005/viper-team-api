@@ -413,4 +413,42 @@ router.get('/tech', async (req, res) => {
   }
 });
 
+// ─── IP Reputation / Proxy Detection ─────────────────────────────────────────
+// GET /api/v1/host/reputation?ip=1.2.3.4
+// Uses ip-api.com (free, no key needed)
+router.get('/reputation', async (req, res) => {
+  const axios = require('axios');
+  let { ip } = req.query;
+  if (!ip) ip = req.ip?.replace('::ffff:','') || req.connection?.remoteAddress;
+  if (!ip || ip === '::1' || ip === '127.0.0.1') {
+    return res.status(400).json({ success: false, error: 'ip query param is required' });
+  }
+  const cleanIp = ip.trim().replace('::ffff:','');
+  try {
+    const { data } = await axios.get(
+      `http://ip-api.com/json/${cleanIp}?fields=status,message,country,countryCode,regionName,city,zip,isp,org,as,asname,proxy,hosting,mobile,query`,
+      { timeout: 8000 }
+    );
+    if (data.status === 'fail') return res.status(400).json({ success: false, error: data.message || 'Invalid IP' });
+
+    const isProxy = data.proxy || false, isHosting = data.hosting || false, isMobile = data.mobile || false;
+    const riskScore = (isProxy ? 40 : 0) + (isHosting ? 20 : 0);
+    const flags = [...(isProxy ? ['proxy_or_vpn'] : []), ...(isHosting ? ['datacenter_or_hosting'] : []), ...(isMobile ? ['mobile_network'] : [])];
+
+    res.json({
+      success: true, ip: data.query,
+      risk_level:  riskScore >= 50 ? 'high' : riskScore >= 20 ? 'medium' : 'low',
+      risk_score:  riskScore, flags,
+      is_proxy: isProxy, is_vpn: isProxy, is_hosting: isHosting, is_mobile: isMobile,
+      country: data.country, country_code: data.countryCode, region: data.regionName,
+      city: data.city, zip: data.zip, isp: data.isp, org: data.org, asn: data.as, as_name: data.asname,
+      advice: isProxy ? 'IP is associated with a proxy/VPN — exercise caution.'
+            : isHosting ? 'IP belongs to a datacenter — may be automated traffic.'
+            : 'No significant risk signals detected.',
+    });
+  } catch (e) {
+    fail(res, 'Reputation lookup failed: ' + e.message, 500);
+  }
+});
+
 module.exports = router;

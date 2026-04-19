@@ -117,4 +117,42 @@ router.get('/businessday', (req, res) => {
   res.json({ success: true, data: { date: d.toISOString().slice(0,10), day_of_week: days[day], is_business_day, is_weekend: !is_business_day } });
 });
 
+// ─── Timezone Lookup ──────────────────────────────────────────────────────────
+// GET /api/v1/datetime/timezone?tz=Africa/Lagos  or  ?city=Lagos
+router.get('/timezone', async (req, res) => {
+  const axios = require('axios');
+  const { tz, city } = req.query;
+  if (!tz && !city) return res.status(400).json({ success: false, error: 'tz (e.g. Africa/Lagos) or city (e.g. Lagos) is required' });
+
+  const CITY_MAP = {
+    lagos:'Africa/Lagos', abuja:'Africa/Lagos', london:'Europe/London', newyork:'America/New_York',
+    'new york':'America/New_York', losangeles:'America/Los_Angeles', paris:'Europe/Paris',
+    berlin:'Europe/Berlin', dubai:'Asia/Dubai', tokyo:'Asia/Tokyo', beijing:'Asia/Shanghai',
+    shanghai:'Asia/Shanghai', sydney:'Australia/Sydney', toronto:'America/Toronto',
+    chicago:'America/Chicago', accra:'Africa/Accra', nairobi:'Africa/Nairobi', cairo:'Africa/Cairo',
+    johannesburg:'Africa/Johannesburg', istanbul:'Europe/Istanbul', mumbai:'Asia/Kolkata',
+    delhi:'Asia/Kolkata', singapore:'Asia/Singapore', moscow:'Europe/Moscow',
+    amsterdam:'Europe/Amsterdam', madrid:'Europe/Madrid', rome:'Europe/Rome',
+    seoul:'Asia/Seoul', bangkok:'Asia/Bangkok', jakarta:'Asia/Jakarta', karachi:'Asia/Karachi',
+  };
+
+  const timezone = tz || CITY_MAP[String(city).toLowerCase().trim()] || String(city);
+
+  try {
+    const { data } = await axios.get(`https://worldtimeapi.org/api/timezone/${encodeURIComponent(timezone)}`, { timeout: 8000 });
+    const date = new Date(data.datetime);
+    res.json({
+      success: true, timezone: data.timezone, datetime: data.datetime,
+      date: date.toISOString().slice(0,10), time: date.toTimeString().slice(0,8),
+      utc_offset: data.utc_offset, utc_datetime: data.utc_datetime,
+      dst: data.dst, dst_offset: data.dst_offset, abbreviation: data.abbreviation,
+      unix: data.unixtime, week_number: data.week_number,
+      day_of_week: data.day_of_week, day_of_year: data.day_of_year,
+    });
+  } catch (e) {
+    if (e.response?.status === 404) return res.status(404).json({ success: false, error: `Unknown timezone: "${timezone}". Use IANA format e.g. Africa/Lagos` });
+    res.status(500).json({ success: false, error: 'Timezone service error: ' + e.message });
+  }
+});
+
 module.exports = router;

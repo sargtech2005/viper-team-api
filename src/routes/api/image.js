@@ -210,4 +210,60 @@ router.post('/resize', (req, res) => {
   });
 });
 
+// ─── OCR — Image to Text ──────────────────────────────────────────────────────
+// POST /api/v1/image/ocr
+// Body: { "url": "https://..." }  OR  { "base64": "iVBORw0..." }
+// Uses OCR.space free API — 25,000 req/month.
+// Optional: add OCR_API_KEY to .env (free key at https://ocr.space/ocrapi)
+// Falls back to the public demo key for low-volume use.
+router.post('/ocr', async (req, res) => {
+  const axios = require('axios');
+  const { url, base64, language = 'eng', scale = true } = req.body;
+  if (!url && !base64) return res.status(400).json({ success: false, error: 'url or base64 is required' });
+
+  const apiKey = process.env.OCR_API_KEY || 'helloworld';
+
+  try {
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('apikey',            apiKey);
+    form.append('language',          language);
+    form.append('isOverlayRequired', 'false');
+    form.append('scale',             scale ? 'true' : 'false');
+    form.append('OCREngine',         '2');
+
+    if (url) {
+      form.append('url', url);
+    } else {
+      const dataUri = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+      form.append('base64Image', dataUri);
+    }
+
+    const { data } = await axios.post('https://api.ocr.space/parse/image', form, {
+      headers: form.getHeaders ? form.getHeaders() : { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
+    });
+
+    if (data.IsErroredOnProcessing) {
+      return res.status(400).json({ success: false, error: data.ErrorMessage?.[0] || 'OCR processing failed' });
+    }
+
+    const results  = (data.ParsedResults || []).map(r => ({ text: r.ParsedText?.trim() || '', confidence: r.TextOverlay?.MeanConfidence || null }));
+    const fullText = results.map(r => r.text).join('\n').trim();
+
+    res.json({
+      success:  true,
+      text:     fullText,
+      pages:    results.length,
+      results,
+      language,
+      chars:    fullText.length,
+      words:    fullText.split(/\s+/).filter(Boolean).length,
+      processing_time_ms: data.ProcessingTimeInMilliseconds || null,
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'OCR failed: ' + e.message });
+  }
+});
+
 module.exports = router;

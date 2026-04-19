@@ -150,4 +150,29 @@ router.post('/diff', (req, res) => {
   res.json({ success: true, data: { added, removed, unchanged: same, stats: { added: added.length, removed: removed.length, unchanged: same.length } } });
 });
 
+// ─── Translate ────────────────────────────────────────────────────────────────
+// Uses MyMemory API — free, no key needed, 1000 req/day per IP
+// langpair examples: en|es  en|fr  en|yo  en|ha  en|ig  auto|en
+router.post('/translate', async (req, res) => {
+  const axios = require('axios');
+  const { text, from = 'auto', to } = req.body;
+  if (!text) return res.status(400).json({ success: false, error: 'text is required' });
+  if (!to)   return res.status(400).json({ success: false, error: 'to (target language code) is required. e.g. "es", "fr", "yo", "ha"' });
+  if (text.length > 500) return res.status(400).json({ success: false, error: 'text too long (max 500 chars per request)' });
+
+  try {
+    const { data } = await axios.get('https://api.mymemory.translated.net/get', {
+      params: { q: text, langpair: `${from}|${to}`, de: 'viper-api@noreply.com' },
+      timeout: 10000,
+    });
+    if (data.responseStatus !== 200 && data.responseStatus !== '200') {
+      return res.status(400).json({ success: false, error: data.responseDetails || 'Translation failed' });
+    }
+    const t = data.responseData;
+    res.json({ success: true, translated: t.translatedText, from, to, match: t.match, original: text });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Translation service error: ' + e.message });
+  }
+});
+
 module.exports = router;
