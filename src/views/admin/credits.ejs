@@ -88,7 +88,7 @@
       </div>
       <div class="pack-actions">
         <button class="btn-icon" data-pack="<%- encodeURIComponent(JSON.stringify(p)) %>" onclick="editPackBtn(this)">✏️ Edit</button>
-        <button class="btn-icon danger" onclick="deletePack(<%= p.id %>, '<%= p.label.replace(/'/g,\"\\'\")||\"\" %>')">🗑 Delete</button>
+        <button class="btn-icon danger" data-id="<%= p.id %>" data-label="<%- encodeURIComponent(p.label) %>" onclick="deletePackBtn(this)">🗑 Delete</button>
       </div>
     </div>
     <% }) %>

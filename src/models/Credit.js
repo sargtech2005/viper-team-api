@@ -2,11 +2,50 @@ const { query } = require('../config/db');
 
 const SUBSCRIBER_BONUS_DEFAULT = 0.20; // fallback if not in DB
 
+// ── Auto-create credit_packs table + seed defaults if missing ─────────────────
+// Mirrors settings.js pattern so credit_packs always exists on first access,
+// even when /startup was run before this migration was added.
+let _tableReady = false;
+async function ensureCreditPacksTable() {
+  if (_tableReady) return;
+  await query(`
+    CREATE TABLE IF NOT EXISTS credit_packs (
+      id          SERIAL PRIMARY KEY,
+      pack_id     VARCHAR(30)  NOT NULL UNIQUE,
+      label       VARCHAR(50)  NOT NULL,
+      price_ngn   INTEGER      NOT NULL DEFAULT 500,
+      base        INTEGER      NOT NULL DEFAULT 600,
+      bonus       INTEGER      NOT NULL DEFAULT 0,
+      bonus_pct   INTEGER      NOT NULL DEFAULT 0,
+      is_active   BOOLEAN      NOT NULL DEFAULT true,
+      sort_order  INTEGER      NOT NULL DEFAULT 0,
+      created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    )
+  `);
+  await query(`
+    INSERT INTO credit_packs (pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order) VALUES
+      ('topup',  'Top-up',  500,   600,   0,     0,  1),
+      ('bundle', 'Bundle',  2000,  3000,  450,   15, 2),
+      ('stack',  'Stack',   7500,  15000, 3750,  25, 3),
+      ('bulk',   'Bulk',    20000, 50000, 17500, 35, 4)
+    ON CONFLICT (pack_id) DO NOTHING
+  `);
+  // Also ensure the SUBSCRIBER_BONUS_PCT setting row exists
+  try {
+    await query(`
+      INSERT INTO settings (key, value) VALUES ('SUBSCRIBER_BONUS_PCT', '20')
+      ON CONFLICT (key) DO NOTHING
+    `);
+  } catch (_) { /* settings table may not exist yet — getSetting handles fallback */ }
+  _tableReady = true;
+}
+
 const Credit = {
 
   // ─── Pack CRUD (DB-backed) ──────────────────────────────────────────────────
 
   allPacks: async () => {
+    await ensureCreditPacksTable();
     const r = await query(
       `SELECT *, (base + bonus) AS total FROM credit_packs ORDER BY sort_order ASC, id ASC`
     );
@@ -18,20 +57,22 @@ const Credit = {
   },
 
   activePacks: async () => {
+    await ensureCreditPacksTable();
     const r = await query(
       `SELECT *, (base + bonus) AS total FROM credit_packs WHERE is_active = true ORDER BY sort_order ASC, id ASC`
     );
     return r.rows.map(p => ({
       ...p,
       total:   p.base + p.bonus,
-      price:   p.price_ngn,                                           // billing.ejs uses pack.price
-      id:      p.pack_id,                                             // billing.ejs passes this as pack_id to verify endpoint
-      dbId:    p.id,                                                  // keep integer PK if needed
+      price:   p.price_ngn,       // billing.ejs uses pack.price
+      id:      p.pack_id,         // billing.ejs passes this as pack_id to verify endpoint
+      dbId:    p.id,              // keep integer PK if needed
       perCall: (p.price_ngn / (p.base + p.bonus || 1)).toFixed(3),
     }));
   },
 
   findPack: async (packId) => {
+    await ensureCreditPacksTable();
     const r = await query(
       `SELECT *, (base + bonus) AS total FROM credit_packs WHERE pack_id = $1`,
       [packId]
@@ -48,6 +89,7 @@ const Credit = {
   },
 
   findPackById: async (dbId) => {
+    await ensureCreditPacksTable();
     const r = await query(
       `SELECT *, (base + bonus) AS total FROM credit_packs WHERE id = $1`,
       [dbId]
@@ -58,6 +100,7 @@ const Credit = {
   },
 
   createPack: async ({ packId, label, priceNgn, base, bonus, bonusPct, sortOrder }) => {
+    await ensureCreditPacksTable();
     const r = await query(
       `INSERT INTO credit_packs (pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
