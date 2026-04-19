@@ -36,6 +36,11 @@
       <% } %>
     </ul>
 
+    <!-- Theme toggle (desktop) -->
+    <button class="theme-toggle" onclick="viperToggleTheme()" title="Toggle theme" aria-label="Toggle theme" style="margin-left:6px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+    </button>
+
     <!-- Mobile hamburger -->
     <button class="nav-hamburger" id="drawerToggle" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -81,6 +86,17 @@
       <a href="/register" class="drawer-link drawer-cta"><%- icon('zap',16) %> Get started free</a>
     <% } %>
   </nav>
+
+  <!-- Theme toggle row in drawer -->
+  <div class="drawer-theme-row">
+    <span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+      <span id="drawerThemeLabel">Dark mode</span>
+    </span>
+    <button class="theme-toggle" onclick="viperToggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+    </button>
+  </div>
 
   <!-- Profile footer: tap to reveal Settings + Sign Out popup -->
   <% if (user) { %>

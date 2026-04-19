@@ -115,6 +115,23 @@
 .pg-out-wrap{border-radius:var(--radius-sm);overflow:hidden;border:1.5px solid #1e293b}
 .pg-out-chrome{display:flex;align-items:center;gap:6px;background:#131d2e;padding:7px 12px;border-bottom:1px solid #1e2d45}
 .pg-out-chrome span{width:10px;height:10px;border-radius:50%}
+/* ── Docs Search ────────────────────────────────────────────────────────── */
+.docs-search-bar{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin-bottom:22px;transition:border-color .18s}
+.docs-search-bar:focus-within{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.docs-search-bar svg{color:var(--text-muted);flex-shrink:0;transition:color .15s}
+.docs-search-bar:focus-within svg{color:var(--purple)}
+#docsSearchInput{flex:1;border:none;outline:none;background:transparent;font-size:.9rem;color:var(--text);min-width:0}
+#docsSearchInput::placeholder{color:var(--text-muted)}
+#docsSearchClear{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;border-radius:4px;display:none;line-height:1;transition:color .15s}
+#docsSearchClear:hover{color:var(--text)}
+.docs-search-count{font-size:.74rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+.ep-card.search-hidden{display:none}
+.cat-section.search-hidden{display:none}
+.docs-no-results{text-align:center;padding:60px 20px;display:none}
+.docs-no-results svg{color:var(--text-muted);margin-bottom:12px}
+.docs-no-results h4{font-size:1rem;color:var(--text);margin-bottom:6px}
+.docs-no-results p{font-size:.86rem;color:var(--text-muted)}
+
 .pg-out{background:#0d1117;padding:14px;font-family:var(--mono);font-size:.78rem;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
 </style>
 
@@ -149,6 +166,23 @@
     <div class="page-header" style="margin-bottom:24px">
       <h2>API Docs & Playground</h2>
       <p style="color:var(--text-muted);margin-top:4px">Browse every endpoint and test live — paste your API key and run directly in the browser. Each test deducts 1 credit.</p>
+    </div>
+
+    <!-- Docs Search -->
+    <div class="docs-search-bar" id="docsSearchBar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="docsSearchInput" placeholder="Search endpoints, categories… (/ or Ctrl+K)" autocomplete="off" spellcheck="false">
+      <span class="docs-search-count" id="docsSearchCount"></span>
+      <button id="docsSearchClear" onclick="clearDocsSearch()" aria-label="Clear search" title="Clear">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- No results state -->
+    <div class="docs-no-results" id="docsNoResults">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <h4>No results found</h4>
+      <p>Try searching for a category name, endpoint path, or keyword.</p>
     </div>
 
     <!-- Base URL bar -->
@@ -489,4 +523,94 @@ async function runEndpoint(btn, method, path){
     btn.innerHTML='<%- icon("play",14) %> Run Request';
   }
 }
+
+// ── Docs Search ──────────────────────────────────────────────────────────────
+(function() {
+  var input   = document.getElementById('docsSearchInput');
+  var clearBtn= document.getElementById('docsSearchClear');
+  var countEl = document.getElementById('docsSearchCount');
+  var noRes   = document.getElementById('docsNoResults');
+  if (!input) return;
+
+  function docsSearch(q) {
+    q = q.trim().toLowerCase();
+    clearBtn.style.display = q ? 'block' : 'none';
+
+    var sections = document.querySelectorAll('.cat-section');
+    var totalVisible = 0;
+
+    sections.forEach(function(sec) {
+      // Skip auth/error sections from filtering
+      if (sec.id === 'auth-section' || sec.id === 'errors-section') {
+        sec.classList.remove('search-hidden');
+        return;
+      }
+
+      if (!q) {
+        sec.classList.remove('search-hidden');
+        sec.querySelectorAll('.ep-card').forEach(function(card) { card.classList.remove('search-hidden'); });
+        totalVisible += sec.querySelectorAll('.ep-card').length;
+        return;
+      }
+
+      // Category-level match: if the category heading matches, show all endpoints
+      var catText = (sec.querySelector('.cat-hd h3, .cat-hd') || {textContent:''}).textContent.toLowerCase();
+      var catMatch = catText.includes(q);
+
+      var cards = sec.querySelectorAll('.ep-card');
+      var visInCat = 0;
+
+      cards.forEach(function(card) {
+        var path  = (card.querySelector('.ep-path')  || {textContent:''}).textContent.toLowerCase();
+        var name  = (card.querySelector('.ep-name')  || {textContent:''}).textContent.toLowerCase();
+        var method= (card.querySelector('.method-badge') || {textContent:''}).textContent.toLowerCase();
+        // Also grab description text inside the card body if open
+        var desc  = (card.querySelector('p') || {textContent:''}).textContent.toLowerCase();
+        var matches = catMatch || path.includes(q) || name.includes(q) || method.includes(q) || desc.includes(q);
+        card.classList.toggle('search-hidden', !matches);
+        if (matches) visInCat++;
+      });
+
+      sec.classList.toggle('search-hidden', visInCat === 0 && !catMatch);
+      if (catMatch && visInCat === 0) {
+        // Show all cards if category name matched
+        cards.forEach(function(card){ card.classList.remove('search-hidden'); visInCat++; });
+        sec.classList.remove('search-hidden');
+      }
+      totalVisible += visInCat;
+    });
+
+    // Count display
+    if (q) {
+      countEl.textContent = totalVisible + ' result' + (totalVisible !== 1 ? 's' : '');
+      noRes.style.display = totalVisible === 0 ? 'block' : 'none';
+    } else {
+      countEl.textContent = '';
+      noRes.style.display = 'none';
+    }
+  }
+
+  input.addEventListener('input', function() { docsSearch(this.value); });
+  input.addEventListener('keydown', function(e) { if (e.key === 'Escape') { this.value = ''; clearDocsSearch(); } });
+
+  window.clearDocsSearch = function() {
+    input.value = '';
+    docsSearch('');
+    input.focus();
+  };
+
+  // Keyboard shortcut: / or Ctrl+K focuses the search
+  document.addEventListener('keydown', function(e) {
+    if ((e.key === '/' || (e.ctrlKey && e.key === 'k')) && document.activeElement !== input) {
+      var tag = document.activeElement.tagName;
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+        document.getElementById('docsSearchBar').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  });
+})();
+
 </script>
