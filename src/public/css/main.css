@@ -1466,8 +1466,9 @@ html, body { overflow-x: hidden; max-width: 100vw; }
 [data-theme="light"] .pg-out         { background: #1e293b; }
 [data-theme="light"] .code-block-chrome,
 [data-theme="light"] .pg-out-chrome  { background: #0f172a; }
-[data-theme="light"] .hero-bg        { opacity: 0.04; }
-[data-theme="light"] .hero-dots      { opacity: 0.06; }
+[data-theme="light"] .hero            { background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%); }
+[data-theme="light"] .hero-bg        { opacity: 0.12; }
+[data-theme="light"] .hero-dots      { opacity: 0.08; background-image: radial-gradient(circle, rgba(124,58,237,0.18) 1px, transparent 1px); }
 [data-theme="light"] .section-strip  { background: var(--bg-2); }
 
 /* ── Theme toggle button ── */
