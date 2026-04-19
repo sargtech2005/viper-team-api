@@ -132,6 +132,109 @@ const API_CATALOG = [
       { method:'GET', path:'/api/v1/media/avatar',      label:'Avatar Generator',  desc:'Generate a letter-based gradient avatar SVG for any name.',           params:[{name:'name',required:true,desc:'Name or username'},{name:'size',required:false,desc:'Size px (default: 150, max: 512)'}] },
     ],
   },
+  {
+    category: 'Network & Web',
+    icon: '🌐',
+    endpoints: [
+      { method:'GET', path:'/api/v1/network/whois',   label:'WHOIS Lookup',      desc:'Get domain registration info — registrar, owner, expiry dates.',       params:[{name:'domain',required:true,desc:'Domain name e.g. google.com'}] },
+      { method:'GET', path:'/api/v1/network/dns',     label:'DNS Lookup',        desc:'Resolve DNS records for a domain. Supports A, AAAA, MX, TXT, NS, CNAME, SOA, PTR.', params:[{name:'domain',required:true,desc:'Domain name'},{name:'type',required:false,desc:'Record type (default: A)'}] },
+      { method:'GET', path:'/api/v1/network/ssl',     label:'SSL Certificate',   desc:'Check SSL certificate validity, expiry date and days remaining.',      params:[{name:'domain',required:true,desc:'Domain name e.g. google.com'}] },
+      { method:'GET', path:'/api/v1/network/headers', label:'HTTP Headers',      desc:'Fetch all response headers from any URL.',                             params:[{name:'url',required:true,desc:'Full URL e.g. https://google.com'}] },
+      { method:'GET', path:'/api/v1/network/status',  label:'Website Status',    desc:'Check if a website is up or down + response time.',                   params:[{name:'url',required:true,desc:'Full URL to check'}] },
+      { method:'GET', path:'/api/v1/network/ping',    label:'Ping Host',         desc:'DNS-based reachability check for any hostname or IP.',                 params:[{name:'host',required:true,desc:'Hostname or IP address'}] },
+    ],
+  },
+  {
+    category: 'Host & IP',
+    icon: '🖥️',
+    endpoints: [
+      { method:'GET', path:'/api/v1/host/ip',      label:'IP Info',           desc:'Full geo, ISP, ASN, proxy and hosting flags for any IPv4/IPv6 address.', params:[{name:'ip',required:true,desc:'IP address to look up'}] },
+      { method:'GET', path:'/api/v1/host/myip',    label:'My IP',             desc:"Returns the caller's own IP address with geo info.",                    params:[] },
+      { method:'GET', path:'/api/v1/host/lookup',  label:'Domain Lookup',     desc:'Full domain intelligence — A/MX/NS/TXT records + IP geo in one call.',  params:[{name:'domain',required:true,desc:'Domain name e.g. google.com'}] },
+      { method:'GET', path:'/api/v1/host/reverse', label:'Reverse DNS',       desc:'Reverse DNS lookup — convert an IP address to its hostname.',           params:[{name:'ip',required:true,desc:'IP address'}] },
+      { method:'GET', path:'/api/v1/host/ports',   label:'Port Scanner',      desc:'TCP port scan — check which common ports are open on a host.',          params:[{name:'host',required:true,desc:'Hostname or IP'},{name:'ports',required:false,desc:'Comma-separated ports (default: 15 common ports, max: 20)'}] },
+      { method:'GET', path:'/api/v1/host/tech',    label:'Tech Stack Detect', desc:'Detect web server, framework, CMS, CDN and frontend tech from a URL.',  params:[{name:'url',required:true,desc:'Full URL e.g. https://example.com'}] },
+    ],
+  },
+  {
+    category: 'Detect & Analyse',
+    icon: '🧠',
+    endpoints: [
+      { method:'POST', path:'/api/v1/detect/sentiment', label:'Sentiment Analysis', desc:'Score text as positive, negative or neutral with a confidence value.', params:[{name:'text',required:true,desc:'Text to analyse'}] },
+      { method:'POST', path:'/api/v1/detect/language',  label:'Language Detection', desc:'Detect the language of any text and return ISO 639 language name.',    params:[{name:'text',required:true,desc:'Text to detect'}] },
+      { method:'POST', path:'/api/v1/detect/profanity', label:'Profanity Filter',   desc:'Detect and optionally clean profanity from text.',                     params:[{name:'text',required:true,desc:'Text to check'},{name:'clean',required:false,desc:'true to return cleaned version (default: false)'}] },
+      { method:'POST', path:'/api/v1/detect/spam',      label:'Spam Detector',      desc:'Score text for spam likelihood based on common patterns.',             params:[{name:'text',required:true,desc:'Text to check'}] },
+    ],
+  },
+  {
+    category: 'Image Tools',
+    icon: '🎨',
+    endpoints: [
+      { method:'GET',  path:'/api/v1/image/generate',    label:'AI Image Generate', desc:'Generate an AI image from a text prompt using Pollinations.ai (free, no key).', params:[{name:'prompt',required:true,desc:'Image description'},{name:'model',required:false,desc:'flux|flux-realism|flux-anime|flux-3d|turbo (default: flux)'},{name:'width',required:false,desc:'Width px (default: 512, max: 1920)'},{name:'height',required:false,desc:'Height px (default: 512, max: 1920)'}] },
+      { method:'GET',  path:'/api/v1/image/screenshot',  label:'Screenshot',        desc:'Capture a full-page screenshot of any URL (via Microlink, 100 free/day).',     params:[{name:'url',required:true,desc:'URL to screenshot'}] },
+      { method:'GET',  path:'/api/v1/image/barcode',     label:'Barcode Generator', desc:'Generate a barcode PNG (Code128, QR, EAN-13, UPC and more).',                  params:[{name:'text',required:true,desc:'Text to encode'},{name:'type',required:false,desc:'code128|qrcode|ean13|upca (default: code128)'}] },
+      { method:'GET',  path:'/api/v1/image/og',          label:'OG Image',          desc:'Generate an Open Graph social preview image.',                                 params:[{name:'title',required:true,desc:'Title text'},{name:'desc',required:false,desc:'Description text'},{name:'theme',required:false,desc:'dark|light (default: dark)'}] },
+      { method:'POST', path:'/api/v1/image/resize',      label:'Image Resize',      desc:'Resize/crop any image by URL using images.weserv.nl (free, unlimited).',       params:[{name:'url',required:true,desc:'Image URL'},{name:'width',required:false,desc:'Target width'},{name:'height',required:false,desc:'Target height'}] },
+    ],
+  },
+  {
+    category: 'Data Conversion',
+    icon: '📊',
+    endpoints: [
+      { method:'POST', path:'/api/v1/data/csv-to-json',  label:'CSV → JSON',     desc:'Parse a CSV string and return a JSON array of objects.',                params:[{name:'csv',required:true,desc:'CSV string'}] },
+      { method:'POST', path:'/api/v1/data/json-to-csv',  label:'JSON → CSV',     desc:'Convert a JSON array of objects to CSV format.',                        params:[{name:'data',required:true,desc:'JSON array'}] },
+      { method:'POST', path:'/api/v1/data/xml-to-json',  label:'XML → JSON',     desc:'Parse an XML string and return a JSON object.',                         params:[{name:'xml',required:true,desc:'XML string'}] },
+      { method:'POST', path:'/api/v1/data/json-to-xml',  label:'JSON → XML',     desc:'Convert a JSON object to XML format.',                                  params:[{name:'data',required:true,desc:'JSON object'},{name:'root',required:false,desc:'Root element name (default: root)'}] },
+      { method:'POST', path:'/api/v1/data/flatten',      label:'Flatten JSON',   desc:'Flatten a deeply nested JSON object to dot-notation keys.',             params:[{name:'data',required:true,desc:'Nested JSON object'}] },
+      { method:'POST', path:'/api/v1/data/paginate',     label:'Paginate Array', desc:'Paginate any JSON array — pass the full array, get back one page.',     params:[{name:'data',required:true,desc:'JSON array'},{name:'page',required:false,desc:'Page number (default: 1)'},{name:'per_page',required:false,desc:'Items per page (default: 10)'}] },
+    ],
+  },
+  {
+    category: 'Weather',
+    icon: '🌤️',
+    endpoints: [
+      { method:'GET', path:'/api/v1/weather/current',  label:'Current Weather', desc:'Live weather for any city — temp, humidity, wind, conditions.',         params:[{name:'city',required:true,desc:'City name e.g. Lagos'},{name:'units',required:false,desc:'metric|imperial|standard (default: metric)'}] },
+      { method:'GET', path:'/api/v1/weather/forecast', label:'Weather Forecast',desc:'5-day weather forecast in 3-hour intervals for any city.',              params:[{name:'city',required:true,desc:'City name'},{name:'days',required:false,desc:'Days ahead (default: 5, max: 5)'},{name:'units',required:false,desc:'metric|imperial|standard (default: metric)'}] },
+    ],
+  },
+  {
+    category: 'Notify',
+    icon: '🔔',
+    endpoints: [
+      { method:'POST', path:'/api/v1/notify/email',   label:'Send Email',   desc:'Send an HTML or plain-text email via your configured SMTP.',               params:[{name:'to',required:true,desc:'Recipient email'},{name:'subject',required:true,desc:'Email subject'},{name:'body',required:true,desc:'HTML or plain text body'}] },
+      { method:'POST', path:'/api/v1/notify/webhook', label:'Send Webhook', desc:'Fire a POST request to any webhook URL with a custom JSON payload.',       params:[{name:'url',required:true,desc:'Webhook URL'},{name:'payload',required:true,desc:'JSON object to send'}] },
+    ],
+  },
+  {
+    category: 'Spotify',
+    icon: '🎵',
+    endpoints: [
+      { method:'GET', path:'/api/v1/spotify/search', label:'Search Spotify', desc:'Search Spotify for tracks, artists or albums. Returns preview URLs.',     params:[{name:'q',required:true,desc:'Search query'},{name:'type',required:false,desc:'track|artist|album (default: track)'},{name:'limit',required:false,desc:'Results (default: 10, max: 50)'}] },
+      { method:'GET', path:'/api/v1/spotify/track',  label:'Track Details',  desc:'Get full track info including 30-second preview MP3 URL.',               params:[{name:'id',required:true,desc:'Spotify track ID'}] },
+      { method:'GET', path:'/api/v1/spotify/artist', label:'Artist Details', desc:'Get artist info — genres, popularity, follower count and images.',        params:[{name:'id',required:true,desc:'Spotify artist ID'}] },
+      { method:'GET', path:'/api/v1/spotify/album',  label:'Album Details',  desc:'Get album info including full track listing with preview URLs.',          params:[{name:'id',required:true,desc:'Spotify album ID'}] },
+    ],
+  },
+  {
+    category: 'Downloads',
+    icon: '📥',
+    endpoints: [
+      { method:'GET', path:'/api/v1/download/tiktok',    label:'TikTok Download',    desc:'Download TikTok videos without watermark. Returns HD, SD and audio links.', params:[{name:'url',required:true,desc:'TikTok video URL'}] },
+      { method:'GET', path:'/api/v1/download/instagram', label:'Instagram Download', desc:'Download Instagram videos or images. Returns direct media links.',          params:[{name:'url',required:true,desc:'Instagram post URL'}] },
+      { method:'GET', path:'/api/v1/download/twitter',   label:'Twitter/X Download', desc:'Download Twitter/X videos. Returns HD and SD MP4 links.',                  params:[{name:'url',required:true,desc:'Twitter or X.com post URL'}] },
+      { method:'GET', path:'/api/v1/download/facebook',  label:'Facebook Download',  desc:'Download Facebook videos. Returns HD and SD MP4 links.',                   params:[{name:'url',required:true,desc:'Facebook video URL'}] },
+      { method:'GET', path:'/api/v1/download/youtube',   label:'YouTube Download',   desc:'Get YouTube video download/stream link + metadata via cobalt.tools.',      params:[{name:'url',required:true,desc:'YouTube video URL or youtu.be link'}] },
+    ],
+  },
+  {
+    category: 'Meta',
+    icon: '📡',
+    endpoints: [
+      { method:'GET', path:'/api/v1/meta/health',    label:'Health Check',     desc:'Returns server status. No API key required. Great for uptime monitors.', params:[] },
+      { method:'GET', path:'/api/v1/meta/ping',      label:'Ping',             desc:'Simple ping — returns pong with server timestamp.',                      params:[] },
+      { method:'GET', path:'/api/v1/meta/endpoints', label:'Endpoints Catalog',desc:'Returns a full machine-readable list of all available endpoints.',       params:[] },
+    ],
+  },
 ];
 
 router.get('/', optionalAuth, (req, res) => {
