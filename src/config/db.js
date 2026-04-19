@@ -153,7 +153,23 @@ const autoMigrate = async () => {
       );
     `);
 
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_tx_user    ON credit_transactions(user_id);`);
+    // display_name + avatar_url for user settings
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='display_name') THEN
+          ALTER TABLE users ADD COLUMN display_name VARCHAR(50) DEFAULT NULL;
+        END IF;
+      END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='avatar_url') THEN
+          ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT NULL;
+        END IF;
+      END $$;
+    `);
+
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_tx_user    ON credit_transactions(user_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_tx_created ON credit_transactions(created_at);`);
 
     await client.query(`

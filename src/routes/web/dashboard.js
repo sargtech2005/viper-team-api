@@ -47,4 +47,81 @@ router.get('/logs', async (req, res, next) => {
   }
 });
 
+// ── Settings ──────────────────────────────────────────────────────────────────
+const multer = require('multer');
+const _upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 1 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    /^image\/(jpeg|png|gif|webp)$/.test(file.mimetype) ? cb(null, true) : cb(new Error('Images only.'));
+  },
+});
+
+router.get('/settings', async (req, res, next) => {
+  try {
+    const User = require('../../models/User');
+    const fresh = await User.findById(req.user.id);
+    res.render('dashboard/settings', { title: 'Settings — Viper-Team API', user: fresh });
+  } catch (err) { next(err); }
+});
+
+router.post('/settings/profile', async (req, res, next) => {
+  const User = require('../../models/User');
+  try {
+    const { display_name, email } = req.body;
+    if (!email || !email.includes('@')) return res.json({ success: false, error: 'Valid email required.' });
+    const existing = await User.findByEmail(email);
+    if (existing && existing.id !== req.user.id) return res.json({ success: false, error: 'Email already in use.' });
+    await User.updateProfile(req.user.id, { displayName: display_name?.trim() || null, email });
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post('/settings/avatar', _upload.single('avatar'), async (req, res, next) => {
+  const User = require('../../models/User');
+  try {
+    if (!req.file) return res.json({ success: false, error: 'No image uploaded.' });
+    const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    await User.updateAvatar(req.user.id, dataUrl);
+    res.json({ success: true, avatar_url: dataUrl });
+  } catch (err) {
+    if (err.code === 'LIMIT_FILE_SIZE') return res.json({ success: false, error: 'Image must be under 1 MB.' });
+    next(err);
+  }
+});
+
+router.post('/settings/avatar/remove', async (req, res, next) => {
+  const User = require('../../models/User');
+  try { await User.updateAvatar(req.user.id, null); res.json({ success: true }); }
+  catch (err) { next(err); }
+});
+
+router.post('/settings/password', async (req, res, next) => {
+  const User = require('../../models/User');
+  try {
+    const { current_password, new_password, confirm_password } = req.body;
+    if (!current_password || !new_password || !confirm_password) return res.json({ success: false, error: 'All fields required.' });
+    if (new_password.length < 8) return res.json({ success: false, error: 'Password must be at least 8 characters.' });
+    if (new_password !== confirm_password) return res.json({ success: false, error: 'New passwords do not match.' });
+    const user = await User.findById(req.user.id);
+    if (!await User.verifyPassword(current_password, user.password_hash)) return res.json({ success: false, error: 'Current password is incorrect.' });
+    await User.updatePassword(req.user.id, new_password);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post('/settings/delete', async (req, res, next) => {
+  const User = require('../../models/User');
+  try {
+    const { confirm_password } = req.body;
+    if (!confirm_password) return res.json({ success: false, error: 'Enter your password to confirm.' });
+    const user = await User.findById(req.user.id);
+    if (!await User.verifyPassword(confirm_password, user.password_hash)) return res.json({ success: false, error: 'Incorrect password.' });
+    await User.deleteAccount(req.user.id);
+    res.clearCookie('viper_token');
+    res.json({ success: true, redirect: '/' });
+  } catch (err) { next(err); }
+});
+
+
 module.exports = router;

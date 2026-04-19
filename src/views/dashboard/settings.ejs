@@ -1,0 +1,264 @@
+<style>
+.settings-wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px;padding-bottom:48px}
+.sc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-xl);overflow:hidden}
+.sc-head{padding:16px 22px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sc-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-head h3{font-size:.91rem;font-weight:700;margin:0;color:var(--text)}
+.sc-head p{font-size:.74rem;color:var(--text-muted);margin:2px 0 0}
+.sc-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+
+/* Avatar */
+.av-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.av-circle{width:74px;height:74px;border-radius:50%;border:2.5px solid var(--border);background:linear-gradient(135deg,var(--purple),var(--green));display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
+.av-circle img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.av-btns{display:flex;flex-direction:column;gap:7px}
+.av-btns p{font-size:.74rem;color:var(--text-muted);margin:0}
+.av-upload-label{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;color:var(--text-subtle);cursor:pointer;transition:all .15s}
+.av-upload-label:hover{border-color:var(--purple);color:var(--purple)}
+.av-remove-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.25);border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;color:#f87171;cursor:pointer;transition:all .15s}
+.av-remove-btn:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+
+/* Fields */
+.sf{display:flex;flex-direction:column;gap:5px}
+.sf label{font-size:.77rem;font-weight:600;color:var(--text-muted);letter-spacing:.03em}
+.sf input{font-size:.88rem;padding:9px 12px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color .15s;width:100%;box-sizing:border-box}
+.sf input:focus{border-color:var(--purple)}
+.sf input:disabled{opacity:.45;cursor:not-allowed}
+.sf .hint{font-size:.71rem;color:var(--text-muted);margin-top:3px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.sg{grid-template-columns:1fr}}
+
+/* Feedback */
+.fb{border-radius:var(--radius-sm);padding:8px 12px;font-size:.81rem;font-weight:600;display:none;align-items:center;gap:7px}
+.fb.ok{background:var(--green-bg);color:#6ee7b7;border:1px solid rgba(52,211,153,.2)}
+.fb.err{background:rgba(239,68,68,.07);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+
+/* Danger zone */
+.sc.danger{border-color:rgba(239,68,68,.22)}
+.sc.danger .sc-head{background:rgba(239,68,68,.03);border-color:rgba(239,68,68,.18)}
+.sc.danger .sc-icon{background:rgba(239,68,68,.1);color:#f87171}
+.sc.danger .sc-head h3{color:#f87171}
+.del-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.28);border-radius:var(--radius-sm);font-size:.83rem;font-weight:700;color:#f87171;cursor:pointer;transition:all .15s;align-self:flex-start}
+.del-btn:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+
+/* Delete confirm modal */
+.dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:950;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(3px)}
+.dm-overlay.open{opacity:1;pointer-events:all}
+.dm-box{background:var(--bg-card);border:1.5px solid rgba(239,68,68,.3);border-radius:var(--radius);width:100%;max-width:400px;transform:translateY(16px) scale(.97);transition:transform .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.dm-overlay.open .dm-box{transform:translateY(0) scale(1)}
+.dm-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px 12px;border-bottom:1px solid rgba(239,68,68,.2)}
+.dm-head h3{font-size:.93rem;font-weight:700;margin:0;color:#f87171;display:flex;align-items:center;gap:7px}
+.dm-close{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;font-size:1rem;line-height:1;transition:color .15s}
+.dm-close:hover{color:var(--text)}
+.dm-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.dm-body p{font-size:.84rem;color:var(--text-subtle);margin:0;line-height:1.55}
+.dm-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border)}
+</style>
+
+<div class="dashboard-layout">
+  <%- include('../partials/sidebar', { active: 'settings' }) %>
+  <div class="dashboard-main">
+
+    <div class="page-header">
+      <h2>Account Settings</h2>
+      <p>Manage your profile, password, and account preferences.</p>
+    </div>
+
+    <div class="settings-wrap">
+
+      <!-- ── Avatar ── -->
+      <div class="sc">
+        <div class="sc-head">
+          <div class="sc-icon" style="background:var(--purple-bg);color:var(--purple)"><%- icon('user',16) %></div>
+          <div><h3>Profile Picture</h3><p>Shown across the dashboard and navigation.</p></div>
+        </div>
+        <div class="sc-body">
+          <div class="av-row">
+            <div class="av-circle" id="avCircle">
+              <% if (user.avatar_url) { %>
+                <img id="avImg" src="<%= user.avatar_url %>" alt="avatar">
+              <% } %>
+              <span id="avInitial" style="<%= user.avatar_url ? 'display:none' : '' %>"><%= (user.display_name||user.username).charAt(0).toUpperCase() %></span>
+            </div>
+            <div class="av-btns">
+              <label class="av-upload-label">
+                <%- icon('upload',13) %> Upload Photo
+                <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none">
+              </label>
+              <button class="av-remove-btn" id="avRemoveBtn" style="<%= user.avatar_url ? '' : 'display:none' %>" onclick="removeAvatar()">
+                <%- icon('trash-2',13) %> Remove
+              </button>
+              <p>JPEG · PNG · GIF · WebP &nbsp;·&nbsp; max 1 MB</p>
+            </div>
+          </div>
+          <div class="fb" id="avFb"></div>
+        </div>
+      </div>
+
+      <!-- ── Profile Info ── -->
+      <div class="sc">
+        <div class="sc-head">
+          <div class="sc-icon" style="background:var(--blue-bg);color:var(--blue)"><%- icon('edit-3',16) %></div>
+          <div><h3>Profile Info</h3><p>Your display name and email address.</p></div>
+        </div>
+        <div class="sc-body">
+          <div class="sg">
+            <div class="sf">
+              <label>Username</label>
+              <input type="text" value="<%= user.username %>" disabled>
+              <div class="hint">Cannot be changed.</div>
+            </div>
+            <div class="sf">
+              <label>Display Name</label>
+              <input type="text" id="displayName" value="<%= user.display_name || '' %>" placeholder="<%= user.username %>" maxlength="50">
+              <div class="hint">Shown in nav (optional).</div>
+            </div>
+          </div>
+          <div class="sf">
+            <label>Email Address</label>
+            <input type="email" id="profileEmail" value="<%= user.email %>">
+          </div>
+          <div class="fb" id="profileFb"></div>
+          <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="saveProfile()"><%- icon('save',13) %> Save Changes</button>
+        </div>
+      </div>
+
+      <!-- ── Password ── -->
+      <div class="sc">
+        <div class="sc-head">
+          <div class="sc-icon" style="background:var(--green-bg);color:var(--green)"><%- icon('lock',16) %></div>
+          <div><h3>Password</h3><p>Choose a strong password, at least 8 characters.</p></div>
+        </div>
+        <div class="sc-body">
+          <div class="sf">
+            <label>Current Password</label>
+            <input type="password" id="curPw" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <div class="sg">
+            <div class="sf">
+              <label>New Password</label>
+              <input type="password" id="newPw" placeholder="Min. 8 chars" autocomplete="new-password">
+            </div>
+            <div class="sf">
+              <label>Confirm New Password</label>
+              <input type="password" id="cfmPw" placeholder="Repeat new password" autocomplete="new-password">
+            </div>
+          </div>
+          <div class="fb" id="pwFb"></div>
+          <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="savePassword()"><%- icon('shield',13) %> Update Password</button>
+        </div>
+      </div>
+
+      <!-- ── Danger Zone ── -->
+      <div class="sc danger">
+        <div class="sc-head">
+          <div class="sc-icon"><%- icon('alert-triangle',16) %></div>
+          <div><h3>Delete Account</h3><p>Permanently remove your account and all data.</p></div>
+        </div>
+        <div class="sc-body">
+          <p style="font-size:.84rem;color:var(--text-subtle);margin:0">This is <strong>irreversible</strong>. Your API keys, credits, logs, and billing history will be permanently deleted.</p>
+          <button class="del-btn" onclick="openDeleteModal()"><%- icon('trash-2',13) %> Delete My Account</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="dm-overlay" id="dmOverlay" onclick="if(event.target===this)closeDm()">
+  <div class="dm-box">
+    <div class="dm-head">
+      <h3><%- icon('alert-triangle',15) %> Delete Account</h3>
+      <button class="dm-close" onclick="closeDm()">✕</button>
+    </div>
+    <div class="dm-body">
+      <p>This will permanently delete your account, all API keys, credits, and logs. <strong>This cannot be undone.</strong></p>
+      <div class="sf">
+        <label>Enter your password to confirm</label>
+        <input type="password" id="dmPw" placeholder="Your current password" autocomplete="current-password">
+      </div>
+      <div class="fb" id="dmFb"></div>
+    </div>
+    <div class="dm-foot">
+      <button class="btn btn-outline btn-sm" onclick="closeDm()">Cancel</button>
+      <button class="btn btn-sm" style="background:#ef4444;color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 18px;font-weight:700;cursor:pointer;font-size:.85rem" onclick="deleteAccount()">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showFb(id, msg, ok) {
+  var el = document.getElementById(id);
+  el.textContent = msg; el.className = 'fb ' + (ok ? 'ok' : 'err'); el.style.display = 'flex';
+  if (ok) setTimeout(function(){ el.style.display = 'none'; }, 3500);
+}
+
+// Avatar upload
+document.getElementById('avatarInput').addEventListener('change', async function() {
+  var file = this.files[0]; if (!file) return;
+  if (file.size > 1048576) { showFb('avFb', 'Image must be under 1 MB.', false); this.value = ''; return; }
+  var fd = new FormData(); fd.append('avatar', file);
+  var r = await fetch('/dashboard/settings/avatar', { method: 'POST', body: fd });
+  var d = await r.json();
+  if (d.success) {
+    var img = document.getElementById('avImg');
+    if (!img) { img = document.createElement('img'); img.id = 'avImg'; document.getElementById('avCircle').appendChild(img); }
+    img.src = d.avatar_url; img.style.display = '';
+    document.getElementById('avInitial').style.display = 'none';
+    document.getElementById('avRemoveBtn').style.display = '';
+    showFb('avFb', 'Avatar updated.', true); viperToast('Avatar updated!', 'success');
+  } else { showFb('avFb', d.error || 'Upload failed.', false); }
+  this.value = '';
+});
+
+async function removeAvatar() {
+  var ok = await viperConfirm('Remove your profile picture?', 'Remove Avatar'); if (!ok) return;
+  var r = await fetch('/dashboard/settings/avatar/remove', { method: 'POST' });
+  var d = await r.json();
+  if (d.success) {
+    var img = document.getElementById('avImg'); if (img) img.style.display = 'none';
+    document.getElementById('avInitial').style.display = '';
+    document.getElementById('avRemoveBtn').style.display = 'none';
+    viperToast('Avatar removed.', 'success');
+  } else { viperToast(d.error || 'Failed.', 'error'); }
+}
+
+async function saveProfile() {
+  var display_name = document.getElementById('displayName').value.trim();
+  var email = document.getElementById('profileEmail').value.trim();
+  if (!email) { showFb('profileFb', 'Email is required.', false); return; }
+  var r = await fetch('/dashboard/settings/profile', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ display_name, email }) });
+  var d = await r.json();
+  if (d.success) { showFb('profileFb', 'Profile saved.', true); viperToast('Profile updated.', 'success'); }
+  else { showFb('profileFb', d.error || 'Failed.', false); }
+}
+
+async function savePassword() {
+  var current_password = document.getElementById('curPw').value;
+  var new_password = document.getElementById('newPw').value;
+  var confirm_password = document.getElementById('cfmPw').value;
+  var r = await fetch('/dashboard/settings/password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password, new_password, confirm_password }) });
+  var d = await r.json();
+  if (d.success) {
+    showFb('pwFb', 'Password updated.', true); viperToast('Password changed.', 'success');
+    document.getElementById('curPw').value = document.getElementById('newPw').value = document.getElementById('cfmPw').value = '';
+  } else { showFb('pwFb', d.error || 'Failed.', false); }
+}
+
+function openDeleteModal() {
+  document.getElementById('dmPw').value = ''; document.getElementById('dmFb').style.display = 'none';
+  document.getElementById('dmOverlay').classList.add('open'); document.body.style.overflow = 'hidden';
+  setTimeout(function(){ document.getElementById('dmPw').focus(); }, 200);
+}
+function closeDm() { document.getElementById('dmOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDm(); });
+
+async function deleteAccount() {
+  var confirm_password = document.getElementById('dmPw').value;
+  var r = await fetch('/dashboard/settings/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ confirm_password }) });
+  var d = await r.json();
+  if (d.success) { viperToast('Account deleted.', 'info'); setTimeout(function(){ window.location.href = d.redirect || '/'; }, 1200); }
+  else { showFb('dmFb', d.error || 'Failed.', false); }
+}
+</script>

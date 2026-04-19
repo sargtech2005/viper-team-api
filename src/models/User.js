@@ -84,6 +84,37 @@ const User = {
       await query("UPDATE users SET role = 'admin' WHERE id = $1 AND role != 'admin'", [userId]);
     }
   },
+
+  // ─── Profile Updates ────────────────────────────────────────────────────────
+
+  updateProfile: async (userId, { displayName, email }) => {
+    const r = await query(
+      `UPDATE users SET display_name=$1, email=$2, updated_at=NOW() WHERE id=$3 RETURNING *`,
+      [displayName || null, email.toLowerCase(), userId]
+    );
+    return r.rows[0] || null;
+  },
+
+  updateAvatar: async (userId, avatarUrl) => {
+    const r = await query(
+      `UPDATE users SET avatar_url=$1, updated_at=NOW() WHERE id=$2 RETURNING *`,
+      [avatarUrl, userId]
+    );
+    return r.rows[0] || null;
+  },
+
+  updatePassword: async (userId, newPassword) => {
+    const hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await query(
+      `UPDATE users SET password_hash=$1, updated_at=NOW() WHERE id=$2`,
+      [hash, userId]
+    );
+  },
+
+  deleteAccount: async (userId) => {
+    await query(`DELETE FROM users WHERE id=$1`, [userId]);
+  },
+
 };
 
 module.exports = User;

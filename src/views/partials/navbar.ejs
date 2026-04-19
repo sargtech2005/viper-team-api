@@ -15,7 +15,21 @@
         <% if (user.role === 'admin') { %>
           <li><a href="/admin" class="nav-link nav-admin">Admin</a></li>
         <% } %>
-        <li><a href="/logout" class="btn btn-outline btn-sm">Sign out</a></li>
+        <!-- Desktop profile dropdown -->
+        <li style="position:relative" id="desktopProfileWrap">
+          <button class="nav-profile-btn" id="desktopProfileBtn" onclick="toggleDesktopProfile()">
+            <div class="nav-av">
+              <% if (user.avatar_url) { %><img src="<%= user.avatar_url %>" alt=""><% } else { %><%= (user.display_name||user.username).charAt(0).toUpperCase() %><% } %>
+            </div>
+            <span class="nav-profile-name"><%= user.display_name || user.username %></span>
+            <%- icon('chevron-down', 12) %>
+          </button>
+          <div class="nav-profile-menu" id="desktopProfileMenu">
+            <a href="/dashboard/settings" class="npm-item"><%- icon('settings',14) %> Settings</a>
+            <div class="npm-divider"></div>
+            <a href="/logout" class="npm-item npm-danger"><%- icon('log-out',14) %> Sign out</a>
+          </div>
+        </li>
       <% } else { %>
         <li><a href="/login"    class="nav-link">Sign in</a></li>
         <li><a href="/register" class="btn btn-primary btn-sm">Get started</a></li>
@@ -53,16 +67,14 @@
 
     <% if (user) { %>
       <div class="drawer-divider"></div>
-      <a href="/dashboard"      class="drawer-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>"><%- icon('grid',16) %> Dashboard</a>
+      <a href="/dashboard"           class="drawer-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>"><%- icon('grid',16) %> Dashboard</a>
       <a href="/dashboard/api-keys"  class="drawer-link"><%- icon('key',16) %> API Keys</a>
       <a href="/dashboard/billing"   class="drawer-link"><%- icon('credit-card',16) %> Billing</a>
       <a href="/dashboard/logs"      class="drawer-link"><%- icon('bar-chart',16) %> Usage Logs</a>
       <% if (user.role === 'admin') { %>
         <div class="drawer-divider"></div>
-        <a href="/admin" class="drawer-link" style="color:var(--purple)"><%- icon('settings',16) %> Admin Panel</a>
+        <a href="/admin" class="drawer-link" style="color:var(--purple)"><%- icon('shield',16) %> Admin Panel</a>
       <% } %>
-      <div class="drawer-divider"></div>
-      <a href="/logout" class="drawer-link" style="color:var(--red)"><%- icon('log-out',16) %> Sign out</a>
     <% } else { %>
       <div class="drawer-divider"></div>
       <a href="/login"    class="drawer-link"><%- icon('log-in',16) %> Sign in</a>
@@ -70,15 +82,125 @@
     <% } %>
   </nav>
 
+  <!-- Profile footer: tap to reveal Settings + Sign Out popup -->
   <% if (user) { %>
   <div class="drawer-footer">
-    <div class="drawer-user">
-      <div class="drawer-avatar"><%- user.username.charAt(0).toUpperCase() %></div>
-      <div>
-        <div style="font-weight:600;font-size:.88rem"><%= user.username %></div>
-        <div style="font-size:.76rem;color:var(--text-muted)"><%= user.email %></div>
-      </div>
+    <!-- Popup (appears above footer on tap) -->
+    <div class="drawer-popup" id="drawerPopup">
+      <a href="/dashboard/settings" class="dp-item" id="dpSettingsLink">
+        <div class="dp-icon" style="background:var(--purple-bg);color:var(--purple)"><%- icon('settings',15) %></div>
+        <div><div class="dp-label">Settings</div><div class="dp-sub">Profile, password, avatar</div></div>
+      </a>
+      <div class="dp-sep"></div>
+      <a href="/logout" class="dp-item dp-danger">
+        <div class="dp-icon" style="background:rgba(239,68,68,.1);color:#f87171"><%- icon('log-out',15) %></div>
+        <div><div class="dp-label">Sign Out</div><div class="dp-sub">End your session</div></div>
+      </a>
     </div>
+
+    <!-- Tappable profile strip -->
+    <button class="drawer-profile-strip" id="drawerProfileStrip" onclick="toggleDrawerPopup()">
+      <div class="drawer-avatar" id="drawerAvatarEl">
+        <% if (user.avatar_url) { %>
+          <img src="<%= user.avatar_url %>" alt="">
+        <% } else { %>
+          <%= (user.display_name||user.username).charAt(0).toUpperCase() %>
+        <% } %>
+      </div>
+      <div class="drawer-profile-info">
+        <div class="dpi-name"><%= user.display_name || user.username %></div>
+        <div class="dpi-email"><%= user.email %></div>
+      </div>
+      <div class="dpi-chevron" id="drawerChevron"><%- icon('chevron-up',14) %></div>
+    </button>
   </div>
   <% } %>
 </aside>
+
+<style>
+/* ── Desktop profile dropdown ──────────────────────────────────────────────── */
+.nav-profile-btn{display:flex;align-items:center;gap:7px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:999px;padding:4px 10px 4px 5px;cursor:pointer;color:var(--text);font-size:.82rem;font-weight:600;transition:all .15s;outline:none}
+.nav-profile-btn:hover,.nav-profile-btn.open{border-color:var(--purple);background:var(--purple-bg)}
+.nav-profile-btn svg{color:var(--text-muted);transition:transform .18s}
+.nav-profile-btn.open svg{transform:rotate(180deg)}
+.nav-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--green));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.nav-av img{width:100%;height:100%;object-fit:cover}
+.nav-profile-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-profile-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);min-width:168px;box-shadow:0 10px 32px rgba(0,0,0,.3);z-index:400;overflow:hidden;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s,transform .15s}
+.nav-profile-menu.open{opacity:1;transform:translateY(0);pointer-events:all}
+.npm-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:.84rem;font-weight:500;color:var(--text-subtle);text-decoration:none;transition:background .12s}
+.npm-item:hover{background:var(--bg-3);color:var(--text)}
+.npm-danger{color:#f87171!important}
+.npm-danger:hover{background:rgba(239,68,68,.07)!important}
+.npm-divider{border:none;border-top:1px solid var(--border);margin:2px 0}
+
+/* ── Drawer footer profile strip ───────────────────────────────────────────── */
+.drawer-footer{border-top:1px solid var(--border);position:relative}
+.drawer-profile-strip{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+.drawer-profile-strip:hover,.drawer-profile-strip.open{background:var(--bg-2)}
+.drawer-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--green));display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(139,92,246,.25);overflow:hidden}
+.drawer-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.drawer-profile-info{flex:1;min-width:0;text-align:left}
+.dpi-name{font-size:.86rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dpi-email{font-size:.71rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dpi-chevron{color:var(--text-muted);flex-shrink:0;transition:transform .2s}
+.dpi-chevron.flipped{transform:rotate(180deg)}
+
+/* ── Drawer popup (appears above the strip) ────────────────────────────────── */
+.drawer-popup{position:absolute;bottom:100%;left:10px;right:10px;margin-bottom:4px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:0 -8px 32px rgba(0,0,0,.35);overflow:hidden;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.drawer-popup.open{opacity:1;transform:translateY(0);pointer-events:all}
+.dp-item{display:flex;align-items:center;gap:12px;padding:13px 14px;text-decoration:none;color:var(--text);transition:background .13s}
+.dp-item:hover{background:var(--bg-2)}
+.dp-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dp-label{font-size:.86rem;font-weight:700;color:var(--text)}
+.dp-sub{font-size:.71rem;color:var(--text-muted);margin-top:1px}
+.dp-sep{border:none;border-top:1px solid var(--border);margin:0}
+.dp-danger .dp-label{color:#f87171}
+.dp-danger:hover{background:rgba(239,68,68,.06)!important}
+</style>
+
+<script>
+// ── Desktop dropdown ─────────────────────────────────────────────────────────
+function toggleDesktopProfile() {
+  var btn  = document.getElementById('desktopProfileBtn');
+  var menu = document.getElementById('desktopProfileMenu');
+  if (!btn || !menu) return;
+  var open = menu.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('desktopProfileWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    var menu = document.getElementById('desktopProfileMenu');
+    var btn  = document.getElementById('desktopProfileBtn');
+    if (menu) menu.classList.remove('open');
+    if (btn)  btn.classList.remove('open');
+  }
+});
+
+// ── Drawer popup ─────────────────────────────────────────────────────────────
+function toggleDrawerPopup() {
+  var popup   = document.getElementById('drawerPopup');
+  var strip   = document.getElementById('drawerProfileStrip');
+  var chevron = document.getElementById('drawerChevron');
+  if (!popup) return;
+  var open = popup.classList.toggle('open');
+  if (strip)   strip.classList.toggle('open', open);
+  if (chevron) chevron.classList.toggle('flipped', open);
+}
+// Close popup when drawer itself closes (patch into existing closeDrawer)
+document.addEventListener('DOMContentLoaded', function() {
+  var drawerClose  = document.getElementById('drawerClose');
+  var drawerOverlay = document.getElementById('drawerOverlay');
+  function closePopup() {
+    var popup = document.getElementById('drawerPopup');
+    var strip = document.getElementById('drawerProfileStrip');
+    var chev  = document.getElementById('drawerChevron');
+    if (popup)  popup.classList.remove('open');
+    if (strip)  strip.classList.remove('open');
+    if (chev)   chev.classList.remove('flipped');
+  }
+  if (drawerClose)   drawerClose.addEventListener('click', closePopup);
+  if (drawerOverlay) drawerOverlay.addEventListener('click', closePopup);
+});
+</script>

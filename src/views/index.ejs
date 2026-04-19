@@ -84,24 +84,6 @@
   </div>
 </div>
 
-<!-- ─── API CATEGORIES ─────────────────────────────────────────────────────── -->
-<section class="section container">
-  <div style="text-align:center;margin-bottom:44px">
-    <div class="section-badge"><%- icon('grid',12) %> API Categories</div>
-    <h2 style="margin-bottom:10px">One Key. Every Endpoint.</h2>
-    <p style="max-width:480px;margin:0 auto;font-size:.93rem">All <%= totalCategories %> categories included in every plan. Your monthly quota spans all <%= totalEndpoints %> endpoints.</p>
-  </div>
-
-  <div class="cat-grid">
-    <% apiCategories.forEach(cat => { %>
-    <a href="/docs<%= cat.docs %>" class="cat-card">
-      <div class="cat-icon <%= cat.color %>"><%- icon(cat.icon, 22) %></div>
-      <div class="cat-name"><%= cat.name %></div>
-      <div class="cat-count"><%= cat.count %> endpoint<%= cat.count !== 1 ? 's' : '' %></div>
-    </a>
-    <% }) %>
-  </div>
-</section>
 
 <!-- ─── FEATURES ──────────────────────────────────────────────────────────── -->
 <div class="section-strip">
