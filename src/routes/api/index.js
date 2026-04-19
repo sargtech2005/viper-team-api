@@ -33,8 +33,14 @@ router.use('/weather',  require('./weather'));   // current, forecast
 router.use('/notify',   require('./notify'));    // email, webhook
 router.use('/spotify',  require('./spotify'));   // search, track, artist, album (+ 30s previews)
 router.use('/meta',     require('./meta'));      // health, ping, endpoints catalog
-router.use('/download', require('./download')); // TikTok, Instagram, Twitter, Facebook, YouTube
-router.use('/host',     require('./host'));      // IP geo, domain lookup, reverse DNS, ports, tech stack
+router.use('/download',  require('./download'));  // TikTok, Instagram, Twitter, Facebook, YouTube
+router.use('/host',      require('./host'));      // IP geo, domain lookup, reverse DNS, ports, tech stack
+router.use('/crypto',    require('./crypto'));    // prices, top coins, history, convert, gas
+router.use('/url',       require('./url'));       // shorten, expand, parse, safety check
+router.use('/news',      require('./news'));      // top headlines, search (needs GNEWS_API_KEY)
+router.use('/tempemail', require('./tempemail')); // generate temp email + read inbox
+router.use('/color',     require('./color'));     // convert, name, contrast, random, mix
+router.use('/code',      require('./code'));      // minify, format, count, escape/unescape
 
 // ── Meta endpoint — returns caller's plan info ───────────────────
 router.get('/me', (req, res) => {

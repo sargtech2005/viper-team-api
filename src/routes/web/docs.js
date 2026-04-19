@@ -235,6 +235,69 @@ const API_CATALOG = [
       { method:'GET', path:'/api/v1/meta/endpoints', label:'Endpoints Catalog',desc:'Returns a full machine-readable list of all available endpoints.',       params:[] },
     ],
   },
+  {
+    category: 'Crypto & Blockchain',
+    icon: '💎',
+    endpoints: [
+      { method:'GET', path:'/api/v1/crypto/price',   label:'Coin Price',        desc:'Get live price of any coin in any currency (USD, NGN, EUR etc).',       params:[{name:'coin',required:false,desc:'CoinGecko coin ID e.g. bitcoin, ethereum (default: bitcoin)'},{name:'currency',required:false,desc:'Comma-separated currencies e.g. usd,ngn (default: usd,ngn)'}] },
+      { method:'GET', path:'/api/v1/crypto/top',     label:'Top Coins',         desc:'Top coins ranked by market cap with 24h change.',                       params:[{name:'limit',required:false,desc:'Number of coins (default: 10, max: 50)'},{name:'currency',required:false,desc:'Currency (default: usd)'}] },
+      { method:'GET', path:'/api/v1/crypto/history', label:'Price History',     desc:'Historical price chart data for any coin over N days.',                 params:[{name:'coin',required:false,desc:'Coin ID (default: bitcoin)'},{name:'days',required:false,desc:'Days of history (default: 7, max: 365)'},{name:'currency',required:false,desc:'Currency (default: usd)'}] },
+      { method:'GET', path:'/api/v1/crypto/convert', label:'Crypto Convert',    desc:'Convert any amount from one crypto or fiat to another.',                params:[{name:'amount',required:false,desc:'Amount (default: 1)'},{name:'from',required:false,desc:'Coin ID e.g. bitcoin (default: bitcoin)'},{name:'to',required:false,desc:'Target currency e.g. ngn, eth (default: usd)'}] },
+      { method:'GET', path:'/api/v1/crypto/gas',     label:'Ethereum Gas',      desc:'Current Ethereum gas fees — slow, standard and fast in Gwei.',          params:[] },
+      { method:'GET', path:'/api/v1/crypto/search',  label:'Search Coins',      desc:'Search CoinGecko for a coin by name or symbol.',                        params:[{name:'q',required:true,desc:'Search term e.g. solana, bnb'}] },
+    ],
+  },
+  {
+    category: 'URL Tools',
+    icon: '🔗',
+    endpoints: [
+      { method:'POST', path:'/api/v1/url/shorten', label:'Shorten URL',  desc:'Shorten any URL using TinyURL (free, no key needed).',                     params:[{name:'url',required:true,desc:'Full URL to shorten'}] },
+      { method:'GET',  path:'/api/v1/url/expand',  label:'Expand URL',   desc:'Expand a shortened URL to its final destination.',                         params:[{name:'url',required:true,desc:'Short URL to expand'}] },
+      { method:'POST', path:'/api/v1/url/parse',   label:'Parse URL',    desc:'Break a URL into all its components — protocol, host, path, params, hash.', params:[{name:'url',required:true,desc:'URL to parse'}] },
+      { method:'GET',  path:'/api/v1/url/safe',    label:'Safety Check', desc:'Heuristic safety check — detects phishing patterns, suspicious domains.',  params:[{name:'url',required:true,desc:'URL to check'}] },
+    ],
+  },
+  {
+    category: 'News',
+    icon: '📰',
+    endpoints: [
+      { method:'GET', path:'/api/v1/news/top',     label:'Top Headlines', desc:'Latest top headlines by category and country. Needs GNEWS_API_KEY.',     params:[{name:'category',required:false,desc:'general|world|nation|business|technology|entertainment|sports|science|health (default: general)'},{name:'country',required:false,desc:'Country code e.g. ng, us, gb (default: ng)'},{name:'lang',required:false,desc:'Language code e.g. en (default: en)'},{name:'limit',required:false,desc:'Results (default: 10, max: 10 on free tier)'}] },
+      { method:'GET', path:'/api/v1/news/search',  label:'Search News',   desc:'Search news articles by keyword. Needs GNEWS_API_KEY.',                  params:[{name:'q',required:true,desc:'Search query'},{name:'lang',required:false,desc:'Language code (default: en)'},{name:'limit',required:false,desc:'Results (default: 10)'}] },
+      { method:'GET', path:'/api/v1/news/sources', label:'Sources Info',  desc:'List all supported categories, countries and languages.',                 params:[] },
+    ],
+  },
+  {
+    category: 'Temp Email',
+    icon: '📬',
+    endpoints: [
+      { method:'GET', path:'/api/v1/tempemail/generate',         label:'Generate Email',  desc:'Get a fresh temporary email address. No sign-up needed.',         params:[{name:'domain',required:false,desc:'Preferred domain e.g. 1secmail.com (use /domains to list options)'}] },
+      { method:'GET', path:'/api/v1/tempemail/inbox',            label:'Read Inbox',      desc:'Check inbox for a temp email address.',                           params:[{name:'email',required:true,desc:'The temp email address'}] },
+      { method:'GET', path:'/api/v1/tempemail/message',          label:'Read Message',    desc:'Read the full content of one email message.',                     params:[{name:'email',required:true,desc:'The temp email address'},{name:'id',required:true,desc:'Message ID from inbox'}] },
+      { method:'GET', path:'/api/v1/tempemail/domains',          label:'List Domains',    desc:'List all available @domains for temp email generation.',           params:[] },
+    ],
+  },
+  {
+    category: 'Colour Tools',
+    icon: '🎨',
+    endpoints: [
+      { method:'GET',  path:'/api/v1/color/convert', label:'Convert Color',  desc:'Convert any color between HEX, RGB, HSL and CMYK formats.',             params:[{name:'value',required:true,desc:'Color value e.g. %23ff5733 (URL-encode the #)'},{name:'from',required:false,desc:'hex|rgb|hsl (auto-detected if omitted)'}] },
+      { method:'GET',  path:'/api/v1/color/name',    label:'Color Name',     desc:'Get the nearest CSS color name for any hex code.',                      params:[{name:'hex',required:true,desc:'Hex color e.g. ff5733 (without #)'}] },
+      { method:'GET',  path:'/api/v1/color/contrast',label:'Contrast Ratio', desc:'WCAG contrast ratio between foreground and background colors.',         params:[{name:'fg',required:true,desc:'Foreground hex (without #)'},{name:'bg',required:true,desc:'Background hex (without #)'}] },
+      { method:'GET',  path:'/api/v1/color/random',  label:'Random Color',   desc:'Generate random color(s) with all format values.',                      params:[{name:'count',required:false,desc:'How many colors (default: 1, max: 20)'}] },
+      { method:'POST', path:'/api/v1/color/mix',     label:'Mix Colors',     desc:'Mix two or more hex colors with optional weights.',                     params:[{name:'colors',required:true,desc:'JSON array of hex colors e.g. ["#ff0000","#0000ff"]'},{name:'weights',required:false,desc:'JSON array of mix weights e.g. [0.7,0.3] (defaults to equal)'}] },
+    ],
+  },
+  {
+    category: 'Code Utilities',
+    icon: '💻',
+    endpoints: [
+      { method:'POST', path:'/api/v1/code/minify',   label:'Minify Code',    desc:'Minify JSON, HTML, CSS or JavaScript. Returns size saved.',             params:[{name:'code',required:true,desc:'Source code string'},{name:'type',required:false,desc:'json|html|css|js (default: json)'}] },
+      { method:'POST', path:'/api/v1/code/format',   label:'Format/Beautify',desc:'Prettify JSON or HTML with configurable indentation.',                  params:[{name:'code',required:true,desc:'Source code string'},{name:'type',required:false,desc:'json|html (default: json)'},{name:'indent',required:false,desc:'Spaces per indent (default: 2)'}] },
+      { method:'POST', path:'/api/v1/code/count',    label:'Count Lines',    desc:'Count total, code, comment and blank lines. Detects language.',         params:[{name:'code',required:true,desc:'Source code string'}] },
+      { method:'POST', path:'/api/v1/code/escape',   label:'Escape',         desc:'Escape code for HTML, URL, Base64 or Unicode.',                        params:[{name:'code',required:true,desc:'String to escape'},{name:'type',required:false,desc:'html|url|base64|unicode (default: html)'}] },
+      { method:'POST', path:'/api/v1/code/unescape', label:'Unescape',       desc:'Reverse HTML entities, URL encoding, Base64 or Unicode escapes.',      params:[{name:'code',required:true,desc:'Escaped string'},{name:'type',required:false,desc:'html|url|base64|unicode (default: html)'}] },
+    ],
+  },
 ];
 
 router.get('/', optionalAuth, (req, res) => {
