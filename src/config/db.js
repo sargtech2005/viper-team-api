@@ -191,18 +191,44 @@ const autoMigrate = async () => {
       DELETE FROM plans WHERE name IN ('Basic', 'Business', 'Ultra') AND id NOT IN (SELECT DISTINCT plan_id FROM users WHERE plan_id IS NOT NULL);
     `);
 
+    // ─── Credit Packs (admin-configurable) ──────────────────────────────────────
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS credit_packs (
+        id          SERIAL PRIMARY KEY,
+        pack_id     VARCHAR(30)  NOT NULL UNIQUE,
+        label       VARCHAR(50)  NOT NULL,
+        price_ngn   INTEGER      NOT NULL DEFAULT 500,
+        base        INTEGER      NOT NULL DEFAULT 600,
+        bonus       INTEGER      NOT NULL DEFAULT 0,
+        bonus_pct   INTEGER      NOT NULL DEFAULT 0,
+        is_active   BOOLEAN      NOT NULL DEFAULT true,
+        sort_order  INTEGER      NOT NULL DEFAULT 0,
+        created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      );
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_credit_packs_active ON credit_packs(is_active);`);
+    await client.query(`
+      INSERT INTO credit_packs (pack_id, label, price_ngn, base, bonus, bonus_pct, sort_order) VALUES
+        ('topup',  'Top-up',  500,   600,   0,     0,  1),
+        ('bundle', 'Bundle',  2000,  3000,  450,   15, 2),
+        ('stack',  'Stack',   7500,  15000, 3750,  25, 3),
+        ('bulk',   'Bulk',    20000, 50000, 17500, 35, 4)
+      ON CONFLICT (pack_id) DO NOTHING;
+    `);
+
     // Seed default settings — DO NOTHING so admin-set values are never overwritten
     await client.query(`
       INSERT INTO settings (key, value) VALUES
-        ('APP_NAME',            'Viper-Team API'),
-        ('MAINTENANCE_MODE',    'off'),
-        ('SMTP_HOST',           $1),
-        ('SMTP_PORT',           $2),
-        ('SMTP_USER',           $3),
-        ('SMTP_PASS',           $4),
-        ('SMTP_FROM',           $5),
-        ('RECAPTCHA_SITE_KEY',  $6),
-        ('RECAPTCHA_SECRET_KEY',$7)
+        ('APP_NAME',             'Viper-Team API'),
+        ('MAINTENANCE_MODE',     'off'),
+        ('SMTP_HOST',            $1),
+        ('SMTP_PORT',            $2),
+        ('SMTP_USER',            $3),
+        ('SMTP_PASS',            $4),
+        ('SMTP_FROM',            $5),
+        ('RECAPTCHA_SITE_KEY',   $6),
+        ('RECAPTCHA_SECRET_KEY', $7),
+        ('SUBSCRIBER_BONUS_PCT', '20')
       ON CONFLICT (key) DO NOTHING;
     `, [
       process.env.SMTP_HOST           || '',

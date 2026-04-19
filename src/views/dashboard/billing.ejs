@@ -87,7 +87,7 @@
     <% if (isSubscriber) { %>
     <div class="sub-bonus-banner">
       <%- icon('check-circle',15) %>
-      <span>You're a subscriber — you'll receive <strong>+20% bonus credits</strong> on every top-up!</span>
+      <span>You're a subscriber — you'll receive <strong>+<%= Math.round(subscriberBonus * 100) %>% bonus credits</strong> on every top-up!</span>
     </div>
     <% } %>
 
@@ -97,23 +97,23 @@
            const subBonus  = isSubscriberCalc ? Math.floor(pack.total * subscriberBonus) : 0;
            const grandTotal = pack.total + subBonus;
       %>
-      <div class="pack-card <%= i === 1 ? 'popular-pack' : '' %>" onclick="startCreditPay('<%= pack.id %>','<%= pack.price %>','<%= pack.label %>')">
+      <div class="pack-card <%= i === 1 ? 'popular-pack' : '' %>" onclick="startCreditPay('<%= pack.pack_id %>','<%= pack.price_ngn %>','<%= pack.label %>')">
         <% if (i === 1) { %><div class="pack-tag">Best Value</div><% } %>
         <% if (pack.minTopup) { %><div class="pack-tag" style="background:var(--green)">Min. Top-up</div><% } %>
         <div class="pack-label"><%= pack.label %></div>
         <div>
-          <div class="pack-price">&#8358;<%= pack.price.toLocaleString() %></div>
+          <div class="pack-price">&#8358;<%= pack.price_ngn.toLocaleString() %></div>
           <div class="pack-credits">
             <%= grandTotal.toLocaleString() %> credits
           </div>
           <% if (subBonus > 0) { %>
           <div class="pack-bonus">+<%= subBonus.toLocaleString() %> subscriber bonus included</div>
           <% } else { %>
-          <div class="pack-bonus"><%= pack.bonusPct > 0 ? '+' + pack.bonusPct + '% bonus credits' : 'Base pack' %></div>
+          <div class="pack-bonus"><%= pack.bonus_pct > 0 ? '+' + pack.bonus_pct + '% bonus credits' : 'Base pack' %></div>
           <% } %>
           <div class="pack-per">&#8358;<%= pack.perCall %>/call</div>
         </div>
-        <button class="btn btn-primary btn-block btn-sm" onclick="event.stopPropagation();startCreditPay('<%= pack.id %>','<%= pack.price %>','<%= pack.label %>')">
+        <button class="btn btn-primary btn-block btn-sm" onclick="event.stopPropagation();startCreditPay('<%= pack.pack_id %>','<%= pack.price_ngn %>','<%= pack.label %>')">
           <%- icon('zap',13) %> Buy <%= pack.label %>
         </button>
       </div>

@@ -24,7 +24,10 @@ const Credit = {
     return r.rows.map(p => ({
       ...p,
       total:   p.base + p.bonus,
-      perCall: p.price_ngn / (p.base + p.bonus || 1),
+      price:   p.price_ngn,                                           // billing.ejs uses pack.price
+      id:      p.pack_id,                                             // billing.ejs passes this as pack_id to verify endpoint
+      dbId:    p.id,                                                  // keep integer PK if needed
+      perCall: (p.price_ngn / (p.base + p.bonus || 1)).toFixed(3),
     }));
   },
 

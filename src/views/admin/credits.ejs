@@ -87,7 +87,7 @@
         <span>Per credit <strong>₦<%= (p.price_ngn/(p.base+p.bonus||1)).toFixed(2) %></strong></span>
       </div>
       <div class="pack-actions">
-        <button class="btn-icon" onclick='editPack(<%- JSON.stringify(p) %>)'>✏️ Edit</button>
+        <button class="btn-icon" data-pack="<%- encodeURIComponent(JSON.stringify(p)) %>" onclick="editPackBtn(this)">✏️ Edit</button>
         <button class="btn-icon danger" onclick="deletePack(<%= p.id %>, '<%= p.label.replace(/'/g,\"\\'\")||\"\" %>')">🗑 Delete</button>
       </div>
     </div>
@@ -230,6 +230,17 @@ async function savePack() {
   viperToast(_editing ? 'Pack updated.' : 'Pack created.', 'success');
   closeModal();
   setTimeout(() => location.reload(), 600);
+}
+
+// Bridge: data-attribute → original editPack
+function editPackBtn(btn) {
+  try { editPack(JSON.parse(decodeURIComponent(btn.dataset.pack))); }
+  catch(e) { viperToast('Failed to parse pack data.', 'error'); }
+}
+
+// Bridge: data-attribute → original deletePack
+function deletePackBtn(btn) {
+  deletePack(btn.dataset.id, decodeURIComponent(btn.dataset.label));
 }
 
 async function deletePack(id, label) {

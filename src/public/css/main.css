@@ -1098,11 +1098,16 @@ tbody td:first-child { color: var(--text); }
 .section-badge svg { flex-shrink: 0; }
 
 /* ─── Cat card icon colors ───────────────────────────────────────────────── */
-.ci-purple { background: var(--purple-bg); color: var(--purple); }
+.ci-purple  { background: var(--purple-bg); color: var(--purple); }
 .ci-orange  { background: rgba(234,88,12,0.12); color: #fb923c; }
 .ci-blue    { background: var(--blue-bg);   color: var(--blue); }
 .ci-pink    { background: rgba(219,39,119,0.12); color: #f472b6; }
 .ci-green   { background: var(--green-bg);  color: var(--green); }
+.ci-teal    { background: rgba(20,184,166,0.12); color: #2dd4bf; }
+.ci-yellow  { background: rgba(234,179,8,0.12);  color: #facc15; }
+.ci-indigo  { background: rgba(99,102,241,0.12); color: #818cf8; }
+.ci-rose    { background: rgba(244,63,94,0.12);  color: #fb7185; }
+.ci-emerald { background: rgba(16,185,129,0.12); color: #34d399; }
 
 /* ─── Features section bg strip ─────────────────────────────────────────── */
 .section-strip {

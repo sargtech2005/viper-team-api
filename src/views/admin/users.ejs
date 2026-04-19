@@ -13,71 +13,85 @@
 .btn-manage{background:var(--purple-bg);color:var(--purple);border:1.5px solid var(--purple);border-radius:var(--radius-sm);padding:4px 11px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-manage:hover{background:var(--purple);color:#fff}
 
-/* ── Modal overlay ── */
-.um-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+/* ══ Modal overlay ══════════════════════════════════════════════════════════ */
+.um-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s ease;backdrop-filter:blur(3px)}
 .um-overlay.open{opacity:1;pointer-events:all}
 
 /* ── Modal box ── */
-.um-modal{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);width:100%;max-width:540px;max-height:90vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.um-modal{background:var(--bg-card);border:1.5px solid var(--border);border-radius:14px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;transform:translateY(24px) scale(.96);transition:transform .24s cubic-bezier(.22,1,.36,1);box-shadow:0 32px 80px rgba(0,0,0,.55)}
 .um-overlay.open .um-modal{transform:translateY(0) scale(1)}
 
-.um-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
-.um-header h3{font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
-.um-close{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;transition:color .15s;line-height:1}
-.um-close:hover{color:var(--text)}
+/* ── Header ── */
+.um-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.um-header-left{display:flex;align-items:center;gap:12px}
+.um-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--green));display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(139,92,246,.3)}
+.um-header h3{font-size:.95rem;font-weight:700;margin:0;color:var(--text)}
+.um-header .um-sub{font-size:.74rem;color:var(--text-muted);margin-top:1px}
+.um-close{background:none;border:1.5px solid var(--border);color:var(--text-muted);cursor:pointer;padding:5px 8px;border-radius:8px;transition:all .15s;line-height:1;font-size:.88rem}
+.um-close:hover{color:var(--text);border-color:var(--text-muted)}
+.um-badges{display:flex;gap:5px;flex-wrap:wrap}
 
-/* ── User info strip ── */
-.um-user-strip{padding:14px 20px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.um-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--green));display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0}
-.um-user-info{flex:1;min-width:0}
-.um-user-info .um-name{font-weight:700;font-size:.95rem;margin:0 0 2px}
-.um-user-info .um-meta{font-size:.77rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.um-badges{display:flex;gap:6px;flex-wrap:wrap}
+/* ── Body ── */
+.um-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px}
 
-/* ── Sections ── */
-.um-body{padding:16px 20px;display:flex;flex-direction:column;gap:16px}
-.um-section{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
-.um-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:0 0 12px;display:flex;align-items:center;gap:6px}
-.um-section-title svg{color:var(--purple)}
+/* ── Stats row ── */
+.um-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.um-stat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center}
+.um-stat .val{font-size:1.15rem;font-weight:800;color:var(--text)}
+.um-stat .lbl{font-size:.68rem;color:var(--text-muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
 
-/* ── Stat row ── */
-.um-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.um-stat{text-align:center;padding:8px 6px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border)}
-.um-stat .val{font-size:1.1rem;font-weight:800;color:var(--text)}
-.um-stat .lbl{font-size:.68rem;color:var(--text-muted);margin-top:2px}
+/* ── Section cards ── */
+.um-section{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.um-section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-bottom:2px}
+
+/* ── Plan picker ── */
+.um-plan-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;padding-right:2px}
+.um-plan-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;user-select:none}
+.um-plan-item:hover{border-color:var(--purple);background:rgba(139,92,246,.06)}
+.um-plan-item.selected{border-color:var(--purple);background:var(--purple-bg)}
+.um-plan-item .pn{font-size:.84rem;font-weight:600;color:var(--text)}
+.um-plan-item .pp{font-size:.74rem;color:var(--text-muted)}
+.um-plan-item .pcheck{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.um-plan-item.selected .pcheck{background:var(--purple);border-color:var(--purple);color:#fff}
+.um-plan-item.selected .pcheck::after{content:'✓';font-size:.6rem;font-weight:900}
+.um-apply-btn{margin-top:4px}
+
+/* ── Credit controls ── */
+.um-credit-toggle{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:4px}
+.um-credit-toggle button{flex:1;padding:7px 10px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;background:none;color:var(--text-muted);transition:all .15s}
+.um-credit-toggle button.add-active{background:rgba(16,185,129,.15);color:var(--green)}
+.um-credit-toggle button.deduct-active{background:rgba(239,68,68,.1);color:#f87171}
+.um-credit-inputs{display:flex;gap:8px;align-items:center}
+.um-credit-inputs input{flex:1;font-size:.83rem;padding:7px 11px;background:var(--bg-3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);transition:border-color .15s;outline:none}
+.um-credit-inputs input:focus{border-color:var(--purple)}
 
 /* ── Action rows ── */
-.um-action-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.um-action-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .um-action-row:last-child{border-bottom:none;padding-bottom:0}
-.um-action-label{font-size:.83rem;font-weight:600;color:var(--text);flex:1}
-.um-action-sub{font-size:.74rem;color:var(--text-muted);margin-top:2px}
+.um-action-label{font-size:.83rem;font-weight:600;color:var(--text)}
+.um-action-sub{font-size:.72rem;color:var(--text-muted);margin-top:2px}
 
-/* ── Inline credit input ── */
-.um-credit-row{display:flex;align-items:center;gap:8px;width:100%}
-.um-credit-row input{flex:1;font-size:.83rem;padding:6px 10px}
-.um-credit-row select{font-size:.83rem;padding:6px 8px;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text)}
-.um-credit-row button{white-space:nowrap}
-
-/* ── Plan select row ── */
-.um-plan-row{display:flex;align-items:center;gap:8px;width:100%}
-.um-plan-row select{flex:1;font-size:.83rem;padding:6px 10px;background:var(--bg-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text)}
+/* ── Action buttons ── */
+.btn-danger-sm{background:rgba(239,68,68,.1);color:#f87171;border:1.5px solid rgba(239,68,68,.3);border-radius:8px;padding:5px 13px;font-size:.79rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-danger-sm:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+.btn-warn-sm{background:rgba(245,158,11,.1);color:#fbbf24;border:1.5px solid rgba(245,158,11,.3);border-radius:8px;padding:5px 13px;font-size:.79rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-warn-sm:hover{background:#f59e0b;color:#fff}
+.btn-ok-sm{background:rgba(16,185,129,.1);color:var(--green);border:1.5px solid rgba(16,185,129,.25);border-radius:8px;padding:5px 13px;font-size:.79rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-ok-sm:hover{background:var(--green);color:#fff}
 
 /* ── Danger zone ── */
-.um-section.danger{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
-.um-section.danger .um-section-title{color:#ef4444}
-.btn-danger{background:rgba(239,68,68,.12);color:#ef4444;border:1.5px solid rgba(239,68,68,.35);border-radius:var(--radius-sm);padding:5px 13px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-danger:hover{background:#ef4444;color:#fff;border-color:#ef4444}
-.btn-warn{background:rgba(245,158,11,.1);color:#f59e0b;border:1.5px solid rgba(245,158,11,.35);border-radius:var(--radius-sm);padding:5px 13px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-warn:hover{background:#f59e0b;color:#fff}
-.btn-success-sm{background:rgba(16,185,129,.1);color:var(--green);border:1.5px solid rgba(16,185,129,.3);border-radius:var(--radius-sm);padding:5px 13px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-success-sm:hover{background:var(--green);color:#fff}
+.um-section.danger-zone{border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.03)}
+.um-section.danger-zone .um-section-title{color:#f87171}
 </style>
 
 <div class="admin-main">
   <%- include('../partials/admin-nav', { adminActive: 'users' }) %>
 
   <div class="page-header flex-between flex-wrap gap-1" style="margin-bottom:16px">
-    <div><h2>Users</h2><p>Total: <strong><%= total %></strong> account<%= total!==1?'s':'' %>.<%= search ? ` Showing results for "<strong>${search}</strong>"` : '' %></p></div>
+    <div>
+      <h2>Users</h2>
+      <p>Total: <strong><%= total %></strong> account<%= total!==1?'s':'' %>.<% if(search){ %> Showing results for "<strong><%= search %></strong>"<% } %></p>
+    </div>
   </div>
 
   <!-- Search -->
@@ -129,105 +143,106 @@
   <% } %>
 </div>
 
-<!-- ══ User Management Modal ═══════════════════════════════════════════════════ -->
+<!-- ══ User Management Modal ═════════════════════════════════════════════════ -->
 <div class="um-overlay" id="umOverlay" onclick="closeIfBg(event)">
   <div class="um-modal" id="umModal">
 
+    <!-- Header -->
     <div class="um-header">
-      <h3 id="umTitle">User Management</h3>
-      <button class="um-close" onclick="closeUserModal()" title="Close">✕</button>
-    </div>
-
-    <!-- User strip -->
-    <div class="um-user-strip" id="umStrip">
-      <div class="um-avatar" id="umAvatar">?</div>
-      <div class="um-user-info">
-        <div class="um-name" id="umName">—</div>
-        <div class="um-meta" id="umEmail">—</div>
+      <div class="um-header-left">
+        <div class="um-avatar" id="umAvatar">?</div>
+        <div>
+          <h3 id="umTitle">Loading…</h3>
+          <div class="um-sub" id="umSub">—</div>
+        </div>
       </div>
-      <div class="um-badges">
-        <span class="badge" id="umRoleBadge">—</span>
-        <span class="badge" id="umStatusBadge">—</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="um-badges">
+          <span class="badge" id="umRoleBadge">—</span>
+          <span class="badge" id="umStatusBadge">—</span>
+        </div>
+        <button class="um-close" onclick="closeUserModal()" title="Close">✕</button>
       </div>
     </div>
 
     <div class="um-body">
 
-      <!-- Stats -->
-      <div class="um-section">
-        <div class="um-section-title">📊 Account Stats</div>
-        <div class="um-stats">
-          <div class="um-stat"><div class="val" id="umCallsVal">—</div><div class="lbl">API Calls</div></div>
-          <div class="um-stat"><div class="val" id="umCreditsVal">—</div><div class="lbl">Credits</div></div>
-          <div class="um-stat"><div class="val" id="umJoinedVal">—</div><div class="lbl">Joined</div></div>
-        </div>
+      <!-- ── Stats ── -->
+      <div class="um-stats">
+        <div class="um-stat"><div class="val" id="umCallsVal">—</div><div class="lbl">API Calls</div></div>
+        <div class="um-stat"><div class="val" id="umCreditsVal">—</div><div class="lbl">Credits</div></div>
+        <div class="um-stat"><div class="val" id="umJoinedVal">—</div><div class="lbl">Joined</div></div>
       </div>
 
-      <!-- Plan Management -->
+      <!-- ── Plan ── -->
       <div class="um-section">
         <div class="um-section-title">📦 Change Plan</div>
-        <div class="um-plan-row">
-          <select id="umPlanSelect">
-            <% plans.forEach(p => { %>
-            <option value="<%= p.id %>"><%= p.name %> — ₦<%= p.price_ngn.toLocaleString() %></option>
-            <% }) %>
-          </select>
-          <button class="btn-success-sm" onclick="changePlan()">Apply Plan</button>
+        <div class="um-plan-list" id="umPlanList">
+          <% plans.forEach(p => { %>
+          <div class="um-plan-item" data-plan-id="<%= p.id %>" onclick="selectPlanItem(this)">
+            <div>
+              <div class="pn"><%= p.name %></div>
+              <div class="pp"><%= p.price_ngn === 0 ? 'Free' : '₦' + p.price_ngn.toLocaleString() + '/mo' %></div>
+            </div>
+            <div class="pcheck"></div>
+          </div>
+          <% }) %>
         </div>
+        <button class="btn btn-sm btn-primary um-apply-btn" onclick="changePlan()">Apply Plan</button>
       </div>
 
-      <!-- Credits -->
+      <!-- ── Credits ── -->
       <div class="um-section">
         <div class="um-section-title">💳 Adjust Credits</div>
-        <div class="um-credit-row">
-          <select id="umCreditOp">
-            <option value="add">➕ Add</option>
-            <option value="deduct">➖ Deduct</option>
-          </select>
-          <input type="number" id="umCreditAmt" placeholder="Amount" min="1" style="width:90px">
-          <input type="text" id="umCreditReason" placeholder="Reason (optional)" style="flex:1">
+        <div class="um-credit-toggle">
+          <button id="umCreditAddBtn" class="add-active" onclick="setCreditOp('add')">➕ Add</button>
+          <button id="umCreditDeductBtn" onclick="setCreditOp('deduct')">➖ Deduct</button>
+        </div>
+        <div class="um-credit-inputs">
+          <input type="number" id="umCreditAmt" placeholder="Amount" min="1">
+          <input type="text" id="umCreditReason" placeholder="Reason (optional)">
           <button class="btn btn-sm btn-primary" onclick="adjustCredits()">Apply</button>
         </div>
       </div>
 
-      <!-- Controls -->
+      <!-- ── Controls ── -->
       <div class="um-section">
         <div class="um-section-title">🔧 User Controls</div>
 
         <div class="um-action-row">
           <div>
-            <div class="um-action-label">Ban / Unban User</div>
-            <div class="um-action-sub">Block or restore access to the platform</div>
+            <div class="um-action-label" id="umBanLabel">Ban User</div>
+            <div class="um-action-sub">Block or restore platform access immediately</div>
           </div>
-          <button id="umBanBtn" class="btn-warn" onclick="toggleBan()">Ban</button>
+          <button id="umBanBtn" class="btn-warn-sm" onclick="toggleBan()">Ban</button>
         </div>
 
         <div class="um-action-row">
           <div>
-            <div class="um-action-label">Reset API Call Limit</div>
+            <div class="um-action-label">Reset API Call Counter</div>
             <div class="um-action-sub">Sets api_calls_used back to 0</div>
           </div>
-          <button class="btn-success-sm" onclick="resetLimit()">Reset</button>
+          <button class="btn-ok-sm" onclick="resetLimit()">Reset</button>
         </div>
 
         <div class="um-action-row">
           <div>
-            <div class="um-action-label" id="umRoleLabel">Toggle Admin Role</div>
-            <div class="um-action-sub">Promote to admin or demote to regular user</div>
+            <div class="um-action-label" id="umRoleLabel">Promote to Admin</div>
+            <div class="um-action-sub">Grant or revoke full admin access</div>
           </div>
           <button id="umRoleBtn" class="btn btn-sm btn-outline" onclick="toggleRole()">Toggle Role</button>
         </div>
       </div>
 
-      <!-- Danger Zone -->
-      <div class="um-section danger">
+      <!-- ── Danger Zone ── -->
+      <div class="um-section danger-zone">
         <div class="um-section-title">⚠ Danger Zone</div>
         <div class="um-action-row">
           <div>
-            <div class="um-action-label" style="color:#ef4444">Delete Account</div>
-            <div class="um-action-sub">Permanently removes user and all their data. Cannot be undone.</div>
+            <div class="um-action-label" style="color:#f87171">Delete Account</div>
+            <div class="um-action-sub">Permanently removes the user and all their data. Cannot be undone.</div>
           </div>
-          <button class="btn-danger" onclick="deleteUser()">Delete</button>
+          <button class="btn-danger-sm" onclick="deleteUser()">Delete</button>
         </div>
       </div>
 
@@ -237,17 +252,48 @@
 
 <!-- ══ Scripts ════════════════════════════════════════════════════════════════ -->
 <script>
-let _uid = null; // current modal user id
-let _uActive = true;
-let _uRole   = 'user';
+let _uid      = null;
+let _uActive  = true;
+let _uRole    = 'user';
+let _creditOp = 'add';
+let _selectedPlanId = null;
 
-// ── Open modal ──────────────────────────────────────────────────────────────
+// ── Credit operation toggle ──────────────────────────────────────────────────
+function setCreditOp(op) {
+  _creditOp = op;
+  const addBtn    = document.getElementById('umCreditAddBtn');
+  const deductBtn = document.getElementById('umCreditDeductBtn');
+  addBtn.classList.toggle('add-active', op === 'add');
+  deductBtn.classList.toggle('deduct-active', op === 'deduct');
+  addBtn.classList.remove('deduct-active');
+  deductBtn.classList.remove('add-active');
+}
+
+// ── Plan item selection ──────────────────────────────────────────────────────
+function selectPlanItem(el) {
+  document.querySelectorAll('#umPlanList .um-plan-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  _selectedPlanId = el.dataset.planId;
+}
+
+function preselectPlan(planId) {
+  _selectedPlanId = null;
+  document.querySelectorAll('#umPlanList .um-plan-item').forEach(i => {
+    i.classList.remove('selected');
+    if (String(i.dataset.planId) === String(planId)) {
+      i.classList.add('selected');
+      _selectedPlanId = planId;
+    }
+  });
+}
+
+// ── Open modal ───────────────────────────────────────────────────────────────
 async function openUserModal(id) {
   _uid = id;
   document.getElementById('umTitle').textContent = 'Loading…';
+  document.getElementById('umSub').textContent   = '';
   document.getElementById('umOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-
   try {
     const r = await fetch('/admin/users/' + id);
     const d = await r.json();
@@ -264,13 +310,11 @@ function populateModal(u) {
   _uActive = u.is_active;
   _uRole   = u.role;
 
-  const initial = (u.username || '?')[0].toUpperCase();
-  document.getElementById('umAvatar').textContent  = initial;
-  document.getElementById('umTitle').textContent   = 'Managing: ' + u.username;
-  document.getElementById('umName').textContent    = u.username;
-  document.getElementById('umEmail').textContent   = u.email + ' · #' + u.id;
-  document.getElementById('umCallsVal').textContent   = (u.api_calls_used||0).toLocaleString();
-  document.getElementById('umCreditsVal').textContent = (u.credit_balance||0).toLocaleString();
+  document.getElementById('umAvatar').textContent  = (u.username || '?')[0].toUpperCase();
+  document.getElementById('umTitle').textContent   = u.username;
+  document.getElementById('umSub').textContent     = u.email + ' · #' + u.id;
+  document.getElementById('umCallsVal').textContent   = (u.api_calls_used || 0).toLocaleString();
+  document.getElementById('umCreditsVal').textContent = (u.credit_balance  || 0).toLocaleString();
   document.getElementById('umJoinedVal').textContent  = new Date(u.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 
   // Role badge
@@ -284,54 +328,62 @@ function populateModal(u) {
   sb.className   = 'badge ' + (u.is_active ? 'badge-green' : 'badge-red');
 
   // Ban button
-  const bb = document.getElementById('umBanBtn');
-  bb.textContent = u.is_active ? 'Ban User' : 'Unban User';
-  bb.className   = u.is_active ? 'btn-warn' : 'btn-success-sm';
+  syncBanBtn();
 
-  // Role button label
-  document.getElementById('umRoleLabel').textContent =
-    u.role === 'admin' ? 'Demote from Admin' : 'Promote to Admin';
+  // Role label
+  document.getElementById('umRoleLabel').textContent = u.role === 'admin' ? 'Demote from Admin' : 'Promote to Admin';
 
-  // Pre-select current plan in dropdown
-  if (u.plan_id) {
-    const sel = document.getElementById('umPlanSelect');
-    if (sel) sel.value = u.plan_id;
-  }
+  // Pre-select plan
+  preselectPlan(u.plan_id);
 
-  // Clear credit inputs
+  // Reset credit inputs
+  setCreditOp('add');
   document.getElementById('umCreditAmt').value    = '';
   document.getElementById('umCreditReason').value = '';
 }
 
-// ── Close modal ─────────────────────────────────────────────────────────────
+function syncBanBtn() {
+  const bb  = document.getElementById('umBanBtn');
+  const lbl = document.getElementById('umBanLabel');
+  if (_uActive) {
+    bb.textContent = 'Ban';
+    bb.className   = 'btn-warn-sm';
+    lbl.textContent = 'Ban User';
+  } else {
+    bb.textContent = 'Unban';
+    bb.className   = 'btn-ok-sm';
+    lbl.textContent = 'Unban User';
+  }
+}
+
+// ── Close modal ──────────────────────────────────────────────────────────────
 function closeUserModal() {
   document.getElementById('umOverlay').classList.remove('open');
   document.body.style.overflow = '';
   _uid = null;
 }
-function closeIfBg(e) {
-  if (e.target === document.getElementById('umOverlay')) closeUserModal();
-}
+function closeIfBg(e) { if (e.target === document.getElementById('umOverlay')) closeUserModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserModal(); });
 
-// ── Change Plan ──────────────────────────────────────────────────────────────
+// ── Change Plan ───────────────────────────────────────────────────────────────
 async function changePlan() {
   if (!_uid) return;
-  const sel = document.getElementById('umPlanSelect');
-  const planId   = sel.value;
-  const planName = sel.options[sel.selectedIndex].text.split(' —')[0];
+  if (!_selectedPlanId) { viperToast('Select a plan first.', 'warning'); return; }
+
+  const items    = document.querySelectorAll('#umPlanList .um-plan-item');
+  let planName   = '';
+  items.forEach(i => { if (i.classList.contains('selected')) planName = i.querySelector('.pn').textContent; });
 
   const ok = await viperConfirm('Change this user\'s plan to "' + planName + '"?', 'Change Plan');
   if (!ok) return;
 
   const r = await fetch('/admin/users/' + _uid + '/plan', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ plan_id: planId }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan_id: _selectedPlanId }),
   });
   const d = await r.json();
   if (d.success) {
     viperToast('Plan changed to ' + d.plan_name + '.', 'success');
-    // Update table row
     const el = document.getElementById('uplan-' + _uid);
     if (el) el.textContent = d.plan_name;
   } else {
@@ -339,23 +391,21 @@ async function changePlan() {
   }
 }
 
-// ── Adjust Credits ───────────────────────────────────────────────────────────
+// ── Adjust Credits ────────────────────────────────────────────────────────────
 async function adjustCredits() {
   if (!_uid) return;
-  const op     = document.getElementById('umCreditOp').value;
   const rawAmt = parseInt(document.getElementById('umCreditAmt').value);
   const reason = document.getElementById('umCreditReason').value.trim();
-
   if (!rawAmt || rawAmt < 1) { viperToast('Enter a valid amount.', 'warning'); return; }
 
-  const amount = op === 'deduct' ? -rawAmt : rawAmt;
-  const label  = op === 'deduct' ? 'Deduct ' + rawAmt + ' credits?' : 'Add ' + rawAmt + ' credits?';
+  const amount = _creditOp === 'deduct' ? -rawAmt : rawAmt;
+  const label  = _creditOp === 'deduct' ? 'Deduct ' + rawAmt + ' credits?' : 'Add ' + rawAmt + ' credits?';
 
   const ok = await viperConfirm(label, 'Adjust Credits');
   if (!ok) return;
 
   const r = await fetch('/admin/users/' + _uid + '/credits', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ amount, reason }),
   });
   const d = await r.json();
@@ -367,14 +417,14 @@ async function adjustCredits() {
     document.getElementById('umCreditAmt').value    = '';
     document.getElementById('umCreditReason').value = '';
   } else {
-    viperToast(d.error || 'Failed to adjust credits.', 'error');
+    viperToast(d.error || 'Failed.', 'error');
   }
 }
 
-// ── Ban / Unban ──────────────────────────────────────────────────────────────
+// ── Ban / Unban ───────────────────────────────────────────────────────────────
 async function toggleBan() {
   if (!_uid) return;
-  const label = _uActive ? 'Ban this user? They will lose access immediately.' : 'Unban this user and restore their access?';
+  const label = _uActive ? 'Ban this user? They lose access immediately.' : 'Unban this user and restore their access?';
   const ok = await viperConfirm(label, _uActive ? 'Ban User' : 'Unban User');
   if (!ok) return;
 
@@ -382,43 +432,34 @@ async function toggleBan() {
   const d = await r.json();
   if (d.success) {
     _uActive = d.is_active;
+    syncBanBtn();
     const sb = document.getElementById('umStatusBadge');
     sb.textContent = d.is_active ? 'Active' : 'Banned';
     sb.className   = 'badge ' + (d.is_active ? 'badge-green' : 'badge-red');
-
-    const bb = document.getElementById('umBanBtn');
-    bb.textContent = d.is_active ? 'Ban User' : 'Unban User';
-    bb.className   = d.is_active ? 'btn-warn' : 'btn-success-sm';
-
-    // Table row badge
     const tb = document.getElementById('ustatus-' + _uid);
     if (tb) { tb.textContent = d.is_active ? 'Active' : 'Banned'; tb.className = 'badge ' + (d.is_active ? 'badge-green' : 'badge-red'); }
-
     viperToast('User ' + (d.is_active ? 'unbanned' : 'banned') + '.', d.is_active ? 'success' : 'warning');
   } else {
     viperToast(d.error || 'Failed.', 'error');
   }
 }
 
-// ── Reset API Limit ──────────────────────────────────────────────────────────
+// ── Reset API Limit ───────────────────────────────────────────────────────────
 async function resetLimit() {
   if (!_uid) return;
   const ok = await viperConfirm('Reset this user\'s API call count to 0?', 'Reset Limit');
   if (!ok) return;
-
   const r = await fetch('/admin/users/' + _uid + '/reset-limit', { method: 'POST' });
   const d = await r.json();
   if (d.success) {
-    viperToast('API call limit reset to 0.', 'success');
+    viperToast('API call counter reset to 0.', 'success');
     document.getElementById('umCallsVal').textContent = '0';
     const cel = document.getElementById('ucalls-' + _uid);
     if (cel) cel.textContent = '0';
-  } else {
-    viperToast(d.error || 'Failed.', 'error');
-  }
+  } else { viperToast(d.error || 'Failed.', 'error'); }
 }
 
-// ── Toggle Role ──────────────────────────────────────────────────────────────
+// ── Toggle Role ───────────────────────────────────────────────────────────────
 async function toggleRole() {
   if (!_uid) return;
   const isAdmin = _uRole === 'admin';
@@ -427,7 +468,6 @@ async function toggleRole() {
     isAdmin ? 'Demote User' : 'Promote to Admin'
   );
   if (!ok) return;
-
   const r = await fetch('/admin/users/' + _uid + '/role', { method: 'POST' });
   const d = await r.json();
   if (d.success) {
@@ -435,40 +475,26 @@ async function toggleRole() {
     const rb = document.getElementById('umRoleBadge');
     rb.textContent = d.role;
     rb.className   = 'badge ' + (d.role === 'admin' ? 'badge-purple' : 'badge-gray');
-
-    document.getElementById('umRoleLabel').textContent =
-      d.role === 'admin' ? 'Demote from Admin' : 'Promote to Admin';
-
-    // Table row badge
+    document.getElementById('umRoleLabel').textContent = d.role === 'admin' ? 'Demote from Admin' : 'Promote to Admin';
     const tb = document.getElementById('urole-' + _uid);
     if (tb) { tb.textContent = d.role; tb.className = 'badge ' + (d.role === 'admin' ? 'badge-purple' : 'badge-gray'); }
-
     viperToast('Role changed to ' + d.role + '.', 'success');
-  } else {
-    viperToast(d.error || 'Failed.', 'error');
-  }
+  } else { viperToast(d.error || 'Failed.', 'error'); }
 }
 
-// ── Delete User ──────────────────────────────────────────────────────────────
+// ── Delete User ───────────────────────────────────────────────────────────────
 async function deleteUser() {
   if (!_uid) return;
-  const name = document.getElementById('umName').textContent;
-  const ok = await viperConfirm(
-    'PERMANENTLY delete "' + name + '"? This removes all their data and cannot be undone.',
-    'Delete Account'
-  );
+  const name = document.getElementById('umTitle').textContent;
+  const ok = await viperConfirm('PERMANENTLY delete "' + name + '"? This removes all their data and cannot be undone.', 'Delete Account');
   if (!ok) return;
-
   const r = await fetch('/admin/users/' + _uid + '/delete', { method: 'POST' });
   const d = await r.json();
   if (d.success) {
     viperToast('User "' + name + '" deleted.', 'success');
     closeUserModal();
-    // Remove row from table
     const row = document.getElementById('urow-' + _uid);
     if (row) row.remove();
-  } else {
-    viperToast(d.error || 'Failed to delete user.', 'error');
-  }
+  } else { viperToast(d.error || 'Failed.', 'error'); }
 }
 </script>

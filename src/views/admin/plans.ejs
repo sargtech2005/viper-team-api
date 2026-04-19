@@ -30,6 +30,12 @@
 .btn-icon{background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:4px 9px;cursor:pointer;color:var(--text-muted);font-size:.8rem;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
 .btn-icon:hover{border-color:var(--purple);color:var(--purple)}
 .btn-icon.danger:hover{border-color:#ef4444;color:#ef4444}
+
+/* ── Status toggle ── */
+.pm-toggle-group{display:flex;gap:0;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.pm-toggle-opt{flex:1;padding:7px 10px;font-size:.82rem;font-weight:600;cursor:pointer;background:none;border:none;color:var(--text-muted);transition:all .15s;text-align:center}
+.pm-toggle-opt.active-on{background:rgba(16,185,129,.15);color:var(--green)}
+.pm-toggle-opt.active-off{background:rgba(239,68,68,.1);color:#ef4444}
 </style>
 
 <div class="admin-main">
@@ -46,9 +52,16 @@
         <tr><th>Name</th><th>Price (₦)</th><th>API Limit</th><th>Rate/min</th><th>Features</th><th>Status</th><th>Actions</th></tr>
       </thead>
       <tbody id="plansBody">
-        <% plans.forEach(p => { %>
-        <%
-          const feats = typeof p.features === 'string' ? JSON.parse(p.features||'[]') : (p.features||[]);
+        <% plans.forEach(p => {
+          let feats = [];
+          try {
+            feats = typeof p.features === 'string' ? JSON.parse(p.features || '[]') : (Array.isArray(p.features) ? p.features : []);
+          } catch(e) { feats = []; }
+          const safePlan = JSON.stringify({
+            id: p.id, name: p.name, price_ngn: p.price_ngn,
+            api_limit: p.api_limit, rate_per_min: p.rate_per_min,
+            features: feats, is_active: p.is_active
+          });
         %>
         <tr id="prow-<%= p.id %>">
           <td><strong id="pname-<%= p.id %>"><%= p.name %></strong></td>
@@ -63,9 +76,9 @@
           </td>
           <td><span class="badge <%= p.is_active?'badge-green':'badge-red' %>" id="pstatus-<%= p.id %>"><%= p.is_active?'Active':'Hidden' %></span></td>
           <td style="white-space:nowrap">
-            <button class="btn-icon" onclick='editPlan(<%= JSON.stringify(p) %>)' title="Edit">✏️ Edit</button>
+            <button class="btn-icon" data-plan="<%- encodeURIComponent(safePlan) %>" onclick="editPlanBtn(this)" title="Edit">✏️ Edit</button>
             <button class="btn-icon" onclick="togglePlan(<%= p.id %>)" title="Toggle status">⏸</button>
-            <button class="btn-icon danger" onclick="deletePlan(<%= p.id %>, '<%= p.name.replace(/'/g,\"\\'\")||\"\" %>')" title="Delete">🗑</button>
+            <button class="btn-icon danger" data-id="<%= p.id %>" data-name="<%- encodeURIComponent(p.name) %>" onclick="deletePlanBtn(this)" title="Delete">🗑</button>
           </td>
         </tr>
         <% }) %>
@@ -95,11 +108,12 @@
           <input type="number" id="pmPrice" min="0" placeholder="0 = Free">
         </div>
         <div class="pm-field">
-          <label>Status</label>
-          <select id="pmActive">
-            <option value="true">Active (visible)</option>
-            <option value="false">Hidden</option>
-          </select>
+          <label>Visibility</label>
+          <div class="pm-toggle-group" id="pmActiveToggle">
+            <button type="button" class="pm-toggle-opt active-on" data-val="true" onclick="setPlanToggle('true')">Active</button>
+            <button type="button" class="pm-toggle-opt" data-val="false" onclick="setPlanToggle('false')">Hidden</button>
+          </div>
+          <input type="hidden" id="pmActive" value="true">
         </div>
       </div>
 
@@ -130,6 +144,14 @@
 <script>
 let _pmEditing = false;
 
+function setPlanToggle(val) {
+  document.getElementById('pmActive').value = val;
+  document.querySelectorAll('#pmActiveToggle .pm-toggle-opt').forEach(btn => {
+    btn.classList.remove('active-on','active-off');
+    if (btn.dataset.val === val) btn.classList.add(val === 'true' ? 'active-on' : 'active-off');
+  });
+}
+
 function openCreate() {
   _pmEditing = false;
   document.getElementById('pmTitle').textContent = 'Add New Plan';
@@ -139,14 +161,15 @@ function openCreate() {
   document.getElementById('pmLimit').value = '';
   document.getElementById('pmRate').value  = '';
   document.getElementById('pmFeatures').value = '';
-  document.getElementById('pmActive').value   = 'true';
+  setPlanToggle('true');
   document.getElementById('pmOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function editPlan(p) {
+function editPlanBtn(btn) {
+  const p = JSON.parse(decodeURIComponent(btn.dataset.plan));
   _pmEditing = true;
-  const feats = typeof p.features === 'string' ? JSON.parse(p.features || '[]') : (p.features || []);
+  const feats = Array.isArray(p.features) ? p.features : [];
   document.getElementById('pmTitle').textContent  = 'Edit Plan: ' + p.name;
   document.getElementById('pmId').value           = p.id;
   document.getElementById('pmName').value         = p.name;
@@ -154,7 +177,7 @@ function editPlan(p) {
   document.getElementById('pmLimit').value        = p.api_limit;
   document.getElementById('pmRate').value         = p.rate_per_min;
   document.getElementById('pmFeatures').value     = feats.join('\n');
-  document.getElementById('pmActive').value       = p.is_active ? 'true' : 'false';
+  setPlanToggle(p.is_active ? 'true' : 'false');
   document.getElementById('pmOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -203,7 +226,9 @@ async function togglePlan(id) {
   } else { viperToast(d.error || 'Failed.', 'error'); }
 }
 
-async function deletePlan(id, name) {
+async function deletePlanBtn(btn) {
+  const id   = btn.dataset.id;
+  const name = decodeURIComponent(btn.dataset.name);
   const ok = await viperConfirm(`Delete plan "${name}"? Users on this plan will have no plan assigned.`, 'Delete Plan');
   if (!ok) return;
   const r = await fetch(`/admin/plans/${id}/delete`, { method: 'POST' });

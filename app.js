@@ -128,8 +128,15 @@ app.use('/admin',      adminRoutes);
 app.use('/api/v1',     apiRouter);
 
 const { optionalAuth } = require('./src/middleware/auth');
+const apiStats         = require('./src/config/apiStats');
 app.get('/', optionalAuth, (req, res) => {
-  res.render('index', { title: 'ViperAPI — Premium REST APIs for Every App & Bot' });
+  const stats = apiStats.getStats();
+  res.render('index', {
+    title:           'ViperAPI — Premium REST APIs for Every App & Bot',
+    apiCategories:   stats.categories,
+    totalEndpoints:  stats.totalEndpoints,
+    totalCategories: stats.totalCategories,
+  });
 });
 
 // ── 404 ───────────────────────────────────────────────────────────────────────

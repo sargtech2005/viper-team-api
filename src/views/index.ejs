@@ -9,7 +9,7 @@
     <div>
       <div class="hero-badge" style="margin-bottom:20px">
         <%- icon('zap',13) %>
-        Now live — 16 real endpoints, zero setup
+        Now live — <%= totalEndpoints %> real endpoints, zero setup
       </div>
       <h1 style="margin-bottom:16px">The API platform<br>built for<br><span class="gradient-text">every developer</span></h1>
       <p style="font-size:1.05rem;margin-bottom:32px;max-width:440px">One API key gives you access to all endpoints — utilities, AI fun, search, media and more. Works in any language, any framework.</p>
@@ -25,9 +25,9 @@
 
       <!-- Stats row -->
       <div class="hero-dividers">
-        <div class="hstat"><strong>16</strong><span>Endpoints</span></div>
+        <div class="hstat"><strong><%= totalEndpoints %></strong><span>Endpoints</span></div>
         <div class="hdiv"></div>
-        <div class="hstat"><strong>5</strong><span>Categories</span></div>
+        <div class="hstat"><strong><%= totalCategories %></strong><span>Categories</span></div>
         <div class="hdiv"></div>
         <div class="hstat"><strong>99.9%</strong><span>Uptime</span></div>
         <div class="hdiv"></div>
@@ -89,35 +89,17 @@
   <div style="text-align:center;margin-bottom:44px">
     <div class="section-badge"><%- icon('grid',12) %> API Categories</div>
     <h2 style="margin-bottom:10px">One Key. Every Endpoint.</h2>
-    <p style="max-width:480px;margin:0 auto;font-size:.93rem">All categories are included in every plan. Your monthly quota is shared across all of them.</p>
+    <p style="max-width:480px;margin:0 auto;font-size:.93rem">All <%= totalCategories %> categories included in every plan. Your monthly quota spans all <%= totalEndpoints %> endpoints.</p>
   </div>
 
   <div class="cat-grid">
-    <a href="/docs#utility" class="cat-card">
-      <div class="cat-icon ci-purple"><%- icon('tool',22) %></div>
-      <div class="cat-name">Utilities</div>
-      <div class="cat-count">8 endpoints</div>
+    <% apiCategories.forEach(cat => { %>
+    <a href="/docs<%= cat.docs %>" class="cat-card">
+      <div class="cat-icon <%= cat.color %>"><%- icon(cat.icon, 22) %></div>
+      <div class="cat-name"><%= cat.name %></div>
+      <div class="cat-count"><%= cat.count %> endpoint<%= cat.count !== 1 ? 's' : '' %></div>
     </a>
-    <a href="/docs#fun" class="cat-card">
-      <div class="cat-icon ci-orange"><%- icon('smile',22) %></div>
-      <div class="cat-name">Fun & Games</div>
-      <div class="cat-count">3 endpoints</div>
-    </a>
-    <a href="/docs#search-info" class="cat-card">
-      <div class="cat-icon ci-blue"><%- icon('search',22) %></div>
-      <div class="cat-name">Search & Info</div>
-      <div class="cat-count">3 endpoints</div>
-    </a>
-    <a href="/docs#media-image" class="cat-card">
-      <div class="cat-icon ci-pink"><%- icon('image',22) %></div>
-      <div class="cat-name">Media & Images</div>
-      <div class="cat-count">2 endpoints</div>
-    </a>
-    <a href="/docs" class="cat-card" style="border-style:dashed">
-      <div class="cat-icon ci-green"><%- icon('plus',22) %></div>
-      <div class="cat-name">More coming</div>
-      <div class="cat-count">In development</div>
-    </a>
+    <% }) %>
   </div>
 </section>
 
